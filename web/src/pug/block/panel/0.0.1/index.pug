@@ -1,0 +1,46 @@
+div
+  .panel
+    .head(ld="head")
+    .body(ld="body")
+  style(type="text/css"): :stylus
+    .panel
+      width: 100%
+      height: 100%
+      display: flex
+      flex-direction: column
+      gap: .25em
+      .head
+        flex: 0 0 1.25em
+      .body
+        flex: 1 0 auto
+        background: #f9fafb
+        border-radius: .15em
+        box-shadow: 0 0px 0px rgba(0,0,0,.1)
+  script: :lsc
+    module.exports =
+      pkg: {}
+      init: ({root, data}) ->
+        view = new ldview do
+          root: root
+          text:
+            head: -> data.data.title or 'dummy header'
+          handler:
+            body: ({node, local}) ->
+              if local.chart or !data.data.chart => return
+              manager.get {version: "0.0.1"} <<< data.data.chart
+                .then (bc) ->
+                  bc.create {data: {delay-render: false}}
+                .then (bi) ->
+                  bi.attach {root: node} .then -> bi.interface!
+                .then ->
+                  local.chart = it
+                  if data.data.cfg => local.chart.config data.data.cfg
+                  local.chart.parse!
+                  local.chart.bind!
+                  local.chart.resize!
+                  local.chart.render!
+                  
+
+
+
+      interface: -> @

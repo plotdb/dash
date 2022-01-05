@@ -1,0 +1,35 @@
+extends /base.pug
+block vars
+block prehead
+block head
+  style(type="text/css"): :stylus
+    html,body
+      width: 100%
+      height: 100%
+      padding: 0
+      margin: 0
+    .dash
+      width: 100%
+      height: 100%
+      gap: 1em
+      display: grid
+      padding: 1em
+    .panelx
+      display: flex
+      flex-direction: column
+      gap: .25em
+      .head
+        flex: 0 0 1.25em
+      .body
+        flex: 1 0 auto
+        background: #ccc
+        border-radius: .15em
+        box-shadow: 0 0px 0px rgba(0,0,0,.1)
+    .panel-root > div
+      width: 100%
+      height: 100%
+block body
+  .dash(ld="dash")
+    .panel-root(ld-each="panel")
+block script
+  script(type="module"): include:lsc index.ls

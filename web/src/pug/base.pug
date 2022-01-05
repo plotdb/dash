@@ -1,0 +1,28 @@
+//- module
+doctype html
+html
+  block vars
+  head
+    block prehead
+    +css([
+      {name: "bootstrap", path: "css/bootstrap.min.css"},
+      {name: "@loadingio/bootstrap.ext"},
+      {name: "ldcover"},
+      {name: "ldloader"}
+    ])
+    block head
+  body
+    block body
+    +script([
+      {name: "bootstrap.native", path: "bootstrap-native-v4.min.js"},
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js", path: "debounce.min.js"},
+      {name: "@loadingio/ldquery", path: "ldq.min.js"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "ldcover"},
+      {name: "ldloader"}
+    ])
+    block script

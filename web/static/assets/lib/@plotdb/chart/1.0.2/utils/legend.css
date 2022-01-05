@@ -1,0 +1,40 @@
+.pdlg {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: start;
+  justify-content: center;
+}
+.pdlg > div {
+  display: flex;
+  align-items: center;
+  line-height: 1em;
+}
+.pdlg > div [ld=shape] {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5em;
+  background: #999;
+  flex: 0 0 auto;
+  line-height: 1em;
+}
+.pdlg > div [ld=text] {
+  color: #999;
+  padding-right: 0.25em;
+  line-height: 1.2em;
+}
+.pdlg.vertical {
+  flex-direction: column;
+  align-items: start;
+}
+.pdlg.vertical > div {
+  margin-bottom: 0.5em;
+}
+.pdlg.horizontal > div {
+  margin-right: 0.5em;
+}
+g.pdlg-g {
+  cursor: pointer;
+  transition: opacity 0.15s ease-in-out;
+}
