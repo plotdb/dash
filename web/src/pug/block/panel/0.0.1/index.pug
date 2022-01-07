@@ -20,6 +20,7 @@ div
     module.exports =
       pkg: {}
       init: ({root, data}) ->
+        d = data.data
         view = new ldview do
           root: root
           text:
@@ -34,13 +35,11 @@ div
                   bi.attach {root: node} .then -> bi.interface!
                 .then ->
                   local.chart = it
-                  if data.data.cfg => local.chart.config data.data.cfg
+                  if d.cfg => local.chart.config d.cfg
+                  if d.raw => local.chart.set-raw d{raw, binding}
                   local.chart.parse!
                   local.chart.bind!
                   local.chart.resize!
                   local.chart.render!
-                  
-
-
 
       interface: -> @

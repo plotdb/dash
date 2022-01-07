@@ -14,9 +14,21 @@ mgr.init!
     dashboard =
       dim: col: 8, row: 4
       panels: [
-        * x: 1, y: 1, w: 1, h: 1, data: { title: "總毛利", chart: {name: "number"} }
-        * x: 2, y: 1, w: 1, h: 1, data: {title: "出貨書目數", chart: {name: "number"}}
-        * x: 3, y: 1, w: 1, h: 1, data: {title: "獨立書店總數", chart: {name: "number"}}
+        * x: 1, y: 1, w: 1, h: 1
+          data: {
+            title: "總毛利", chart: {name: "number"}
+            raw: [{value:"123", unit: "元新臺幣"}], binding: {value: {key: "value"}, unit: {key: "unit"}}
+          },
+        * x: 2, y: 1, w: 1, h: 1
+          data: {
+            title: "出貨書目數", chart: {name: "number"}
+            raw: [{value:"123", unit: "本"}], binding: {value: {key: "value"}, unit: {key: "unit"}}
+          }
+        * x: 3, y: 1, w: 1, h: 1
+          data: {
+            title: "獨立書店總數", chart: {name: "number"}
+            raw: [{value:"123", unit: "間"}], binding: {value: {key: "value"}, unit: {key: "unit"}}
+          }
         * x: 4, y: 1, w: 5, h: 1,
           data: {
             title: "排行"
