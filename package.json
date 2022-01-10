@@ -13,7 +13,7 @@
     "@loadingio/bootstrap.ext": "^0.0.3",
     "@loadingio/debounce.js": "^0.0.1",
     "@loadingio/ldquery": "^2.2.1",
-    "@plotdb/block": "^4.0.0",
+    "@plotdb/block": "^4.0.1",
     "@plotdb/chart": "^1.0.2",
     "@plotdb/csscope": "^3.0.3",
     "@plotdb/layout": "^0.0.11",
@@ -91,7 +91,11 @@
       "@plotdb/layout",
       "ldcolor",
       "pdmaptw",
+      "papaparse",
       "@plotdb/chart"
     ]
+  },
+  "dependencies": {
+    "papaparse": "^5.3.1"
   }
 }

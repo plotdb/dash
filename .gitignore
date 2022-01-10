@@ -2,3 +2,4 @@ node_modules
 .*.swp
 .swp
 web/.view
+web/static/assets/data/sales.csv
