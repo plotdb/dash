@@ -8,6 +8,7 @@ block head
       height: 100%
       padding: 0
       margin: 0
+      background: #f7f8f9
     .dash
       width: 100%
       height: 100%
@@ -29,7 +30,11 @@ block head
       width: 100%
       height: 100%
 block body
-  .dash(ld="dash")
+  +scope().dash(ld="dash-main")
     .panel-root(ld-each="panel")
+  .ldcv.default-size(ld="detail"): .base: .inner
+    +scope().dash(ld="dash-detail")
+      .panel-root(ld-each="panel")
+
 block script
   script(type="module"): include:lsc index.ls

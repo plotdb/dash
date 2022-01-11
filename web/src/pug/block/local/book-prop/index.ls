@@ -1,4 +1,6 @@
 module.exports =
+  init: ({chart, base}) ->
+    chart.on \select, -> base.fire \select, it
   meta: ->
     title: "前一百名出貨書量佔比", chart: {name: "percent-list"}
     cfg:

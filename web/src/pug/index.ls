@@ -1,5 +1,48 @@
 <-(->it.apply {}) _
 
+dashboard = (opt = {}) ->
+  @root = if typeof(opt.root) == \string => document.querySelector(opt.root) else opt.root
+  @mgr = opt.manager
+  @cfg = opt.cfg
+  @data = opt.data
+  @evt-handler = {}
+  @
+
+dashboard.prototype = Object.create(Object.prototype) <<< do
+  on: (n, cb) -> (if Array.isArray(n) => n else [n]).map (n) ~> @evt-handler.[][n].push cb
+  fire: (n, ...v) -> for cb in (@evt-handler[n] or []) => cb.apply @, v
+  init: ->
+    cfg = @cfg
+    mgr.get({name: "panel", version: "0.0.1"})
+      .then (bc) ~>
+        @bc = bc
+        @view = view = new ldview do
+          root: @root
+          handler:
+            dash: ({node}) -> node.style.gridTemplate = "repeat(#{cfg.dim.row}) repeat(#{cfg.dim.col})"
+            panel:
+              list: ~> cfg.panels
+              view:
+                init: ->
+                handler: "@": ({node, ctx, local}) ~>
+                  p = if !local.bi =>
+                    @bc.create!then (bi) ~>
+                      local.bi = bi
+                      bi.attach {root: node, data: {meta: ctx, data: @data}}
+                        .then -> bi.interface!
+                        .then (itf) ~>
+                          local.itf = itf
+                          itf.on \select, ~> @fire \select, it
+                          itf
+                  else Promise.resolve!
+                  p.then ->
+                    node.style <<<
+                      gridArea: "#{ctx.y} / #{ctx.x} / span #{ctx.h} / span #{ctx.w}"
+
+  render: ->
+    @view.render!
+
+
 mgr = window.manager = new block.manager registry: ({name, version, path, type}) ->
   if name in <[line pie bar bubble base number bar taiwancounty percent-list]> => return "/assets/chart/#name/#version/#{path or 'index.html'}"
   if /^d3/.exec(name) => return "/assets/lib/#name/main/#path"
@@ -18,7 +61,8 @@ mgr.init!
     data = data.map (b) -> Object.fromEntries head.map (d,i) -> [d,b[i]]
     console.log data
 
-    dashboard =
+    cfg = {}
+    cfg.main =
       dim: col: 8, row: 4
       panels: [
         * x: 1, y: 1, w: 1, h: 1, name: "total-gross"
@@ -31,28 +75,30 @@ mgr.init!
         * x: 3, y: 2, w: 3, h: 3, name: "book-prop"
         * x: 6, y: 2, w: 3, h: 3, name: "store-dist"
       ]
-
+    cfg.detail =
+      dim: col: 1, row: 2
+      panels: [
+        * x: 1, y: 1, w: 1, h: 1, name: "book-trend"
+        * x: 1, y: 2, w: 1, h: 1, name: "book-trend"
+      ]
     view = new ldview do
       root: document.body
-      handler:
-        dash: ({node}) ->
-          dim = dashboard.dim
-          node.style <<<
-            gridTemplateColumns: "repeat(#{dim.col})"
-            gridTemplateRows: "repeat(#{dim.row})"
-        panel:
-          list: -> dashboard.panels
-          view:
-            init: ->
-            handler: "@": ({node, ctx, local}) ~>
-              p = if !local.bi =>
-                @bc.create!then (bi) ->
-                  local.bi = bi
-                  bi.attach {root: node, data: {meta: ctx, data}}
-                    .then -> bi.interface!
-                    .then -> local.itf = it
-              else Promise.resolve!
-              p.then ->
-                node.style <<<
-                  gridArea: "#{ctx.y} / #{ctx.x} / span #{ctx.h} / span #{ctx.w}"
 
+    ldcv = new ldcover do
+      root: view.get('detail')
+
+    dash = {}
+    dash.main = new dashboard do
+      root: view.get('dash-main')
+      cfg: cfg.main
+      data: data
+
+    dash.detail = new dashboard do
+      root: view.get('dash-detail')
+      cfg: cfg.detail
+      data: data
+
+    dash.main.init!
+    dash.main.on \select, ->
+      ldcv.toggle!
+      dash.detail.init!
