@@ -1,8 +1,8 @@
 module.exports =
   meta: ->
-    title: "書目出貨量趨勢", chart: {name: "line"}
+    title: "各季出版社出貨量趨勢", chart: {name: "line"}
     cfg: {
-      mode: "line"
+      mode: "streamgraph", show-dot: false
       legend: {selectable: false, enabled: false}
       line: \curve
       yaxis: enabled: false

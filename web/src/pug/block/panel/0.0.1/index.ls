@@ -19,6 +19,13 @@ module.exports =
           init:
             dropdown: ({node}) -> new BSN.Dropdown(node)
           handler:
+            "diff-root": ({node}) ->
+              node.style.display = if meta.chart.name == \number => '' else \none
+            diff: ({node}) ->
+              v = (10 * Math.random! - 5)
+              node.classList.toggle \text-danger, (v < 0)
+              node.classList.toggle \text-success, (v > 0)
+              node.innerText = (v).toFixed(1) + "%"
             body: ({node, local}) ~>
               if !meta.chart => return
               p = if local.chart => Promise.resolve(local.chart)

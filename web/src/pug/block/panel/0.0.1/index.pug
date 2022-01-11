@@ -2,11 +2,12 @@ div
   .panel
     .head.d-flex.align-items-start
       .font-weight-bold(ld="head")
-      span.text-sm.mx-1 /
-      .text-danger.text-sm -4.5%
+      div(ld="diff-root")
+        span.text-sm.mx-1 /
+        span.text-danger.text-sm(ld="diff")
       .flex-grow-1
       .dropdown(ld="dropdown")
-        .btn.btn-sm.dropdown-toggle.p-0(data-toggle="dropdown") ...
+        .clickable.dropdown-toggle.p-0(data-toggle="dropdown") ...
         .dropdown-menu.dropdown-menu-right.shadow-sm
           .dropdown-item 出貨數
           .dropdown-item 退貨數

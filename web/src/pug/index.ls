@@ -68,7 +68,7 @@ mgr.init!
         * x: 1, y: 1, w: 1, h: 1, name: "total-gross"
         * x: 2, y: 1, w: 1, h: 1, name: "sales-count"
         * x: 3, y: 1, w: 1, h: 1, name: "store-count"
-        * x: 4, y: 1, w: 5, h: 1, name: "book-trend"
+        * x: 4, y: 1, w: 5, h: 1, name: "publish-trend"
         * x: 1, y: 2, w: 2, h: 1, name: "ship-hist"
         * x: 1, y: 3, w: 2, h: 1, name: "return-hist"
         * x: 1, y: 4, w: 2, h: 1, name: "order-hist"
