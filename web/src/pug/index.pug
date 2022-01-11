@@ -14,27 +14,62 @@ block head
       height: 100%
       gap: 1em
       display: grid
-      padding: 1em
-    .panelx
-      display: flex
-      flex-direction: column
-      gap: .25em
-      .head
-        flex: 0 0 1.25em
-      .body
-        flex: 1 0 auto
-        background: #ccc
-        border-radius: .15em
-        box-shadow: 0 0px 0px rgba(0,0,0,.1)
     .panel-root > div
       width: 100%
       height: 100%
 block body
-  +scope().dash(ld="dash-main")
-    .panel-root(ld-each="panel")
-  .ldcv.default-size(ld="detail"): .base: .inner
-    +scope().dash(ld="dash-detail")
+  .d-flex.flex-column.w-100.h-100.p-3(style="gap:1em")
+    .border.shadow.p-2.d-flex.align-items-center
+      div
+        .text-lg.font-weight-bold 獨立書電銷售數據
+        .text-sm 產調視覺化 / 文化內容策進院
+      .flex-grow-1
+      .d-flex.align-items-center(style="gap:.5em")
+        .btn.btn-outline-secondary 表格檢視
+
+        .dropdown
+          .btn.btn-outline-secondary.dropdown-toggle.d-flex.align-items-center(data-toggle="dropdown")
+            div 時段：
+            .mx-2(style="line-height:1em;white-space:pre",ld="date-range") 近半年
+          .dropdown-menu.dropdown-menu-right.shadow-sm
+            .dropdown-item(ld="date-preset",data-name="all") 全部時段
+            .dropdown-item(ld="date-preset",data-name="1m") 最近一個月
+            .dropdown-item(ld="date-preset",data-name="6m") 最近半年
+            .dropdown-divider
+            .dropdown-header 時段起點
+            .dropdown-item
+              select.form-control(ld="date-picker",data-type="start",style="width:9em")
+                option 2021/12/05
+            .dropdown-header 時段終點
+            .dropdown-item
+              select.form-control(ld="date-picker",data-type="end",style="width:9em")
+                option 2022/02/04
+            .dropdown-divider
+            .dropdown-item.text-nowrap.d-flex.align-items-center
+              .mr-4 啟用時段對比
+              div: .switch.on
+            .dropdown-header 對比時段起點
+            .dropdown-item
+              select.form-control(ld="date-picker",data-type="end",style="width:9em")
+                option 2021/02/04
+
+
+
+
+        .dropdown
+          .btn.btn-outline-secondary.dropdown-toggle.d-flex.align-items-center.ml-2(data-toggle="dropdown") 下載
+          .dropdown-menu.dropdown-menu-right
+            .dropdown-header 原始資料
+            .dropdown-item(ld="download",data-name="all") 全時段
+            .dropdown-item(ld="download",data-name="part") 選定時段
+            .dropdown-divider
+            .dropdown-item 篩選後之資料
+
+    +scope().dash.flex-grow-1(ld="dash-main")
       .panel-root(ld-each="panel")
+    .ldcv.default-size(ld="detail"): .base: .inner
+      +scope().dash(ld="dash-detail")
+        .panel-root(ld-each="panel")
 
 block script
   script(type="module"): include:lsc index.ls
