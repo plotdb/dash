@@ -2,11 +2,11 @@
 doctype html
 html
   block vars
-  include @/ldview/dist/index.pug
+  include @/ldview/index.pug
   head
     block prehead
     +css([
-      {name: "bootstrap", path: "css/bootstrap.min.css"},
+      {name: "bootstrap", path: "dist/css/bootstrap.min.css"},
       {name: "@loadingio/bootstrap.ext"},
       {name: "ldcover"},
       {name: "ldloader"}
@@ -15,10 +15,11 @@ html
   body
     block body
     +script([
-      {name: "bootstrap.native", path: "bootstrap-native-v4.min.js"},
+      {name: "bootstrap.native", path: "dist/bootstrap-native-v4.min.js"},
       {name: "proxise"},
-      {name: "@loadingio/debounce.js", path: "debounce.min.js"},
-      {name: "@loadingio/ldquery", path: "ldq.min.js"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
       {name: "@plotdb/csscope"},
       {name: "@plotdb/rescope"},
       {name: "@plotdb/block"},

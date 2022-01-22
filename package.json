@@ -1,24 +1,25 @@
 {
-  "name": "dash",
-  "version": "1.0.0",
+  "name": "@plotdb/dash",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "browser": "dist/index.min.js",
+  "main": "dist/index.min.js",
   "scripts": {
     "start": "npx server -r web -o true"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "@loadingio/bootstrap.ext": "^0.0.3",
-    "@loadingio/debounce.js": "^0.0.1",
-    "@loadingio/ldquery": "^2.2.1",
-    "@plotdb/block": "^4.0.1",
-    "@plotdb/chart": "^1.0.2",
-    "@plotdb/csscope": "^3.0.3",
-    "@plotdb/layout": "^0.0.11",
-    "@plotdb/rescope": "^4.0.5",
-    "@zbryikt/template": "^2.3.32",
+    "@loadingio/bootstrap.ext": "^0.0.4",
+    "@loadingio/debounce.js": "^1.0.1",
+    "@loadingio/ldquery": "^3.0.2",
+    "@plotdb/block": "^4.1.0",
+    "@plotdb/chart": "^2.0.0",
+    "@plotdb/csscope": "^4.0.0",
+    "@plotdb/layout": "^0.0.12",
+    "@plotdb/rescope": "^4.1.0",
+    "@zbryikt/template": "^2.3.33",
     "bootstrap": "^4.6.1",
     "bootstrap.native": "^4.0.7",
     "d3": "^4.13.0",
@@ -42,14 +43,15 @@
     "d3-shape": "^3.0.1",
     "d3-timer": "^3.0.1",
     "d3-transition": "^3.0.1",
-    "fedep": "^0.0.17",
-    "ldcolor": "^0.0.4",
-    "ldcover": "^2.1.0",
-    "ldloader": "^2.1.0",
-    "ldview": "^0.2.7",
-    "pdmaptw": "^1.0.0",
-    "proxise": "^0.1.6",
-    "wrap-svg-text": "^0.0.6"
+    "fedep": "^1.1.2",
+    "ldcolor": "^1.0.0",
+    "ldcover": "^3.0.1",
+    "ldloader": "^3.0.0",
+    "ldview": "^1.0.0",
+    "papaparse": "^5.3.1",
+    "pdmaptw": "^2.0.0",
+    "proxise": "^1.0.1",
+    "wrap-svg-text": "^0.0.7"
   },
   "frontendDependencies": {
     "root": "web/static/assets/lib",
@@ -57,6 +59,7 @@
       "@loadingio/bootstrap.ext",
       "@loadingio/debounce.js",
       "@loadingio/ldquery",
+      "@plotdb/semver",
       "@plotdb/block",
       "@plotdb/csscope",
       "@plotdb/rescope",
@@ -96,6 +99,6 @@
     ]
   },
   "dependencies": {
-    "papaparse": "^5.3.1"
+    "@plotdb/semver": "^0.0.2"
   }
 }

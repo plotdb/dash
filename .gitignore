@@ -3,3 +3,4 @@ node_modules
 .swp
 web/.view
 web/static/assets/data/sales.csv
+web/static/assets/lib/

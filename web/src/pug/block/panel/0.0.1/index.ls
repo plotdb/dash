@@ -1,7 +1,7 @@
 module.exports =
   pkg:
     dependencies: [
-      {name: "bootstrap.native", version: "main", path: "bootstrap-native-v4.min.js"}
+      {name: "bootstrap.native", version: "main", path: "dist/bootstrap-native-v4.min.js"}
     ]
       
   init: ({root, data, manager, context}) ->
