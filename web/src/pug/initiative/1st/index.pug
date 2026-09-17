@@ -1,0 +1,201 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title @plotdb/dash - 模組化儀表板概念示範
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      html, body
+        width: 100%
+        height: 100%
+        margin: 0
+        padding: 0
+        font-family: system-ui, "Noto Sans TC", sans-serif
+      .btn
+        padding: .2em .8em
+        font-size: .9em
+        color: var(--dash-fg)
+        background: #fff
+        border: 1px solid var(--dash-border)
+        border-radius: var(--dash-radius)
+        cursor: pointer
+        white-space: nowrap
+        &:hover
+          border-color: var(--dash-accent)
+          color: var(--dash-accent)
+      .btn.primary
+        color: #fff
+        background: var(--dash-accent)
+        border-color: var(--dash-accent)
+        &:hover
+          color: #fff
+          opacity: .85
+      .chip
+        padding: .1em .6em
+        font-size: .85em
+        color: #fff
+        background: var(--dash-accent)
+        border-radius: 1em
+
+      // def 檢視 / 編輯視窗
+      .defv
+        display: none
+        position: fixed
+        top: 0
+        left: 0
+        width: 100%
+        height: 100%
+        z-index: 100
+        &.show
+          display: block
+      .defv-mask
+        position: absolute
+        width: 100%
+        height: 100%
+        background: rgba(20,22,24,.45)
+      .defv-win
+        position: absolute
+        top: 50%
+        left: 50%
+        transform: translate(-50%,-50%)
+        width: min(1040px, 92vw)
+        height: min(760px, 88vh)
+        display: flex
+        flex-direction: column
+        background: var(--dash-panel-bg)
+        border-radius: .5em
+        box-shadow: 0 8px 40px rgba(0,0,0,.25)
+        overflow: hidden
+      .defv-head
+        flex: 0 0 auto
+        display: flex
+        align-items: center
+        gap: .5em
+        padding: .7em 1em
+        border-bottom: 1px solid var(--dash-border)
+      .defv-body
+        flex: 1 1 auto
+        min-height: 0
+        display: flex
+      .defv-side
+        flex: 0 0 12em
+        padding: .6em
+        overflow-y: auto
+        border-right: 1px solid var(--dash-border)
+        background: #fbfcfd
+      .defv-item
+        padding: .45em .7em
+        font-size: .9em
+        border-radius: var(--dash-radius)
+        cursor: pointer
+        &:hover
+          background: #eef4f7
+        &.active
+          color: #fff
+          background: var(--dash-accent)
+      .defv-item .path
+        font-size: .8em
+        opacity: .65
+      .defv-main
+        flex: 1 1 auto
+        min-width: 0
+        display: flex
+        flex-direction: column
+        gap: .8em
+        padding: 1em
+        overflow-y: auto
+      .defv-desc
+        font-size: .92em
+        line-height: 1.6em
+      .defv-field
+        display: flex
+        gap: .6em
+        padding: .4em 0
+        font-size: .88em
+        border-top: 1px dashed var(--dash-border)
+      .defv-field .key
+        flex: 0 0 7em
+        font-weight: bold
+      .defv-field .type
+        flex: 0 0 14em
+        color: var(--dash-accent)
+        font-family: ui-monospace, monospace
+        font-size: .92em
+        word-break: break-all
+      .defv-field .desc
+        flex: 1 1 auto
+        color: var(--dash-fg-dim)
+      .defv-editor
+        display: flex
+        flex-direction: column
+        gap: .4em
+      .defv-editor textarea
+        width: 100%
+        min-height: 16em
+        padding: .6em
+        font-family: ui-monospace, monospace
+        font-size: .85em
+        line-height: 1.5em
+        color: var(--dash-fg)
+        background: #fbfcfd
+        border: 1px solid var(--dash-border)
+        border-radius: var(--dash-radius)
+        resize: vertical
+      .defv-foot
+        display: flex
+        align-items: center
+        gap: .6em
+  body
+    .dash-page
+      .dash-toolbar
+        div
+          .dash-title 獨立書店銷售概況
+          .dash-sub @plotdb/dash 模組化概念示範 / 合成資料
+        .dash-spacer
+        .dash-sub(ld="state") 尚未篩選
+        div(ld="chips",style="display:flex;gap:.4em")
+        .btn(ld="clear") 清除篩選
+        .btn.primary(ld="open-def") 儀表板定義
+      div(ld="board",style="flex:1 1 auto;min-height:0")
+
+    .defv(ld="defv")
+      .defv-mask(ld="close-def")
+      .defv-win
+        .defv-head
+          div
+            .dash-title 儀表板定義 ( def )
+            .dash-sub 一份 def 就是一個儀表板。左側是要定義的東西，右側可以直接改，套用後立刻重建。
+          .dash-spacer
+          .btn(ld="close-def") 關閉
+        .defv-body
+          .defv-side: .defv-item(ld-each="group")
+            div(ld="label")
+            .path(ld="path")
+          .defv-main
+            .defv-desc(ld="desc")
+            div
+              .defv-field(ld-each="field")
+                .key(ld="key")
+                .type(ld="type")
+                .desc(ld="fdesc")
+            .defv-editor
+              .dash-sub(ld="hint")
+              textarea(ld="editor",spellcheck="false")
+              .defv-foot
+                .btn.primary(ld="apply") 套用並重建
+                .btn(ld="reset") 還原
+                .dash-sub(ld="msg")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc index.ls

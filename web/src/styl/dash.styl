@@ -1,0 +1,113 @@
+// @plotdb/dash 基本 CSS
+//
+// 只做兩件事: 版面 ( .dash / .dash-cell ) 與卡片外觀 ( .dash-panel ).
+// 顏色與間距走 custom property, 讓套用的專案能只改變數就換皮.
+
+:root
+  --dash-bg: #f7f8f9
+  --dash-panel-bg: #fff
+  --dash-border: #e7e8e9
+  --dash-fg: #333435
+  --dash-fg-dim: #8b8d8f
+  --dash-accent: #0b7fab
+  --dash-radius: .3em
+  --dash-gap: .8em
+
+.dash, .dash-cell, .dash-panel, .dash-page, .dash-toolbar
+  box-sizing: border-box
+
+// 版面: 由 board.layout! 依 def 寫入 grid-template
+.dash
+  display: grid
+  width: 100%
+  height: 100%
+  min-width: 0
+  min-height: 0
+  overflow: hidden
+  gap: var(--dash-gap)
+
+// grid item 預設 min-height 是 auto, 內容 ( svg ) 會把格子撐開而不是被格子限制,
+// 所以一定要壓成 0, 否則圖表放大後版面會被推爆.
+.dash-cell
+  min-width: 0
+  min-height: 0
+  display: flex
+
+.dash-panel
+  flex: 1 1 auto
+  min-width: 0
+  min-height: 0
+  display: flex
+  flex-direction: column
+  gap: .3em
+  padding: .4em .6em
+  color: var(--dash-fg)
+  background: var(--dash-panel-bg)
+  border: 1px solid var(--dash-border)
+  border-radius: var(--dash-radius)
+  box-shadow: 0 1px 3px rgba(0,0,0,.08)
+
+  > .dash-head
+    flex: 0 0 auto
+    display: flex
+    align-items: center
+    gap: .4em
+    font-size: .9em
+
+  > .dash-body
+    flex: 1 1 auto
+    min-height: 0
+    position: relative
+
+.dash-title
+  font-weight: bold
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+.dash-sub
+  color: var(--dash-fg-dim)
+  font-size: .85em
+
+.dash-spacer
+  flex: 1 1 auto
+
+// 這張圖正在對外發 filter 時的狀態
+.dash-tag
+  display: none
+  align-items: center
+  gap: .3em
+  padding: 0 .4em
+  font-size: .8em
+  line-height: 1.6em
+  color: #fff
+  border-radius: 1em
+  background: var(--dash-accent)
+  cursor: pointer
+
+.dash-panel.filtering
+  border-color: var(--dash-accent)
+
+  > .dash-head .dash-tag
+    display: inline-flex
+
+// 頁面外框: 讓 demo 頁不必自己再寫一次
+.dash-page
+  width: 100%
+  height: 100%
+  display: flex
+  flex-direction: column
+  gap: var(--dash-gap)
+  padding: var(--dash-gap)
+  background: var(--dash-bg)
+  color: var(--dash-fg)
+
+.dash-toolbar
+  flex: 0 0 auto
+  display: flex
+  align-items: center
+  gap: .5em
+  padding: .5em .8em
+  background: var(--dash-panel-bg)
+  border: 1px solid var(--dash-border)
+  border-radius: var(--dash-radius)

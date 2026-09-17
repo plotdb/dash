@@ -4,3 +4,5 @@ node_modules
 web/.view
 web/static/assets/data/sales.csv
 web/static/assets/lib/
+web/static/
+/context/shared
