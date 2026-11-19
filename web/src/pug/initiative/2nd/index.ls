@@ -37,18 +37,41 @@ geo = colors: <[#4fc3b0]>                           # 地區 ( 單色 )
 # 剩下幾塊亮的浮在黑底上, 看不出那是地圖
 geo-ramp = colors: <[#223139 #5fe0c8]>              # 地區 ( 漸層 )
 
-# 每張圖拿到的是自己的一份 - config 會被圖表併進自己的設定, 不共用同一個物件
-axis = -> {
-  caption: {show: false}
-  label: {format: '.2~s', color: ink, font: {size: \.78em}}
-  tick: {color: grid, inner: 4}
-  baseline: {color: grid}
-}
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
 
 # partial 模式下「沒被選中」的那一段, 顏色是該色的灰階往背景靠.
 # 背景預設是白色, 深色底不設這個就會冒出一塊亮灰
 panel-bg = \#18202a
+
+# 所有圖表共用的那一層. 圖表的 config 結構是一致的 ( 都從 chart.utils.config.preset
+# 長出來 ), 所以同一份東西可以套到每一張圖上, 不必每個 panel 各抄一次.
+# 沒有這一層的話, 換主題就是去每個 panel 裡改五行.
+#
+# xaxis / yaxis 對 pie / percent-list / map 是多餘的 key, 圖表會忽略 -
+# 寧可多給, 也不要為了少給而把主題拆成好幾份
+axis-theme =
+  caption: {show: false}
+  label: {format: '.2~s', color: ink, font: {size: \.78em}}
+  tick: {color: grid, inner: 4}
+  baseline: {color: grid}
+
+theme =
+  color: ink
+  margin: 2
+  xaxis: axis-theme
+  yaxis: axis-theme
+  common: {subset: {background: panel-bg}}
+
+# 深拷貝式合併: 兩邊都複製一份, 免得多張圖共用同一個巢狀物件
+# ( 圖表會把 config 併進自己的設定, 共用的話一張圖改到另一張 )
+deep = (a = {}, b = {}) ->
+  clone = (v) -> if v and typeof(v) == \object and !Array.isArray(v) => deep(v) else v
+  ret = {}
+  for k, v of a => ret[k] = clone v
+  for k, v of b =>
+    ret[k] = if v and typeof(v) == \object and !Array.isArray(v) => deep (ret[k] or {}), v
+    else v
+  ret
 
 # ------------------------------------------------------------------ def
 def =
@@ -104,13 +127,9 @@ def =
         compare: {excludeSelf: true}
       cfg:
         palette: cat
-        color: ink
-        margin: 2
         mode: \line
         line: {mode: \curve, strokeWidth: 2}
         dot: {show: true, size: 2.5}
-        xaxis: axis!
-        yaxis: axis!
         common: {subset: {mode: \shrink}}
         brush: {enabled: true}
         legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom}
@@ -125,9 +144,8 @@ def =
       cfg:
         palette: chn
         color: \#a9b5c3
-        margin: 2
         donut: {percent: 0.74, padding: 0.015}
-        common: {subset: {mode: \partial, background: panel-bg}}
+        common: {subset: {mode: \partial}}
         legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom}
 
     * id: \region, title: "各地區銷售額", subtitle: "可框選 · 單色, 排序本身就是訊息"
@@ -140,12 +158,8 @@ def =
         compare: true
       cfg:
         palette: geo
-        color: ink
-        margin: 2
         legend: {enabled: false}
-        common: {subset: {mode: \partial, background: panel-bg}}
-        xaxis: axis!
-        yaxis: axis!
+        common: {subset: {mode: \partial}}
 
     # 刻意不排序: 項目順序跟著資料裡第一次出現的順序走, 與上面 line 的 series
     # 順序一致, 同一個書系才會是同一個顏色
@@ -159,8 +173,7 @@ def =
       cfg:
         palette: cat-ramp
         color: \#c3ced4
-        margin: 2
-        common: {subset: {mode: \partial, background: panel-bg}}
+        common: {subset: {mode: \partial}}
 
     # 跨兩列: 臺灣本島加離島的範圍又高又窄, 放在扁格子裡會縮成右上角一小塊
     * id: \map, title: "地區分布", subtitle: "可點選 · 深淺是銷售額, 與左下長條圖同一個維度"
@@ -171,11 +184,12 @@ def =
         measures: [{name: "銷售額", field: \amount, op: \sum, unit: "元"}]
       cfg:
         palette: geo-ramp
-        color: ink
-        margin: 2
         legend: {enabled: false}
         border: {color: 'rgba(255,255,255,.16)', width: 0.7}
   ]
+
+# 主題套到每個有圖的 panel 上, panel 自己寫的贏
+def.panels.map (p) -> if p.chart => p.cfg = deep theme, (p.cfg or {})
 
 # ---------------------------------------------------------------- runtime
 view = null
