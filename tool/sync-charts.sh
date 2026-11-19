@@ -19,7 +19,7 @@ for n in "$@"; do
     echo "synced @plotdb/chart"
   else
     ( cd "$src/$n" && ./build > /dev/null )
-    cp "$src/$n/dist/index.html" "$root/web/static/assets/lib/@makechart/$n/main/index.html"
+    cp -R "$src/$n/dist/." "$root/web/static/assets/lib/@makechart/$n/main/"
     echo "synced @makechart/$n"
   fi
 done
