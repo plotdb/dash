@@ -338,10 +338,10 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
 
  - chart 走 fedep 安裝：`@makechart/*` 列在 `package.json` 的依賴與 `frontendDependencies`，
    `npx fedep` 會裝到 `web/static/assets/lib/@makechart/<name>/<version>/` 並建 `main` symlink
- - `@plotdb/chart` ( 核心的 subset / scope / filterDims、legend、config ) 與 `bar`、`pie`、
-   `line`、`percent-list`、`taiwan-map` 目前都是本地改動版，還沒發版。`@makechart/base` 已經
-   改回原狀，不必跟著發。改完用 `./tool/sync-charts.sh chart bar pie line percent-list taiwan-map`
-   蓋過去；下一次 `npx fedep` 會還原回 npm 版
+ - `@plotdb/chart` 與五張圖都已發版，`package.json` 跟著指到發布的版本，所以一般情況
+   不需要本地覆蓋。只有在本地改了還沒發版時才用
+   `./tool/sync-charts.sh chart bar pie line percent-list taiwan-map` 蓋過去 ——
+   注意 `npx fedep` 會把 `main` 還原回 npm 版，所以 sync 一定要在 fedep 之後跑
  - 發版順序有相依：`@plotdb/chart` 先，其餘五張圖後
  - 示範資料用 `node tool/gen-sales.js` 產生，固定 seed 可重現。地區 / 通路 / 書系之間
    刻意做成有關聯（都會區網路強、花蓮以寄售為主、藝術設計偏網路）—— 三個維度互相獨立的話，
