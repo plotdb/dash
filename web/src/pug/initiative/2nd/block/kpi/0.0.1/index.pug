@@ -1,0 +1,106 @@
+div
+  .n2-kpi
+    .n2-kpi-head
+      .n2-kpi-label(ld="label")
+      .n2-spacer
+      .n2-kpi-note(ld="note")
+    .n2-kpi-value
+      span.n2-kpi-num(ld="num") 0
+      span.n2-kpi-unit(ld="unit")
+    .n2-kpi-rail
+      .n2-kpi-fill(ld="fill")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .n2-kpi
+      --n2-kpi-accent: #8fa3bb
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      display: flex
+      flex-direction: column
+      justify-content: center
+      gap: 6px
+      padding: 12px 15px 13px
+      border-radius: var(--n2-radius)
+      background: linear-gradient(180deg, #1a222d 0%, #151c25 100%)
+      border: 1px solid rgba(255,255,255,.065)
+      box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 14px 34px -20px rgba(0,0,0,.9)
+      overflow: hidden
+      transition: border-color .2s
+      &:hover
+        border-color: rgba(255,255,255,.12)
+      // 左緣的一道色條, 是這張卡片唯一的顏色
+      &:before
+        content: ''
+        position: absolute
+        top: 0
+        left: 0
+        width: 2px
+        height: 100%
+        background: var(--n2-kpi-accent)
+        opacity: .8
+
+    .n2-kpi-head
+      display: flex
+      align-items: baseline
+      gap: 8px
+
+    .n2-kpi-label
+      font-size: 11.5px
+      letter-spacing: .05em
+      color: var(--n2-fg-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .n2-spacer
+      flex: 1 1 auto
+
+    .n2-kpi-note
+      flex: 0 0 auto
+      font-size: 10.5px
+      font-variant-numeric: tabular-nums
+      color: #6c7a8a
+      white-space: nowrap
+      &.up
+        color: #5ddba4
+      &.down
+        color: #f0a3b4
+
+    .n2-kpi-value
+      display: flex
+      align-items: baseline
+      gap: 6px
+      min-width: 0
+
+    .n2-kpi-num
+      font-size: 30px
+      font-weight: 600
+      line-height: 1.1
+      letter-spacing: -.01em
+      font-variant-numeric: tabular-nums
+      color: #f3f7fb
+
+    .n2-kpi-unit
+      font-size: 11.5px
+      color: var(--n2-fg-dim)
+
+    // 被篩選選中的比例. 沒有篩選時就是滿格, 所以它一直在, 不會跳出來
+    .n2-kpi-rail
+      height: 2px
+      border-radius: 2px
+      background: rgba(255,255,255,.07)
+      overflow: hidden
+    .n2-kpi-fill
+      width: 100%
+      height: 100%
+      border-radius: 2px
+      background: var(--n2-kpi-accent)
+      opacity: .62
+      transition: width .45s cubic-bezier(.22,.8,.3,1)
+  script: include:lsc index.ls

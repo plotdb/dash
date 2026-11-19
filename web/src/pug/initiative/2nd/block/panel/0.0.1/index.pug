@@ -1,0 +1,104 @@
+div
+  .n2-panel
+    .n2-head
+      div(style="min-width:0")
+        .n2-title(ld="title")
+        .n2-sub(ld="sub")
+      .n2-spacer
+      .n2-tag(ld="tag")
+        i.n2-tag-dot
+        span 篩選中
+        i.n2-tag-x ✕
+    .n2-body(ld="body")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .n2-panel
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+      flex-direction: column
+      gap: 2px
+      padding: 12px 14px 10px
+      border-radius: var(--n2-radius)
+      color: var(--n2-fg)
+      background: linear-gradient(180deg, #1a222d 0%, #151c25 100%)
+      border: 1px solid rgba(255,255,255,.065)
+      box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 14px 34px -20px rgba(0,0,0,.9)
+      transition: border-color .2s, box-shadow .2s
+      &:hover
+        border-color: rgba(255,255,255,.12)
+
+    .n2-head
+      flex: 0 0 auto
+      display: flex
+      align-items: flex-start
+      gap: 8px
+      padding-bottom: 6px
+
+    .n2-title
+      font-size: 13.5px
+      font-weight: 600
+      letter-spacing: .02em
+      color: var(--n2-fg)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .n2-sub
+      margin-top: 2px
+      font-size: 11px
+      line-height: 1.5
+      color: var(--n2-fg-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .n2-spacer
+      flex: 1 1 auto
+
+    .n2-body
+      flex: 1 1 auto
+      min-height: 0
+      position: relative
+
+    // 這張圖正在對外發 filter 時的狀態. 用亮度而不是色相 -
+    // 色相全部留給資料, 介面狀態不跟資料搶顏色
+    .n2-tag
+      display: none
+      flex: 0 0 auto
+      align-items: center
+      gap: 5px
+      padding: 3px 8px
+      font-size: 10.5px
+      letter-spacing: .04em
+      color: #dde6f0
+      background: rgba(255,255,255,.08)
+      border: 1px solid rgba(255,255,255,.16)
+      border-radius: 999px
+      cursor: pointer
+      transition: .15s
+      &:hover
+        background: rgba(255,255,255,.14)
+        border-color: rgba(255,255,255,.3)
+    .n2-tag-dot
+      width: 5px
+      height: 5px
+      border-radius: 50%
+      background: #f0a04b
+      box-shadow: 0 0 0 3px rgba(240,160,75,.18)
+    .n2-tag-x
+      font-style: normal
+      opacity: .55
+    .n2-panel.filtering
+      border-color: rgba(255,255,255,.2)
+      box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 14px 34px -20px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.04)
+      > .n2-head .n2-tag
+        display: inline-flex
+  script: include:lsc index.ls

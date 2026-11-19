@@ -1,0 +1,363 @@
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title 獨立書店銷售概況 / @plotdb/dash
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // 第二版: 同一份框架、同一套 crossfilter, 換一組 panel block 與一層主題.
+      // 顏色的規則只有一條 - 色相留給資料, 介面狀態只用亮度.
+      :root
+        --n2-fg: #e7eef6
+        --n2-fg-dim: #7f8d9d
+        --n2-radius: 12px
+        --dash-gap: 14px
+
+      html, body
+        width: 100%
+        height: 100%
+        margin: 0
+        padding: 0
+      body
+        background: #0e1319
+        color: var(--n2-fg)
+        font-family: -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
+        -webkit-font-smoothing: antialiased
+        font-size: 14px
+
+      .n2-page
+        box-sizing: border-box
+        width: 100%
+        height: 100%
+        min-height: 620px
+        display: flex
+        flex-direction: column
+        gap: 16px
+        padding: 22px 26px 24px
+        background: radial-gradient(1100px 560px at 10% -12%, rgba(127,156,245,.10), transparent 62%), radial-gradient(900px 480px at 94% -4%, rgba(79,195,176,.09), transparent 58%), #0e1319
+
+      // ------------------------------------------------------------ 頁首
+      .n2-bar
+        flex: 0 0 auto
+        display: flex
+        align-items: flex-end
+        gap: 18px
+        flex-wrap: wrap
+      .n2-eyebrow
+        font-size: 10px
+        font-weight: 600
+        letter-spacing: .2em
+        text-transform: uppercase
+        color: #566477
+      .n2-h1
+        margin-top: 3px
+        font-family: "Iowan Old Style", Palatino, "Palatino Linotype", "Songti TC", "Noto Serif TC", serif
+        font-size: 27px
+        font-weight: 600
+        line-height: 1.15
+        letter-spacing: .015em
+        color: #f4f8fc
+      .n2-h2
+        margin-top: 5px
+        font-size: 12px
+        line-height: 1.5
+        color: var(--n2-fg-dim)
+      .n2-spacer
+        flex: 1 1 auto
+      .n2-tools
+        display: flex
+        align-items: center
+        gap: 8px
+        flex-wrap: wrap
+        justify-content: flex-end
+        max-width: 56vw
+
+      .n2-btn
+        padding: 6px 14px
+        font-size: 12.5px
+        color: #cfdae6
+        background: rgba(255,255,255,.04)
+        border: 1px solid rgba(255,255,255,.10)
+        border-radius: 999px
+        cursor: pointer
+        white-space: nowrap
+        transition: .15s
+        &:hover
+          color: #fff
+          background: rgba(255,255,255,.09)
+          border-color: rgba(255,255,255,.22)
+        &.off
+          opacity: .3
+          pointer-events: none
+      .n2-btn.primary
+        color: #10161e
+        background: #e7eef6
+        border-color: #e7eef6
+        &:hover
+          background: #fff
+          border-color: #fff
+
+      // 篩選中的欄位. 跟 panel 的「篩選中」標籤同一套語彙
+      .n2-chip
+        display: inline-flex
+        align-items: center
+        gap: 7px
+        padding: 5px 7px 5px 11px
+        font-size: 11.5px
+        color: #e2eaf3
+        background: rgba(255,255,255,.065)
+        border: 1px solid rgba(255,255,255,.13)
+        border-radius: 999px
+        white-space: nowrap
+        max-width: 22em
+        .k
+          color: #76848f
+        .v
+          overflow: hidden
+          text-overflow: ellipsis
+        .x
+          display: inline-flex
+          align-items: center
+          justify-content: center
+          width: 15px
+          height: 15px
+          font-size: 9px
+          color: #9fadbb
+          background: rgba(255,255,255,.08)
+          border-radius: 50%
+          cursor: pointer
+          &:hover
+            color: #10161e
+            background: #f0a3b4
+
+      // ------------------------------------------------------------ 版面
+      // .dash / .dash-cell 來自 dash.css, 這裡只加進場動畫
+      .n2-board
+        flex: 1 1 auto
+        min-height: 0
+      .dash > .dash-cell
+        animation: n2-in .55s cubic-bezier(.22,.85,.3,1) both
+        &:nth-child(1)
+          animation-delay: .00s
+        &:nth-child(2)
+          animation-delay: .04s
+        &:nth-child(3)
+          animation-delay: .08s
+        &:nth-child(4)
+          animation-delay: .12s
+        &:nth-child(5)
+          animation-delay: .18s
+        &:nth-child(6)
+          animation-delay: .22s
+        &:nth-child(7)
+          animation-delay: .28s
+        &:nth-child(8)
+          animation-delay: .32s
+        &:nth-child(9)
+          animation-delay: .36s
+      @keyframes n2-in
+        from
+          opacity: 0
+          transform: translateY(10px)
+        to
+          opacity: 1
+          transform: none
+
+      // d3 brush 的選取框預設是淺底加白邊, 在深色底上會變成一塊發亮的方塊.
+      // 這段寫在頁面層 ( 不是 block 裡 ), 因為要套到圖表 block 自己的 DOM 上
+      .dash rect.selection
+        fill: #fff
+        fill-opacity: .06
+        stroke: rgba(255,255,255,.28)
+        stroke-width: 1
+      .dash rect.handle
+        fill: rgba(255,255,255,.22)
+
+      // ------------------------------------------------- def 檢視 / 編輯
+      .n2-drawer
+        position: fixed
+        top: 0
+        left: 0
+        width: 100%
+        height: 100%
+        z-index: 60
+        visibility: hidden
+        &.show
+          visibility: visible
+      .n2-mask
+        position: absolute
+        width: 100%
+        height: 100%
+        background: rgba(5,8,12,.62)
+        opacity: 0
+        transition: opacity .25s
+      .n2-drawer.show .n2-mask
+        opacity: 1
+      .n2-win
+        box-sizing: border-box
+        position: absolute
+        top: 0
+        right: 0
+        height: 100%
+        // stylus 會在編譯期算掉 min(), 混單位的結果不是想要的 - 拆成兩行寫
+        width: 900px
+        max-width: 95vw
+        display: flex
+        flex-direction: column
+        background: #121a23
+        border-left: 1px solid rgba(255,255,255,.09)
+        box-shadow: -24px 0 70px rgba(0,0,0,.6)
+        transform: translateX(100%)
+        transition: transform .32s cubic-bezier(.28,.84,.3,1)
+      .n2-drawer.show .n2-win
+        transform: none
+      .n2-win-head
+        flex: 0 0 auto
+        display: flex
+        align-items: flex-start
+        gap: 10px
+        padding: 18px 20px 14px
+        border-bottom: 1px solid rgba(255,255,255,.07)
+      .n2-win-title
+        font-size: 15px
+        font-weight: 600
+      .n2-win-body
+        flex: 1 1 auto
+        min-height: 0
+        display: flex
+      .n2-side
+        box-sizing: border-box
+        flex: 0 0 13em
+        padding: 10px
+        overflow-y: auto
+        border-right: 1px solid rgba(255,255,255,.07)
+      .n2-item
+        padding: 8px 11px
+        border-radius: 8px
+        cursor: pointer
+        transition: .12s
+        .label
+          font-size: 12.5px
+        .path
+          margin-top: 2px
+          font-size: 10.5px
+          font-family: ui-monospace, "SF Mono", monospace
+          color: #68768a
+        &:hover
+          background: rgba(255,255,255,.05)
+        &.active
+          background: rgba(255,255,255,.1)
+          .path
+            color: #9fb0c4
+      .n2-main
+        flex: 1 1 auto
+        min-width: 0
+        display: flex
+        flex-direction: column
+        gap: 14px
+        padding: 18px 20px
+        overflow-y: auto
+      .n2-desc
+        font-size: 12.8px
+        line-height: 1.75
+        color: #b9c6d4
+      .n2-field
+        display: flex
+        gap: 12px
+        padding: 8px 0
+        font-size: 12px
+        border-top: 1px solid rgba(255,255,255,.06)
+        .key
+          flex: 0 0 7em
+          font-weight: 600
+        .type
+          flex: 0 0 14em
+          font-family: ui-monospace, "SF Mono", monospace
+          font-size: 11.5px
+          color: #8fd3c6
+          word-break: break-all
+        .desc
+          flex: 1 1 auto
+          color: var(--n2-fg-dim)
+      .n2-editor
+        display: flex
+        flex-direction: column
+        gap: 8px
+        textarea
+          box-sizing: border-box
+          width: 100%
+          min-height: 18em
+          padding: 12px
+          font-family: ui-monospace, "SF Mono", monospace
+          font-size: 11.5px
+          line-height: 1.65
+          color: #d7e2ee
+          background: #0d141b
+          border: 1px solid rgba(255,255,255,.09)
+          border-radius: 8px
+          resize: vertical
+          &:focus
+            outline: none
+            border-color: rgba(255,255,255,.22)
+      .n2-foot
+        display: flex
+        align-items: center
+        gap: 10px
+      .n2-hint, .n2-msg
+        font-size: 11.5px
+        color: var(--n2-fg-dim)
+  body
+    .n2-page
+      .n2-bar
+        div
+          .n2-eyebrow Independent Bookstores · 2024 · Synthetic
+          .n2-h1 獨立書店銷售概況
+          .n2-h2 @plotdb/dash 第二版 — 同一份 def, 換一組 panel block 與一層主題
+        .n2-spacer
+        .n2-tools
+          div(ld="chips",style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end")
+          .n2-btn(ld="clear") 清除篩選
+          .n2-btn.primary(ld="open-def") 儀表板定義
+      .n2-board(ld="board")
+
+    .n2-drawer(ld="defv")
+      .n2-mask(ld="close-def")
+      .n2-win
+        .n2-win-head
+          div
+            .n2-win-title 儀表板定義 ( def )
+            .n2-h2 一份 def 就是一個儀表板. 左側是要定義的東西, 右側可以直接改, 套用後立刻重建.
+          .n2-spacer
+          .n2-btn(ld="close-def") 關閉
+        .n2-win-body
+          .n2-side: .n2-item(ld-each="group")
+            .label(ld="label")
+            .path(ld="path")
+          .n2-main
+            .n2-desc(ld="desc")
+            div
+              .n2-field(ld-each="field")
+                .key(ld="key")
+                .type(ld="type")
+                .desc(ld="fdesc")
+            .n2-editor
+              .n2-hint(ld="hint")
+              textarea(ld="editor",spellcheck="false")
+              .n2-foot
+                .n2-btn.primary(ld="apply") 套用並重建
+                .n2-btn(ld="reset") 還原
+                .n2-msg(ld="msg")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc index.ls
