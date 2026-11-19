@@ -140,7 +140,9 @@ def =
         line: {mode: \curve, strokeWidth: 2}
         dot: {show: true, size: 2.5}
         brush: {enabled: true}
-        legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom}
+        # direct: 書系的名字直接寫在線的末端, 不另外排一疊清單.
+        # 四條線在右端會收斂, 擠在一起的會被推開並畫引線 ( 核心的 utils.labels )
+        legend: {crossfilter: true, subset: {mode: \dim}, position: \right, mode: \direct}
         common:
           subset: {mode: \shrink}
           # 參考線是資料座標的註記, 要圖表實作 space scope ( line 有 ).
@@ -165,7 +167,9 @@ def =
         color: \#a9b5c3
         donut: {percent: 0.74, padding: 0.015}
         common: {subset: {mode: \partial}}
-        legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom}
+        # actions: false - 只有三項, 「全選 / 全不選」兩顆比項目本身還佔位置.
+        # 項目照樣可以點 ( 以前關掉按鈕就等於關掉選取, 現在拆開了 )
+        legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom, actions: false}
 
     * id: \region, title: "各地區銷售額", subtitle: "可框選 · 單色, 排序本身就是訊息"
       area: {col: [1, 5], row: [3, 1]}
