@@ -59,7 +59,13 @@ theme =
   color: ink
   margin: 2
   xaxis: axis-theme
-  yaxis: axis-theme
+  # 格線只開 y 軸. x 軸在長條圖是類別軸, 一個類別一條會變雜訊 -
+  # 該開哪一軸是看軸的性質, 不是看圖的種類, 所以核心預設關閉、逐軸打開.
+  # 有格線就不必再留刻度與基線, 兩者講的是同一件事
+  yaxis: {} <<< axis-theme <<<
+    grid: {show: true}
+    tick: {color: grid, inner: 0}
+    baseline: {show: false}
   common:
     subset: {background: panel-bg}
     # 刷選框. d3 的慣例是淺底白邊, 深色底上會變成一塊發亮的方塊.
