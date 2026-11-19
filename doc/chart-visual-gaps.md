@@ -78,6 +78,9 @@
 
 預設維持 `horizontal`，`auto` 是 opt-in。
 
+`@makechart/bar` 會用：直方圖的區間標籤（`100–109` 這種）很容易放不下，
+目前只能抽稀。預設維持 `horizontal` 是它那邊明確要求的。
+
 
 ## 5. 空狀態  `[待定案 — 但方向清楚]`
 
@@ -152,3 +155,9 @@ position 加 `top` / `left` 一併處理。
 那不該是正常路徑，因為那是圖表 block 自己的 DOM，宿主本來不該伸手進去。
 
 這是這一份裡唯一「主題層明確做不到、非得改核心」的項目。
+
+**相容性要求（`@makechart/bar` 那邊提的）**：新增可設定的樣式時，**預設值必須跟現在
+完全一樣**，否則 bar 這幾組 snapshot 會全部變動 —— `brush:*`、`filter:external`、
+`bin:filter-external`、`bin:brush-drag`、`dash:*`。
+另外 bar 自己會在 render 最後把 `rect.selection` 的 `shape-rendering` 設成 `auto`
+（`bar/src/index.ls`），其餘維持 brush 的預設。如果預設值非改不可，要先通知它更新 snapshot。
