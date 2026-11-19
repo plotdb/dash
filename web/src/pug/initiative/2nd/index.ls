@@ -60,7 +60,16 @@ theme =
   margin: 2
   xaxis: axis-theme
   yaxis: axis-theme
-  common: {subset: {background: panel-bg}}
+  common:
+    subset: {background: panel-bg}
+    # 刷選框. d3 的慣例是淺底白邊, 深色底上會變成一塊發亮的方塊.
+    # 這本來得在頁面層寫 CSS 蓋掉圖表 block 自己的 DOM, 現在是設定
+    brush:
+      fill: \#fff
+      fillOpacity: 0.06
+      stroke: 'rgba(255,255,255,.28)'
+      strokeWidth: 1
+      handleFill: 'rgba(255,255,255,.22)'
 
 # 深拷貝式合併: 兩邊都複製一份, 免得多張圖共用同一個巢狀物件
 # ( 圖表會把 config 併進自己的設定, 共用的話一張圖改到另一張 )

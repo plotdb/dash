@@ -164,11 +164,17 @@ position 加 `top` / `left` 一併處理。
 `initiative/2nd/index.ls` 現在就是這樣做的（`theme` + `deep`），
 每張圖少抄五行，換主題只改一處。
 
-**但還有一個洞：d3 brush 的選取框不能 customize。** 預設是淺底加白邊，深色底上是
-一塊發亮的方塊。我現在是在**頁面層**蓋 CSS（`.dash rect.selection`）繞過去的 ——
-那不該是正常路徑，因為那是圖表 block 自己的 DOM，宿主本來不該伸手進去。
+~~**但還有一個洞：d3 brush 的選取框不能 customize。**~~ 已經做了（chart 3.12.0）：
+`common.brush` 可以設選取框與拉桿的 `fill` / `fillOpacity` / `stroke` / `strokeOpacity` /
+`strokeWidth` / `handleFill` / `handleOpacity`。
 
-這是這一份裡唯一「主題層明確做不到、非得改核心」的項目。
+做法是**核心直接改**，圖表什麼都不必傳 —— 節點結構（`rect.overlay` / `rect.selection` /
+`rect.handle`）本來就是核心自己的 `utils.brush` 定義的。每個屬性預設都是「不設」，
+不設就完全不碰，所以沒用到的圖序列化結果一模一樣（107 個 case 驗證過），
+`@makechart/bar` 自己設的 `shape-rendering` 也不會被蓋掉。
+
+`2nd` 的頁面層 CSS hack 已經移除。順帶一提拉桿預設是透明的（只當熱區），
+`handleFill` 會讓兩端看得見。
 
 **相容性要求（`@makechart/bar` 那邊提的）**：新增可設定的樣式時，**預設值必須跟現在
 完全一樣**，否則 bar 這幾組 snapshot 會全部變動 —— `brush:*`、`filter:external`、

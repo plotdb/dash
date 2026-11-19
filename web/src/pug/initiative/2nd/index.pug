@@ -164,16 +164,6 @@ html(lang="zh-TW")
           opacity: 1
           transform: none
 
-      // d3 brush 的選取框預設是淺底加白邊, 在深色底上會變成一塊發亮的方塊.
-      // 這段寫在頁面層 ( 不是 block 裡 ), 因為要套到圖表 block 自己的 DOM 上
-      .dash rect.selection
-        fill: #fff
-        fill-opacity: .06
-        stroke: rgba(255,255,255,.28)
-        stroke-width: 1
-      .dash rect.handle
-        fill: rgba(255,255,255,.22)
-
       // ------------------------------------------------- def 檢視 / 編輯
       .n2-drawer
         position: fixed
