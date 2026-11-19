@@ -62,7 +62,7 @@
 見下。
 
 
-## 4. x 軸標籤的方向  `[可做, 待排]`
+## 4. x 軸標籤的方向  `[做了 — chart 3.11.0]`
 
 現況查證：`axis.label.direction` **已經有 `horizontal` / `vertical` 兩種**
 （`axis.ls:200` 起，vertical 是 `rotate(-90)`），放不下時用 `label.strategy`
@@ -106,7 +106,16 @@
 所以要嘛由 host 告知，要嘛只做一種通用訊息。
 
 
-## 6. annotation  `[待定案 — 但該拆成兩層]`
+## 6. annotation  `[做了一半 — chart 3.11.0]`
+
+已經做的：`common.annotation` 的 `notes`（視圖座標）與 `reference`（資料座標的參考線），
+以及新的 `space` scope（`space.x(v)` / `space.y(v)`，資料值 -> 繪圖區座標，預設回 null）。
+目前只有 `@makechart/line` 實作了 `space`，其他圖要畫參考線就得各自補上 —— 一張圖幾行。
+
+還沒做的是資料座標的「圈住某個點」「指著某一塊」那一類，以及色塊對應。
+anchor 的簽名現在定下來了（就是 `space`），所以 direct labeling 可以接著用同一個東西。
+
+原本的分析：
 
 「在哪畫條線、哪畫個圈、加個字」。關鍵是**這是兩種不同的東西，不要混在一起**：
 
@@ -129,7 +138,7 @@
 是不是也走同一個 scope？
 
 
-## 7. legend 的「全選 / 全不選」  `[可做, 待排]`
+## 7. legend 的「全選 / 全不選」  `[做了 — chart 3.11.0]`
 
 現況查證：`legend.selectable: false` **會連點選一起關掉**（`legend.ls:88` 直接 return），
 不只是收掉那兩顆按鈕。所以「要 legend 可點、但不要那兩顆按鈕」目前辦不到 ——
