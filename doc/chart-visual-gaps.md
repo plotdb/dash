@@ -1,6 +1,6 @@
 # 圖表的視覺缺口 — 討論中
 
-做 `initiative/2nd` ( 深色儀表板 ) 時撞到的東西。每一項都附實際的程式位置，
+做 `initiative/2nd/design-1` ( 深色儀表板 ) 時撞到的東西。每一項都附實際的程式位置，
 結論是**不改圖表的畫法，補圖表的設定面** —— 畫得對不對是資料正確性，已經是對的；
 「好看」是主題層的事，而現在主題層能調的太少。
 
@@ -206,7 +206,7 @@ position 加 `top` / `left` 一併處理。
 
 結論是**不需要核心支援**。圖表的 config 結構一致（都從 `chart.utils.config.preset`
 長出來），所以宿主準備一份 generic config、deep clone 後併進每張圖的 cfg 就夠了。
-`initiative/2nd/index.ls` 現在就是這樣做的（`theme` + `deep`），
+`initiative/2nd/design-1/index.ls` 現在就是這樣做的（`theme` + `deep`），
 每張圖少抄五行，換主題只改一處。
 
 ~~**但還有一個洞：d3 brush 的選取框不能 customize。**~~ 已經做了（chart 3.12.0）：

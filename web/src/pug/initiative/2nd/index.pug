@@ -3,351 +3,245 @@ html(lang="zh-TW")
   head
     meta(charset="utf-8")
     meta(name="viewport",content="width=device-width,initial-scale=1")
-    title 獨立書店銷售概況 / @plotdb/dash
-    +css([{url: "/css/dash.css"}])
+    title 三種長相, 同一份 def / @plotdb/dash
     style(type="text/css"): :stylus
-      // 第二版: 同一份框架、同一套 crossfilter, 換一組 panel block 與一層主題.
-      // 顏色的規則只有一條 - 色相留給資料, 介面狀態只用亮度.
+      // 入口頁. 三個設計共用一份 def, 這一頁的工作只是把差別講清楚並連過去.
+      //
+      // 縮圖是 CSS 畫的, 不是截圖 - 截圖會過期, 而且這三版的差別本來就是
+      // 版面比例與色票, 用幾個 div 就講得完
       :root
-        --n2-fg: #e7eef6
-        --n2-fg-dim: #7f8d9d
-        --n2-radius: 12px
-        --dash-gap: 14px
-
+        --g-bg: #101317
+        --g-fg: #e8ecf1
+        --g-dim: #8893a2
       html, body
-        width: 100%
-        height: 100%
         margin: 0
         padding: 0
+        min-height: 100%
       body
-        background: #0e1319
-        color: var(--n2-fg)
+        background: var(--g-bg)
+        color: var(--g-fg)
         font-family: -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
         -webkit-font-smoothing: antialiased
         font-size: 14px
 
-      .n2-page
+      .g-wrap
         box-sizing: border-box
-        width: 100%
-        height: 100%
-        min-height: 620px
-        display: flex
-        flex-direction: column
-        gap: 16px
-        padding: 22px 26px 24px
-        background: radial-gradient(1100px 560px at 10% -12%, rgba(127,156,245,.10), transparent 62%), radial-gradient(900px 480px at 94% -4%, rgba(79,195,176,.09), transparent 58%), #0e1319
+        max-width: 1200px
+        margin: 0 auto
+        padding: 64px 32px 80px
 
-      // ------------------------------------------------------------ 頁首
-      .n2-bar
-        flex: 0 0 auto
-        display: flex
-        align-items: flex-end
-        gap: 18px
-        flex-wrap: wrap
-      .n2-eyebrow
+      .g-eyebrow
         font-size: 10px
         font-weight: 600
-        letter-spacing: .2em
+        letter-spacing: .22em
         text-transform: uppercase
-        color: #566477
-      .n2-h1
-        margin-top: 3px
-        font-family: "Iowan Old Style", Palatino, "Palatino Linotype", "Songti TC", "Noto Serif TC", serif
-        font-size: 27px
+        color: #5d6b7d
+      .g-h1
+        margin: 10px 0 0
+        font-family: "Iowan Old Style", Palatino, "Songti TC", "Noto Serif TC", serif
+        font-size: 36px
         font-weight: 600
-        line-height: 1.15
-        letter-spacing: .015em
-        color: #f4f8fc
-      .n2-h2
-        margin-top: 5px
-        font-size: 12px
-        line-height: 1.5
-        color: var(--n2-fg-dim)
-      .n2-spacer
-        flex: 1 1 auto
-      .n2-tools
-        display: flex
-        align-items: center
-        gap: 8px
-        flex-wrap: wrap
-        justify-content: flex-end
-        max-width: 56vw
-
-      .n2-btn
-        padding: 6px 14px
-        font-size: 12.5px
-        color: #cfdae6
-        background: rgba(255,255,255,.04)
-        border: 1px solid rgba(255,255,255,.10)
-        border-radius: 999px
-        cursor: pointer
-        white-space: nowrap
-        transition: .15s
-        &:hover
-          color: #fff
-          background: rgba(255,255,255,.09)
-          border-color: rgba(255,255,255,.22)
-        &.off
-          opacity: .3
-          pointer-events: none
-      .n2-btn.primary
-        color: #10161e
-        background: #e7eef6
-        border-color: #e7eef6
-        &:hover
-          background: #fff
-          border-color: #fff
-
-      // 篩選中的欄位. 跟 panel 的「篩選中」標籤同一套語彙
-      .n2-chip
-        display: inline-flex
-        align-items: center
-        gap: 7px
-        padding: 5px 7px 5px 11px
-        font-size: 11.5px
-        color: #e2eaf3
-        background: rgba(255,255,255,.065)
-        border: 1px solid rgba(255,255,255,.13)
-        border-radius: 999px
-        white-space: nowrap
-        max-width: 22em
-        .k
-          color: #76848f
-        .v
-          overflow: hidden
-          text-overflow: ellipsis
-        .x
-          display: inline-flex
-          align-items: center
-          justify-content: center
-          width: 15px
-          height: 15px
-          font-size: 9px
-          color: #9fadbb
-          background: rgba(255,255,255,.08)
-          border-radius: 50%
-          cursor: pointer
-          &:hover
-            color: #10161e
-            background: #f0a3b4
-
-      // ------------------------------------------------------------ 版面
-      // .dash / .dash-cell 來自 dash.css, 這裡只加進場動畫
-      .n2-board
-        flex: 1 1 auto
-        min-height: 0
-      .dash > .dash-cell
-        animation: n2-in .55s cubic-bezier(.22,.85,.3,1) both
-        &:nth-child(1)
-          animation-delay: .00s
-        &:nth-child(2)
-          animation-delay: .04s
-        &:nth-child(3)
-          animation-delay: .08s
-        &:nth-child(4)
-          animation-delay: .12s
-        &:nth-child(5)
-          animation-delay: .18s
-        &:nth-child(6)
-          animation-delay: .22s
-        &:nth-child(7)
-          animation-delay: .28s
-        &:nth-child(8)
-          animation-delay: .32s
-        &:nth-child(9)
-          animation-delay: .36s
-      @keyframes n2-in
-        from
-          opacity: 0
-          transform: translateY(10px)
-        to
-          opacity: 1
-          transform: none
-
-      // ------------------------------------------------- def 檢視 / 編輯
-      .n2-drawer
-        position: fixed
-        top: 0
-        left: 0
-        width: 100%
-        height: 100%
-        z-index: 60
-        visibility: hidden
-        &.show
-          visibility: visible
-      .n2-mask
-        position: absolute
-        width: 100%
-        height: 100%
-        background: rgba(5,8,12,.62)
-        opacity: 0
-        transition: opacity .25s
-      .n2-drawer.show .n2-mask
-        opacity: 1
-      .n2-win
-        box-sizing: border-box
-        position: absolute
-        top: 0
-        right: 0
-        height: 100%
-        // stylus 會在編譯期算掉 min(), 混單位的結果不是想要的 - 拆成兩行寫
-        width: 900px
-        max-width: 95vw
-        display: flex
-        flex-direction: column
-        background: #121a23
-        border-left: 1px solid rgba(255,255,255,.09)
-        box-shadow: -24px 0 70px rgba(0,0,0,.6)
-        transform: translateX(100%)
-        transition: transform .32s cubic-bezier(.28,.84,.3,1)
-      .n2-drawer.show .n2-win
-        transform: none
-      .n2-win-head
-        flex: 0 0 auto
-        display: flex
-        align-items: flex-start
-        gap: 10px
-        padding: 18px 20px 14px
-        border-bottom: 1px solid rgba(255,255,255,.07)
-      .n2-win-title
+        line-height: 1.2
+      .g-lede
+        margin-top: 14px
+        max-width: 44em
         font-size: 15px
-        font-weight: 600
-      .n2-win-body
-        flex: 1 1 auto
-        min-height: 0
-        display: flex
-      .n2-side
-        box-sizing: border-box
-        flex: 0 0 13em
-        padding: 10px
-        overflow-y: auto
-        border-right: 1px solid rgba(255,255,255,.07)
-      .n2-item
-        padding: 8px 11px
-        border-radius: 8px
-        cursor: pointer
-        transition: .12s
-        .label
-          font-size: 12.5px
-        .path
-          margin-top: 2px
-          font-size: 10.5px
+        line-height: 1.85
+        color: #aab6c4
+        code
           font-family: ui-monospace, "SF Mono", monospace
-          color: #68768a
-        &:hover
-          background: rgba(255,255,255,.05)
-        &.active
-          background: rgba(255,255,255,.1)
-          .path
-            color: #9fb0c4
-      .n2-main
-        flex: 1 1 auto
-        min-width: 0
+          font-size: 12.5px
+          color: #8fd3c6
+
+      .g-grid
+        display: grid
+        grid-template-columns: repeat(3, 1fr)
+        gap: 22px
+        margin-top: 42px
+      @media (max-width: 900px)
+        .g-grid
+          grid-template-columns: 1fr
+
+      .g-card
         display: flex
         flex-direction: column
-        gap: 14px
-        padding: 18px 20px
-        overflow-y: auto
-      .n2-desc
+        color: inherit
+        text-decoration: none
+        background: #171c23
+        border: 1px solid rgba(255,255,255,.07)
+        border-radius: 14px
+        overflow: hidden
+        transition: transform .2s, border-color .2s, box-shadow .2s
+        &:hover
+          transform: translateY(-3px)
+          border-color: rgba(255,255,255,.2)
+          box-shadow: 0 24px 50px -28px rgba(0,0,0,.9)
+
+      // ---- 縮圖. 每一張都是該設計的版面比例 + 色票, 用 grid 疊出來
+      .g-shot
+        aspect-ratio: 16 / 10
+        padding: 10px
+        display: grid
+        grid-template-columns: repeat(12, 1fr)
+        grid-auto-rows: 1fr
+      .g-shot > i
+        display: block
+        border-radius: 2px
+
+      // design-1: 深色、有間距、圓角卡片
+      .g-shot.s1
+        gap: 4px
+        grid-template-rows: .7fr 1.1fr 1fr
+        background: #0e1319
+      .s1 > i
+        background: #1a222d
+        border-radius: 3px
+      .s1 > i.k
+        border-left: 2px solid currentColor
+
+      // design-2: 紙、細線分隔、沒有色塊
+      .g-shot.s2
+        gap: 9px
+        grid-template-rows: .6fr 1.2fr 1.1fr
+        background: #fbfaf7
+      .s2 > i
+        background: rgba(40,34,24,.055)
+        border-top: 1px solid rgba(40,34,24,.4)
+        border-radius: 0
+
+      // design-3: 色塊拼貼、縫很窄
+      .g-shot.s3
+        gap: 2px
+        grid-template-rows: .7fr 1.2fr 1fr
+        background: #0a0a09
+        padding: 4px
+      .s3 > i
+        background: #1c1a19
+        border-radius: 0
+
+      .g-meta
+        flex: 1 1 auto
+        display: flex
+        flex-direction: column
+        gap: 8px
+        padding: 18px 20px 22px
+        border-top: 1px solid rgba(255,255,255,.07)
+      .g-name
+        display: flex
+        align-items: baseline
+        gap: 9px
+      .g-id
+        font-family: ui-monospace, "SF Mono", monospace
+        font-size: 11px
+        color: #66748a
+      .g-title
+        font-size: 17px
+        font-weight: 600
+      .g-desc
         font-size: 12.8px
         line-height: 1.75
-        color: #b9c6d4
-      .n2-field
-        display: flex
-        gap: 12px
-        padding: 8px 0
+        color: var(--g-dim)
+      .g-points
+        margin: 4px 0 0
+        padding-left: 1.1em
+        font-size: 12.3px
+        line-height: 1.8
+        color: #96a3b3
+      .g-go
+        margin-top: auto
+        padding-top: 12px
         font-size: 12px
-        border-top: 1px solid rgba(255,255,255,.06)
-        .key
-          flex: 0 0 7em
-          font-weight: 600
-        .type
-          flex: 0 0 14em
-          font-family: ui-monospace, "SF Mono", monospace
-          font-size: 11.5px
-          color: #8fd3c6
-          word-break: break-all
-        .desc
-          flex: 1 1 auto
-          color: var(--n2-fg-dim)
-      .n2-editor
-        display: flex
-        flex-direction: column
-        gap: 8px
-        textarea
-          box-sizing: border-box
-          width: 100%
-          min-height: 18em
-          padding: 12px
-          font-family: ui-monospace, "SF Mono", monospace
-          font-size: 11.5px
-          line-height: 1.65
-          color: #d7e2ee
-          background: #0d141b
-          border: 1px solid rgba(255,255,255,.09)
-          border-radius: 8px
-          resize: vertical
-          &:focus
-            outline: none
-            border-color: rgba(255,255,255,.22)
-      .n2-foot
-        display: flex
-        align-items: center
-        gap: 10px
-      .n2-hint, .n2-msg
-        font-size: 11.5px
-        color: var(--n2-fg-dim)
-  body
-    .n2-page
-      .n2-bar
-        div
-          .n2-eyebrow Independent Bookstores · 2024 · Synthetic
-          .n2-h1 獨立書店銷售概況
-          .n2-h2 @plotdb/dash 第二版 — 同一份 def, 換一組 panel block 與一層主題
-        .n2-spacer
-        .n2-tools
-          div(ld="chips",style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end")
-          .n2-btn(ld="clear") 清除篩選
-          .n2-btn.primary(ld="open-def") 儀表板定義
-      .n2-board(ld="board")
+        letter-spacing: .04em
+        color: #8fd3c6
 
-    .n2-drawer(ld="defv")
-      .n2-mask(ld="close-def")
-      .n2-win
-        .n2-win-head
-          div
-            .n2-win-title 儀表板定義 ( def )
-            .n2-h2 一份 def 就是一個儀表板. 左側是要定義的東西, 右側可以直接改, 套用後立刻重建.
-          .n2-spacer
-          .n2-btn(ld="close-def") 關閉
-        .n2-win-body
-          .n2-side: .n2-item(ld-each="group")
-            .label(ld="label")
-            .path(ld="path")
-          .n2-main
-            .n2-desc(ld="desc")
-            div
-              .n2-field(ld-each="field")
-                .key(ld="key")
-                .type(ld="type")
-                .desc(ld="fdesc")
-            .n2-editor
-              .n2-hint(ld="hint")
-              textarea(ld="editor",spellcheck="false")
-              .n2-foot
-                .n2-btn.primary(ld="apply") 套用並重建
-                .n2-btn(ld="reset") 還原
-                .n2-msg(ld="msg")
-    +script([
-      {name: "proxise"},
-      {name: "@loadingio/debounce.js"},
-      {name: "@loadingio/ldquery"},
-      {name: "@plotdb/semver"},
-      {name: "@plotdb/csscope"},
-      {name: "@plotdb/rescope"},
-      {name: "@plotdb/block"},
-      {name: "ldview"},
-      {name: "papaparse", path: "papaparse.min.js"},
-      {url: "/js/dash.js"}
-    ])
-    script(type="module"): include:lsc index.ls
+      .g-note
+        margin-top: 46px
+        padding-top: 22px
+        max-width: 50em
+        font-size: 13px
+        line-height: 1.9
+        color: var(--g-dim)
+        border-top: 1px solid rgba(255,255,255,.08)
+        a
+          color: #8fd3c6
+          text-decoration: none
+          border-bottom: 1px solid rgba(143,211,198,.35)
+  body
+    .g-wrap
+      .g-eyebrow @plotdb/dash · initiative / 2nd
+      h1.g-h1 三種長相, 同一份 def
+      .g-lede
+        | 下面三個儀表板載入同一份資料、同一批圖表 block、同一套 crossfilter 語意。
+        | 每一版換掉的只有兩樣東西: <code>panel block</code> 與一層套在每個 panel 上的
+        | <code>cfg</code> 主題。它們長得不像, 是因為一開始問的問題不一樣。
+
+      .g-grid
+        a.g-card(href="/initiative/2nd/design-1/")
+          .g-shot.s1
+            i.k(style="grid-column:span 3;color:#7f9cf5")
+            i.k(style="grid-column:span 3;color:#5ddba4")
+            i.k(style="grid-column:span 3;color:#ffd08a")
+            i.k(style="grid-column:span 3;color:#4fc3b0")
+            i(style="grid-column:span 6")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3;grid-row:span 2")
+            i(style="grid-column:span 5")
+            i(style="grid-column:span 4")
+          .g-meta
+            .g-name
+              .g-id design-1
+              .g-title 分析台
+            .g-desc 給一個坐在螢幕前面、正在找原因的人。密集、深色、滿版不捲動, 每一格都可以點、可以框選。
+            ul.g-points
+              li 12 欄格線, KPI 與圖共用同一組欄
+              li 色相留給資料, 介面狀態只用亮度
+              li def 是右側滑出的抽屜, 可以直接改
+            .g-go 打開 →
+        a.g-card(href="/initiative/2nd/design-2/")
+          .g-shot.s2
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 12")
+            i(style="grid-column:span 8")
+            i(style="grid-column:span 4")
+          .g-meta
+            .g-name
+              .g-id design-2
+              .g-title 報告
+            .g-desc 給一個要把結論讀完的人。版心置中、整頁往下捲, 沒有卡片、沒有陰影, 襯線字從標題一路套到座標軸。
+            ul.g-points
+              li 行高是絕對值, 高度由內容決定而不是視窗
+              li 分隔只有一條細線與留白
+              li def 不是抽屜, 是文件最後的附錄
+            .g-go 打開 →
+        a.g-card(href="/initiative/2nd/design-3/")
+          .g-shot.s3
+            i(style="grid-column:span 3;background:#ffd166")
+            i(style="grid-column:span 3;background:#26c6a6")
+            i(style="grid-column:span 3;background:#ff8c61")
+            i(style="grid-column:span 3;background:#8ab4ff")
+            i(style="grid-column:span 9")
+            i(style="grid-column:span 3;grid-row:span 2")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+          .g-meta
+            .g-name
+              .g-id design-3
+              .g-title 牆面
+            .g-desc 給一個十公尺外走過去的人。磚與磚之間只有 3px 的縫, 數字大到佔滿整格, 狀態用面積而不是小字。
+            ul.g-points
+              li 色票比另外兩版飽和一整級, 遠看才分得開
+              li x 軸標籤用 auto, 擠不下就自己傾斜
+              li 沒有 def 編輯器 — 牆上的螢幕不接鍵盤
+            .g-go 打開 →
+
+      .g-note
+        | 第一版 (
+        |
+        a(href="/initiative/1st/") /initiative/1st/
+        | ) 問的是「一個儀表板由哪些東西組成」, 刻意用最素的樣式。
+        | 這一組問的是接下來那一題: 組成固定下來之後, 長相能換到什麼程度。
+        | 三版的差異寫在各自的 <code>README.md</code> 裡。

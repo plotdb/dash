@@ -1,0 +1,95 @@
+div
+  .rp-panel
+    .rp-rule
+    .rp-head
+      .rp-title(ld="title")
+      .rp-spacer
+      .rp-tag(ld="tag") 篩選中 ✕
+    .rp-sub(ld="sub")
+    .rp-body(ld="body")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    // 報告版的卡片是「沒有卡片」. 分隔靠的是一條細線與留白,
+    // 不是邊框、圓角與陰影 - 印出來的東西沒有陰影
+    .rp-panel
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+      flex-direction: column
+      color: var(--rp-ink)
+      // 圖表的文字會繼承這裡的 font-family ( svg text 也吃 CSS 繼承 ),
+      // 所以軸標籤、legend 跟標題是同一套字
+      font-family: var(--rp-serif)
+      background: none
+      border: none
+
+    // 標題上面那一條. filtering 時整條換色加粗 - 這一版沒有別的地方可以變
+    .rp-rule
+      flex: 0 0 auto
+      height: 1px
+      background: var(--rp-line)
+      transition: background .18s, height .18s
+
+    .rp-head
+      flex: 0 0 auto
+      display: flex
+      align-items: baseline
+      gap: 10px
+      padding-top: 9px
+
+    .rp-title
+      font-size: 15.5px
+      font-weight: 600
+      letter-spacing: .02em
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .rp-spacer
+      flex: 1 1 auto
+
+    // 說明文字單獨一行, 用斜體 - 報告的圖說就長這樣
+    .rp-sub
+      flex: 0 0 auto
+      margin-top: 2px
+      font-size: 11.5px
+      font-style: italic
+      line-height: 1.5
+      color: var(--rp-ink-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .rp-body
+      flex: 1 1 auto
+      min-height: 0
+      position: relative
+      padding-top: 6px
+
+    // 「篩選中」是一段加底線的文字, 不是藥丸按鈕
+    .rp-tag
+      display: none
+      flex: 0 0 auto
+      font-size: 11px
+      font-style: italic
+      color: var(--rp-accent)
+      border-bottom: 1px solid currentColor
+      cursor: pointer
+      white-space: nowrap
+      &:hover
+        opacity: .7
+
+    .rp-panel.filtering
+      > .rp-rule
+        height: 2px
+        background: var(--rp-accent)
+      > .rp-head .rp-tag
+        display: inline-block
+  script: include:lsc index.ls

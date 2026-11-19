@@ -1,0 +1,93 @@
+div
+  .wl-panel
+    .wl-head
+      .wl-title(ld="title")
+      .wl-spacer
+      .wl-tag(ld="tag")
+        i.wl-tag-dot
+        span 篩選中
+      .wl-sub(ld="sub")
+    .wl-body(ld="body")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    // 牆面版的磚: 沒有圓角、沒有陰影、沒有邊框, 整塊實色.
+    // 分隔靠的是格子之間那 3px 的縫, 不是卡片的輪廓 -
+    // 遠看的時候輪廓線根本看不見, 看得見的是色塊的邊界
+    .wl-panel
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+      flex-direction: column
+      padding: 16px 18px 12px
+      color: var(--wl-fg)
+      background: var(--wl-tile)
+      font-family: var(--wl-sans)
+
+    .wl-head
+      flex: 0 0 auto
+      display: flex
+      align-items: baseline
+      gap: 10px
+      flex-wrap: wrap
+
+    // 大寫、緊排、粗 - 遠處要先讀到的是這一行
+    .wl-title
+      font-size: 13px
+      font-weight: 800
+      letter-spacing: .13em
+      text-transform: uppercase
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .wl-spacer
+      flex: 1 1 auto
+
+    // 說明文字排在標題右邊而不是下面 - 牆面上的垂直空間要留給圖
+    .wl-sub
+      flex: 0 0 auto
+      font-size: 11px
+      letter-spacing: .02em
+      color: var(--wl-fg-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .wl-body
+      flex: 1 1 auto
+      min-height: 0
+      position: relative
+      margin-top: 8px
+
+    // 篩選中: 整塊磚的上緣換成一道粗的強調色.
+    // 遠看只看得到「哪幾塊亮起來了」, 看不到小字 - 所以狀態要用面積表示
+    .wl-tag
+      display: none
+      flex: 0 0 auto
+      align-items: center
+      gap: 6px
+      font-size: 10.5px
+      font-weight: 700
+      letter-spacing: .1em
+      text-transform: uppercase
+      color: var(--wl-hot)
+      cursor: pointer
+      &:hover
+        opacity: .7
+    .wl-tag-dot
+      width: 7px
+      height: 7px
+      background: var(--wl-hot)
+
+    .wl-panel.filtering
+      box-shadow: inset 0 4px 0 0 var(--wl-hot)
+      > .wl-head .wl-tag
+        display: inline-flex
+  script: include:lsc index.ls

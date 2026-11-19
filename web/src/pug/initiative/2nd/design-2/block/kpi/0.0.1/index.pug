@@ -1,0 +1,73 @@
+div
+  .rp-kpi
+    .rp-rule
+    .rp-kpi-label(ld="label")
+    .rp-kpi-value
+      span.rp-kpi-num(ld="num") 0
+      span.rp-kpi-unit(ld="unit")
+    .rp-kpi-note(ld="note")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .rp-kpi
+      --rp-kpi-accent: var(--rp-accent)
+      flex: 1 1 auto
+      min-width: 0
+      display: flex
+      flex-direction: column
+      gap: 3px
+      font-family: var(--rp-serif)
+      color: var(--rp-ink)
+
+    // 跟圖表卡片共用同一條線, 所以四個數字跟底下的圖看起來是同一份文件
+    .rp-rule
+      flex: 0 0 auto
+      height: 1px
+      margin-bottom: 7px
+      background: var(--rp-line)
+
+    .rp-kpi-label
+      font-family: var(--rp-sans)
+      font-size: 10px
+      font-weight: 600
+      letter-spacing: .14em
+      text-transform: uppercase
+      color: var(--rp-kpi-accent)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .rp-kpi-value
+      display: flex
+      align-items: baseline
+      gap: 6px
+      min-width: 0
+
+    // 報告的主角是數字本身 - 襯線、舊體數字、夠大
+    .rp-kpi-num
+      font-size: 40px
+      font-weight: 500
+      line-height: 1.05
+      letter-spacing: -.015em
+      font-variant-numeric: tabular-nums
+      color: var(--rp-ink)
+
+    .rp-kpi-unit
+      font-size: 12px
+      font-style: italic
+      color: var(--rp-ink-dim)
+
+    .rp-kpi-note
+      font-family: var(--rp-sans)
+      font-size: 11px
+      font-variant-numeric: tabular-nums
+      color: var(--rp-ink-dim)
+      &.up
+        color: var(--rp-up)
+      &.down
+        color: var(--rp-down)
+  script: include:lsc index.ls

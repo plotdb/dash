@@ -20,7 +20,7 @@ mgr = new block.manager do
   registry: ({url, ns, name, version, path, type}) ->
     if url => return url
     if type == \block =>
-      if ns == \local => return "/initiative/2nd/block/#name/#{version or '0.0.1'}/#{path or 'index.html'}"
+      if ns == \local => return "/initiative/2nd/design-1/block/#name/#{version or '0.0.1'}/#{path or 'index.html'}"
       return "/assets/lib/#name/#{version or 'main'}/#{path or 'index.html'}"
     if /^d3/.exec(name) => return "/assets/lib/#name/main/#path"
     "/assets/lib/#name/#{version or 'main'}/#{path or (if type == \css => 'index.min.css' else 'index.min.js')}"

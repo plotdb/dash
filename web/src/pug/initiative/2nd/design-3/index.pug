@@ -1,0 +1,187 @@
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title 獨立書店銷售概況 — 值班畫面 / @plotdb/dash
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // design-3「牆面」. 假設沒有人坐在螢幕前面.
+      //
+      // 這一版沒有留白. 磚與磚之間只有 3px 的縫, 縫的顏色就是頁面底色 -
+      // 所以整面看起來是一張拼起來的板子, 不是一堆浮在底色上的卡片.
+      :root
+        --wl-bg: #0a0a09
+        --wl-tile: #1c1a19
+        --wl-fg: #f2efe9
+        --wl-fg-dim: #8d867d
+        --wl-hot: #ffd166
+        --wl-sans: "Helvetica Neue", -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
+        --dash-gap: 3px
+
+      html, body
+        width: 100%
+        height: 100%
+        margin: 0
+        padding: 0
+      body
+        background: var(--wl-bg)
+        color: var(--wl-fg)
+        font-family: var(--wl-sans)
+        -webkit-font-smoothing: antialiased
+        font-size: 14px
+        overflow: hidden
+
+      .wl-screen
+        box-sizing: border-box
+        width: 100%
+        height: 100%
+        min-height: 560px
+        display: flex
+        flex-direction: column
+        gap: 3px
+        padding: 3px
+
+      // ------------------------------------------------------------ 頁首
+      // 頁首也是一塊磚, 不是浮在上面的工具列. 高度壓到最低 - 牆面上
+      // 每一個像素的高度都該給圖
+      .wl-bar
+        flex: 0 0 auto
+        display: flex
+        align-items: center
+        gap: 16px
+        padding: 0 18px
+        height: 52px
+        background: var(--wl-tile)
+      .wl-brand
+        display: flex
+        align-items: baseline
+        gap: 12px
+        min-width: 0
+      .wl-mark
+        width: 10px
+        height: 10px
+        background: var(--wl-hot)
+      .wl-h1
+        font-size: 16px
+        font-weight: 800
+        letter-spacing: .16em
+        text-transform: uppercase
+        white-space: nowrap
+      .wl-h2
+        font-size: 11px
+        letter-spacing: .1em
+        text-transform: uppercase
+        color: var(--wl-fg-dim)
+        white-space: nowrap
+      .wl-spacer
+        flex: 1 1 auto
+
+      .wl-chips
+        display: flex
+        align-items: center
+        gap: 10px
+        flex-wrap: nowrap
+        overflow: hidden
+      .wl-chip
+        display: inline-flex
+        align-items: baseline
+        gap: 7px
+        padding: 4px 10px
+        font-size: 11.5px
+        font-weight: 600
+        color: #0d0c0b
+        background: var(--wl-hot)
+        white-space: nowrap
+        .k
+          font-weight: 700
+          opacity: .55
+
+      .wl-btn
+        flex: 0 0 auto
+        padding: 6px 13px
+        font-size: 11px
+        font-weight: 700
+        letter-spacing: .1em
+        text-transform: uppercase
+        color: var(--wl-fg)
+        background: none
+        border: 1px solid rgba(255,255,255,.2)
+        cursor: pointer
+        white-space: nowrap
+        &:hover
+          color: #0d0c0b
+          background: var(--wl-fg)
+          border-color: var(--wl-fg)
+        &.off
+          opacity: .22
+          pointer-events: none
+      .wl-link
+        flex: 0 0 auto
+        font-size: 11px
+        letter-spacing: .1em
+        text-transform: uppercase
+        color: var(--wl-fg-dim)
+        text-decoration: none
+        white-space: nowrap
+        &:hover
+          color: var(--wl-fg)
+
+      // ------------------------------------------------------------ 版面
+      .wl-board
+        flex: 1 1 auto
+        min-height: 0
+      // 磚是一塊一塊亮起來的. 間隔比 design-1 短 - 牆面的畫面會重複被看到,
+      // 慢的進場第二次看就是在等
+      .dash > .dash-cell
+        animation: wl-in .4s cubic-bezier(.2,.8,.3,1) both
+        &:nth-child(1)
+          animation-delay: .00s
+        &:nth-child(2)
+          animation-delay: .03s
+        &:nth-child(3)
+          animation-delay: .06s
+        &:nth-child(4)
+          animation-delay: .09s
+        &:nth-child(5)
+          animation-delay: .13s
+        &:nth-child(6)
+          animation-delay: .16s
+        &:nth-child(7)
+          animation-delay: .19s
+        &:nth-child(8)
+          animation-delay: .22s
+        &:nth-child(9)
+          animation-delay: .25s
+      @keyframes wl-in
+        from
+          opacity: 0
+          transform: scale(.985)
+        to
+          opacity: 1
+          transform: none
+  body
+    .wl-screen
+      .wl-bar
+        .wl-brand
+          .wl-mark
+          .wl-h1 獨立書店銷售概況
+          .wl-h2 2024 · Synthetic
+        .wl-spacer
+        .wl-chips(ld="chips")
+        .wl-btn(ld="clear") 清除篩選
+        a.wl-link(href="/initiative/2nd/") 其他設計 ↗
+      .wl-board(ld="board")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc index.ls

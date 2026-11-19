@@ -1,0 +1,299 @@
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title 獨立書店銷售概況 — 年度報告 / @plotdb/dash
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // design-2「報告」. 同一份 def, 當成一份印出來的文件來排.
+      //
+      // 跟 design-1 相反的地方都寫在對應的規則旁邊; 總的來說只有一句:
+      // 不填滿視窗, 填滿的是版心.
+      :root
+        --rp-paper: #fbfaf7
+        --rp-ink: #2a251d
+        --rp-ink-dim: #78726a
+        --rp-line: rgba(40,34,24,.16)
+        --rp-accent: #b4553f
+        --rp-up: #5a6b38
+        --rp-down: #b4553f
+        --rp-serif: "Iowan Old Style", Palatino, "Palatino Linotype", "Songti TC", "Noto Serif TC", serif
+        --rp-sans: -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
+        --dash-gap: 26px
+
+      html
+        background: #efece4
+      body
+        margin: 0
+        padding: 0
+        background: #efece4
+        color: var(--rp-ink)
+        font-family: var(--rp-serif)
+        -webkit-font-smoothing: antialiased
+        font-size: 14px
+
+      // 版心. 一張紙, 置中, 兩側留出紙緣
+      .rp-sheet
+        box-sizing: border-box
+        width: 100%
+        max-width: 1180px
+        margin: 0 auto
+        padding: 56px 54px 70px
+        background: var(--rp-paper)
+        box-shadow: 0 0 0 1px rgba(40,34,24,.07), 0 18px 60px -30px rgba(40,34,24,.45)
+
+      // ------------------------------------------------------------ 刊頭
+      .rp-masthead
+        padding-bottom: 20px
+        border-bottom: 2px solid var(--rp-ink)
+      .rp-eyebrow
+        font-family: var(--rp-sans)
+        font-size: 10px
+        font-weight: 600
+        letter-spacing: .22em
+        text-transform: uppercase
+        color: var(--rp-accent)
+      .rp-h1
+        margin: 8px 0 0
+        font-size: 40px
+        font-weight: 600
+        line-height: 1.1
+        letter-spacing: .01em
+      .rp-lede
+        margin-top: 12px
+        max-width: 42em
+        font-size: 15px
+        line-height: 1.85
+        color: #4a443b
+      .rp-byline
+        margin-top: 14px
+        font-family: var(--rp-sans)
+        font-size: 11px
+        letter-spacing: .04em
+        color: var(--rp-ink-dim)
+        a
+          color: var(--rp-accent)
+          text-decoration: none
+          border-bottom: 1px solid rgba(180,85,63,.4)
+
+      // 目前的篩選. 報告裡這是一行「本節統計範圍」的註記, 不是工具列
+      .rp-state
+        display: flex
+        align-items: baseline
+        gap: 10px
+        flex-wrap: wrap
+        margin-top: 18px
+        padding: 9px 0
+        font-size: 12px
+        border-bottom: 1px solid var(--rp-line)
+      .rp-state-label
+        font-family: var(--rp-sans)
+        font-size: 10px
+        font-weight: 600
+        letter-spacing: .16em
+        text-transform: uppercase
+        color: var(--rp-ink-dim)
+      .rp-chip
+        display: inline-flex
+        align-items: baseline
+        gap: 6px
+        font-size: 12px
+        font-style: italic
+        .k
+          color: var(--rp-ink-dim)
+          font-style: normal
+        .x
+          font-style: normal
+          color: var(--rp-accent)
+          cursor: pointer
+          &:hover
+            opacity: .6
+      .rp-link
+        font-family: var(--rp-sans)
+        font-size: 11px
+        color: var(--rp-accent)
+        border-bottom: 1px solid rgba(180,85,63,.4)
+        cursor: pointer
+        &.off
+          opacity: .3
+          pointer-events: none
+        &:hover
+          opacity: .7
+      .rp-spacer
+        flex: 1 1 auto
+
+      // ------------------------------------------------------------ 版面
+      // dash.css 的 .dash 是 height:100% - 那是「填滿視窗」的儀表板.
+      // 這一版高度由 def.layout.row 的絕對行高決定, 整頁往下捲
+      .rp-board
+        margin-top: 26px
+        .dash
+          height: auto
+          overflow: visible
+
+      // ------------------------------------------------------------ 附錄
+      // def 不是抽屜. 它是這份文件的一部分, 所以放在最後, 一直在
+      .rp-appendix
+        margin-top: 54px
+        padding-top: 20px
+        border-top: 2px solid var(--rp-ink)
+      .rp-ap-title
+        font-size: 20px
+        font-weight: 600
+      .rp-ap-note
+        margin-top: 6px
+        max-width: 44em
+        font-size: 13px
+        line-height: 1.8
+        color: #4a443b
+      .rp-tabs
+        display: flex
+        flex-wrap: wrap
+        gap: 22px
+        margin-top: 18px
+        padding-bottom: 9px
+        border-bottom: 1px solid var(--rp-line)
+      .rp-tab
+        font-family: var(--rp-sans)
+        font-size: 12px
+        color: var(--rp-ink-dim)
+        cursor: pointer
+        padding-bottom: 4px
+        border-bottom: 2px solid transparent
+        margin-bottom: -11px
+        &:hover
+          color: var(--rp-ink)
+        &.active
+          color: var(--rp-ink)
+          font-weight: 600
+          border-bottom-color: var(--rp-accent)
+      .rp-desc
+        margin-top: 16px
+        max-width: 46em
+        font-size: 13px
+        line-height: 1.85
+        color: #4a443b
+      .rp-field
+        display: flex
+        gap: 14px
+        padding: 9px 0
+        font-size: 12.5px
+        border-top: 1px solid var(--rp-line)
+        .key
+          flex: 0 0 7em
+          font-weight: 600
+        .type
+          flex: 0 0 15em
+          font-family: ui-monospace, "SF Mono", monospace
+          font-size: 11px
+          color: #2f4b7c
+          word-break: break-all
+        .desc
+          flex: 1 1 auto
+          color: var(--rp-ink-dim)
+      .rp-editor
+        display: flex
+        flex-direction: column
+        gap: 8px
+        margin-top: 18px
+        textarea
+          box-sizing: border-box
+          width: 100%
+          min-height: 20em
+          padding: 14px 16px
+          font-family: ui-monospace, "SF Mono", monospace
+          font-size: 11.5px
+          line-height: 1.7
+          color: #2a251d
+          background: #f5f2ea
+          border: 1px solid var(--rp-line)
+          border-radius: 2px
+          resize: vertical
+          &:focus
+            outline: none
+            border-color: rgba(40,34,24,.4)
+      .rp-foot
+        display: flex
+        align-items: center
+        gap: 14px
+      .rp-btn
+        font-family: var(--rp-sans)
+        padding: 7px 16px
+        font-size: 12px
+        color: var(--rp-paper)
+        background: var(--rp-ink)
+        border: 1px solid var(--rp-ink)
+        border-radius: 2px
+        cursor: pointer
+        &:hover
+          opacity: .85
+      .rp-btn.ghost
+        color: var(--rp-ink)
+        background: none
+      .rp-hint, .rp-msg
+        font-family: var(--rp-sans)
+        font-size: 11.5px
+        color: var(--rp-ink-dim)
+
+      @media (max-width: 860px)
+        .rp-sheet
+          padding: 34px 22px 48px
+        .rp-h1
+          font-size: 30px
+  body
+    .rp-sheet
+      .rp-masthead
+        .rp-eyebrow Independent Bookstores · 2024 · Synthetic
+        h1.rp-h1 獨立書店銷售概況
+        .rp-lede
+          | 這一頁跟
+          |
+          a(href="/initiative/2nd/design-1/") design-1
+          |  用的是同一份 def、同一套 crossfilter、同一批圖表 block。
+          | 換掉的只有 panel 的外觀與一層主題 —— 以及一個決定：
+          | 不把視窗填滿，而是把版心填滿。圖仍然可以點、可以框選，篩選會同時套到以下五張圖。
+        .rp-byline
+          | @plotdb/dash · design-2 ·
+          |
+          a(href="/initiative/2nd/") 看其他設計
+      .rp-state
+        .rp-state-label 統計範圍
+        div(ld="chips",style="display:flex;gap:16px;flex-wrap:wrap;align-items:baseline")
+        .rp-spacer
+        .rp-link(ld="clear") 清除篩選
+      .rp-board(ld="board")
+
+      .rp-appendix
+        .rp-ap-title 附錄 — 儀表板定義 ( def )
+        .rp-ap-note
+          | 一份 def 就是一個儀表板。三個設計長得完全不一樣，但這段東西是同一份結構：
+          | 資料從哪來、版面怎麼切、每一格畫什麼。可以直接改，套用後整個儀表板重建。
+        .rp-tabs
+          .rp-tab(ld-each="group"): span(ld="label")
+        .rp-desc(ld="desc")
+        div
+          .rp-field(ld-each="field")
+            .key(ld="key")
+            .type(ld="type")
+            .desc(ld="fdesc")
+        .rp-editor
+          .rp-hint(ld="hint")
+          textarea(ld="editor",spellcheck="false")
+          .rp-foot
+            .rp-btn(ld="apply") 套用並重建
+            .rp-btn.ghost(ld="reset") 還原
+            .rp-msg(ld="msg")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc index.ls
