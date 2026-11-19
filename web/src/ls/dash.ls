@@ -59,6 +59,10 @@ dash.agg = agg =
 # 兩者一起餵給 dash.binding 就能自動接上圖表的 dimension.
 dash.query = (rows = [], def = {}) ->
   keyname = def.key or \key
+  # 原始列模式: 不聚合, 直接把 rows 當 raw.
+  # 自己分組的圖 ( 例如 bar 打開 cfg.bin 的直方圖 ) 要的是原始列 - 聚合過就沒有東西
+  # 可以分組了. 這種 raw 沒有 meta.fields, 所以 binding 要在 panel 裡明寫.
+  if def.raw => return {raw: rows, meta: {key: null, fields: [], raw: true}}
   measures = def.measures or [{name: \value, op: \count}]
   keyfn = if typeof(def.groupby) == \function => def.groupby
   else if def.groupby => (r) -> r[def.groupby]
@@ -162,14 +166,21 @@ board.prototype = Object.create(Object.prototype) <<<
       .then (rows) ~>
         @rows = rows or []
         @layout!
-        @mgr.get @panel-block
-      .then (bc) ~>
+        # 每個 panel 可以自己指定要用哪個 panel block - 同一份 def、同一套 crossfilter,
+        # 外觀與呈現方式由 block 決定 ( 例如 KPI 用不掛圖表的卡片 ).
+        # 沒指定就用 board 的預設; 同一個 block 只取一次.
+        cache = {}
+        Promise.all @panels.map (p) ~>
+          b = p.panel or @panel-block
+          k = JSON.stringify b
+          (cache[k] or= @mgr.get b).then (bc) -> p._bc = bc
+      .then ~>
         Promise.all @panels.map (p) ~>
           node = document.createElement \div
           node.classList.add \dash-cell
           node.style <<< @_area p
           @root.appendChild node
-          bc.create {data: {def: p, board: @}}
+          p._bc.create {data: {def: p, board: @}}
             .then (bi) -> bi.attach {root: node} .then -> bi.interface!
             .then (itf) -> p.itf = itf
       .then ~> @fire \init
@@ -244,7 +255,12 @@ board.prototype = Object.create(Object.prototype) <<<
     v = r[f.field]
     if f.type == \range =>
       [lo, hi] = f.values
-      (!(lo?) or v >= lo) and (!(hi?) or v <= hi)
+      # closed: left = [lo, hi), right = (lo, hi], both / 沒給 = [lo, hi] ( 原本的行為 ).
+      # 分組的區間是半開的 - 兩端都含的話, 相鄰的組會在邊界重複算到
+      c = f.closed or \both
+      lo-ok = if !(lo?) => true else if c == \right => v > lo else v >= lo
+      hi-ok = if !(hi?) => true else if c == \left => v < hi else v <= hi
+      lo-ok and hi-ok
     else ~f.values.indexOf(v)
 
   _apply: (fs) ->
@@ -358,6 +374,7 @@ dash.spec = [
       * key: \const, type: "object", desc: "每一列都補上的常數欄"
       * key: \compare, type: "true | {excludeSelf}", desc: "同一個 query 跑兩次, 額外送出篩選後的子集 ( chart 的 subset ). 配 cfg.common.subset.mode 的 partial / shrink 使用; 分母是未篩選的全體, 分子套用所有 filter. compare: {excludeSelf: true} 則分子不套用自己發出的 filter - 圖自己已經把選取畫出來時要用這個 ( 例如 line 的 brush, 否則框外會整個掉到 0 )"
       * key: \key, type: "string", desc: "產生的分組欄位名稱, 預設 key"
+      * key: \raw, type: "true", desc: "原始列模式: 不聚合, 直接把 rows 當 raw. 自己分組的圖 ( 例如 bar 的直方圖 ) 要用這個. 沒有 meta.fields, 所以 binding 要明寫, 例如 {value: {key: \"amount\"}}"
     ]
 
   * key: \binding
@@ -385,7 +402,9 @@ dash.spec = [
 
     # filter 有兩種型別, 由發出的圖決定, def 不必寫:
     #   index  值列表 ( 點選、類別軸的框選 )
-    #   range  區間 [lo, hi] 兩端都含 ( 連續軸的框選, 例如 line 的 brush )
+    #   range  區間 [lo, hi] ( 連續軸的框選, 例如 line 的 brush ).
+    #          可以帶 closed: left = [lo, hi), right = (lo, hi], 沒給就兩端都含.
+    #          直方圖的組是半開區間, 兩端都含的話相鄰的組會在邊界重複算到
 
     # 被篩掉的資料怎麼表現 ( 需要 data.compare 才有子集可比 )
     cfg: common: subset:

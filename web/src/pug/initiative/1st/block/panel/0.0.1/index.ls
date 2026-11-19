@@ -56,7 +56,8 @@ module.exports =
       need = false
       for dim of @field-map =>
         f = board.filter-of def.id, dim
-        fs[dim] = if f and f.values => {type: (f.type or \index), value: f.values} else undefined
+        # closed 跟 type 一樣原樣帶回去 - 直方圖的組是半開區間, 回灌時要認得出來
+        fs[dim] = if f and f.values => {type: (f.type or \index), value: f.values, closed: f.closed} else undefined
         # 兩邊都空就不用同步 - 免得每次 render 都去戳圖的選取機制 ( 例如 bar 的 brush ).
         # 「上次灌了什麼」要自己記: binding 每次 render 都重建, 圖身上的 filter 會跟著不見,
         # 所以問圖認不出「剛剛有篩選, 現在被清掉了」- 不記的話別人清空時 bar 的框會留在畫面上
@@ -76,13 +77,18 @@ module.exports =
     if cf == false => return {field-map: {}, group-dim: null}
     ret = {}
     group-dim = null
+    # 原始列模式 ( data.raw ) 沒有 groupby / series, 每個維度就是它在 binding 裡綁到的
+    # 那一欄 - 直方圖這種自己分組的圖走這條
+    raw-mode = !!(def.data or {}).raw
     for dim, b of binding =>
       one = if Array.isArray(b) => b.0 else b
       # 綁到 meta.key 的那一維就是「資料點」所在的維度. 每張圖叫法不同 -
       # pie / bar 是 name, line 是 order - 所以用 binding 去認, 不寫死名字
-      is-group = !!(one and one.key == meta.key)
+      is-group = !!(one and meta.key? and one.key == meta.key)
       if is-group => group-dim := dim
-      f = if is-group => def.data?groupby else def.data?series
+      f = if raw-mode => (one or {}).key
+      else if is-group => def.data?groupby
+      else def.data?series
       # 舊寫法 {field: "region"} 指的是資料點選那一維
       if cf? and typeof(cf) == \object =>
         if cf[dim]? => f = cf[dim]
@@ -102,8 +108,9 @@ module.exports =
       for dim, v of (filters or {}) =>
         if !(field = (@field-map or {})[dim]) => continue
         # v 是 undefined = 清掉這一維的篩選; v.value 是空陣列 = 一項都沒選, 是有效的篩選
-        # type 原樣帶過去 - index ( 值列表 ) 或 range ( 區間 )
-        board.set-filter def.id, (if v => {field, type: (v.type or \index), values: (v.value or [])} else null), dim
+        # type 原樣帶過去 - index ( 值列表 ) 或 range ( 區間 ).
+        # range 還可能帶 closed ( left / right / both ), 直方圖的組是半開區間
+        board.set-filter def.id, (if v => {field, type: (v.type or \index), values: (v.value or []), closed: v.closed} else null), dim
     # select 代打只填資料點那一維 ( name ); 圖自己就會發 name filter 的不需要代打,
     # 兩個都接會互相蓋掉. 圖只發別的維度 ( 例如 line 只發 legend ) 則兩者並存
     chart.on \select, (d) ~>
