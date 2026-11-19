@@ -116,7 +116,7 @@ def =
         compare: true
 
     # ---- 圖. 這些沿用預設的 panel block
-    * id: \trend, title: "月銷售趨勢", subtitle: "依書系 · 點 legend 篩書系, 橫向拖曳框選月份區間"
+    * id: \trend, title: "月銷售趨勢", subtitle: "依書系 · 點 legend 篩書系, 橫向拖曳框選月份區間 · 虛線為單書系月均"
       area: {col: [1, 6], row: [2, 1]}
       chart: {name: "@makechart/line"}
       data:
@@ -130,9 +130,19 @@ def =
         mode: \line
         line: {mode: \curve, strokeWidth: 2}
         dot: {show: true, size: 2.5}
-        common: {subset: {mode: \shrink}}
         brush: {enabled: true}
         legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom}
+        common:
+          subset: {mode: \shrink}
+          # 參考線是資料座標的註記, 要圖表實作 space scope ( line 有 ).
+          # 有一條基準線之後, 「這個月這個書系算好還是算差」才看得出來 -
+          # 四條線互相比只看得出相對高低, 看不出跟常態比如何
+          annotation:
+            color: \#ffd08a
+            reference: [{axis: \y, value: 784324}]
+            # 說明文字用視圖座標的註記, 不掛在線的末端 - 參考線的標籤目前沒有避讓,
+            # 貼在右緣會壓到資料線. 左下角這一塊本來就是空的
+            notes: [{x: 0.012, y: 0.94, text: "虛線 — 單書系月均 78 萬", align: \start, size: \.72em}]
 
     * id: \channel, title: "通路占比", subtitle: "可點選 · 通路自己一組色階"
       area: {col: [7, 3], row: [2, 1]}
