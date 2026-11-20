@@ -39,10 +39,20 @@ deep = (a = {}, b = {}) ->
     else v
   ret
 
+# 網址上的 ?mode=light|dark 蓋過一切, 而且不寫進 localStorage.
+# 給截圖用 ( 入口頁的縮圖是真的截圖, 見 tool/shot.sh ), 順便也方便把某一個模式
+# 的連結傳給別人
+forced = ->
+  try
+    m = (new URLSearchParams(location.search)).get \mode
+    if m in <[light dark]> => m else null
+  catch e
+    null
+
 window.dmode = do ->
   cbs = []
   mq = window.match-media '(prefers-color-scheme: dark)'
-  cur = ls-get(key) or (if mq.matches => \dark else \light)
+  cur = forced! or ls-get(key) or (if mq.matches => \dark else \light)
 
   apply = (m, persist) ->
     cur := m
@@ -50,8 +60,8 @@ window.dmode = do ->
     if persist => ls-set key, m
     for cb in cbs => cb m
 
-  # 沒有自己選過就跟著系統走
-  mq.add-event-listener \change, (e) -> if !ls-get(key) => apply (if e.matches => \dark else \light), false
+  # 沒有自己選過就跟著系統走 ( 網址指定了模式時不跟 )
+  mq.add-event-listener \change, (e) -> if !forced! and !ls-get(key) => apply (if e.matches => \dark else \light), false
 
   self =
     deep: deep

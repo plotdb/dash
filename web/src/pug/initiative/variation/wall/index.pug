@@ -6,7 +6,7 @@ html(lang="zh-TW")
     title 獨立書店銷售概況 — 值班畫面 / @plotdb/dash
     //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
     script.
-      try{var m=localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
+      try{var q=new URLSearchParams(location.search).get('mode');var m=(q==='light'||q==='dark')?q:(localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));document.documentElement.dataset.mode=m}catch(e){}
     +css([{url: "/css/dash.css"}])
     style(type="text/css"): :stylus
       // wall「牆面」. 假設沒有人坐在螢幕前面.

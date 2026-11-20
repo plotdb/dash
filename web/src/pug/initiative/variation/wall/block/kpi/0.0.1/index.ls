@@ -5,6 +5,12 @@
 #
 # def 的欄位跟另外幾版一樣 ( unit / accent / note ), 同一份 def 七版都能跑.
 
+still = ->
+  try
+    window.match-media('(prefers-reduced-motion: reduce)').matches
+  catch e
+    false
+
 num-fmt = (n) ->
   if Math.abs(n) >= 1000 => Math.round(n).toLocaleString \en-US
   else (Math.round(n * 10) / 10).toLocaleString \en-US
@@ -56,9 +62,21 @@ module.exports =
   # 數字用補間而不是直接換. 牆上的螢幕沒有人在操作, 變化本身就是唯一的提示
   tween: (v) ->
     @target = v
+    # 系統裡說了「減少動態」就直接換數字. CSS 那邊 dash.css 已經處理掉動畫與轉場,
+    # 這裡是 JS 畫的補間, 得自己看
+    if still! =>
+      @cur = v
+      @n.num.textContent = num-fmt v
+      return
     if @timer => return
-    step = ~>
-      @cur += (@target - @cur) * 0.22
+    # 步長跟著經過的時間走, 不是跟著「跑了幾個 frame」- 120Hz 的螢幕上跑兩倍快
+    # 是小事, 但分頁被切到背景、或是 headless 截圖時只畫得出兩三格的時候,
+    # 按 frame 算的補間會永遠停在半路, 畫面上就是一個不對的數字
+    last = null
+    step = (t) ~>
+      dt = if last? => t - last else 16
+      last := t
+      @cur += (@target - @cur) * (1 - Math.pow(1 - 0.22, dt / 16))
       if Math.abs(@target - @cur) < (Math.abs(@target) * 0.001 >? 0.05) => @cur = @target
       @n.num.textContent = num-fmt @cur
       @timer = if @cur == @target => null else requestAnimationFrame step

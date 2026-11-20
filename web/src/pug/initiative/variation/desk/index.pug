@@ -7,7 +7,7 @@ html(lang="zh-TW")
     //- 模式要在畫面出現之前就寫到 <html> 上. index.ls 是 module, 會被 defer 到
     //- DOM 之後, 等它才設屬性會先閃一下另一個模式的顏色
     script.
-      try{var m=localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
+      try{var q=new URLSearchParams(location.search).get('mode');var m=(q==='light'||q==='dark')?q:(localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));document.documentElement.dataset.mode=m}catch(e){}
     +css([{url: "/css/dash.css"}])
     style(type="text/css"): :stylus
       // 第二版: 同一份框架、同一套 crossfilter, 換一組 panel block 與一層主題.

@@ -6,19 +6,16 @@ html(lang="zh-TW")
     title 七種長相, 同一份 def / @plotdb/dash
     //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
     script.
-      try{var m=localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
+      try{var q=new URLSearchParams(location.search).get('mode');var m=(q==='light'||q==='dark')?q:(localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));document.documentElement.dataset.mode=m}catch(e){}
     style(type="text/css"): :stylus
       // 入口頁. 七個設計共用一份 def, 這一頁的工作只是把差別講清楚並連過去.
       //
-      // 縮圖是 CSS 畫的, 不是截圖 - 截圖會過期, 而且這七版的差別本來就是
-      // 版面比例與色票, 用幾個 div 就講得完.
+      // 縮圖是真的截圖 ( tool/shot.sh 產生 ), 每個設計 light / dark 各一張,
+      // 跟著這一頁的模式換 - 所以這一頁現在長什麼樣, 點進去就是什麼樣.
       //
-      // 縮圖裡的顏色也跟著模式換: 每一張縮圖用的是那個設計自己的色票,
-      // 所以這一頁現在長什麼樣, 點進去就是什麼樣
+      // 一開始是用 CSS 畫的 ( 版面比例 + 色票 ), 看得出排版但看不出風格 -
+      // 字、線的粗細、圖表本身的長相才是這一組在分的東西
       :root, :root[data-mode=dark]
-        --t0-bg: #15171a
-        --t0-cell: #1d2024
-        --t0-line: #2e3238
         --g-bg: #101317
         --g-card: #171c23
         --g-fg: #e8ecf1
@@ -30,33 +27,7 @@ html(lang="zh-TW")
         --g-accent: #8fd3c6
         --g-lede: #aab6c4
         --g-shadow: 0 24px 50px -28px rgba(0,0,0,.9)
-        // 每一張縮圖的三個色: 底、格子、重點
-        --t1-bg: #0e1319
-        --t1-cell: #1a222d
-        --t2-bg: #1c1a17
-        --t2-cell: rgba(235,225,205,.06)
-        --t2-line: rgba(235,225,205,.45)
-        --t3-bg: #0a0a09
-        --t3-cell: #1c1a19
-        --t3-a: #ffd166
-        --t3-b: #26c6a6
-        --t3-c: #ff8c61
-        --t3-d: #8ab4ff
-        --t4-bg: #0b0d12
-        --t4-cell: #171a21
-        --t4-a: #8ea2ff
-        --t5-bg: #0b0b0c
-        --t5-cell: #111214
-        --t5-line: #262a30
-        --t5-a: #ffb000
-        --t6-bg: #0c0d10
-        --t6-cell: rgba(247,248,250,.14)
-        --t6-a: #ff4d60
-        --t6-rule: #f7f8fa
       :root[data-mode=light]
-        --t0-bg: #f7f8f9
-        --t0-cell: #ffffff
-        --t0-line: #e7e8e9
         --g-bg: #f1f3f6
         --g-card: #ffffff
         --g-fg: #1b2029
@@ -68,28 +39,6 @@ html(lang="zh-TW")
         --g-accent: #0f7a6e
         --g-lede: #4b5361
         --g-shadow: 0 24px 50px -32px rgba(20,25,35,.5)
-        --t1-bg: #eef1f6
-        --t1-cell: #ffffff
-        --t2-bg: #fbfaf7
-        --t2-cell: rgba(40,34,24,.055)
-        --t2-line: rgba(40,34,24,.4)
-        --t3-bg: #c7c2b8
-        --t3-cell: #faf8f4
-        --t3-a: #c07800
-        --t3-b: #00796b
-        --t3-c: #c43c22
-        --t3-d: #2f5fc0
-        --t4-bg: #eef0f4
-        --t4-cell: #ffffff
-        --t4-a: #3b4bd8
-        --t5-bg: #eceae3
-        --t5-cell: #f8f7f3
-        --t5-line: #c9c6bd
-        --t5-a: #9a5e00
-        --t6-bg: #ffffff
-        --t6-cell: rgba(10,12,15,.10)
-        --t6-a: #d7263d
-        --t6-rule: #0a0c0f
 
       html, body
         margin: 0
@@ -105,7 +54,7 @@ html(lang="zh-TW")
 
       .g-wrap
         box-sizing: border-box
-        max-width: 1200px
+        max-width: 1320px
         margin: 0 auto
         padding: 56px 32px 80px
 
@@ -151,15 +100,14 @@ html(lang="zh-TW")
           font-size: 12.5px
           color: var(--g-accent)
 
+      // 兩欄, 不是三欄. 三欄的時候每張縮圖只有 370px 寬, 字跟線都糊掉了 -
+      // 而字跟線正是這七版在分的東西
       .g-grid
         display: grid
-        grid-template-columns: repeat(3, 1fr)
-        gap: 22px
+        grid-template-columns: repeat(2, 1fr)
+        gap: 26px
         margin-top: 42px
-      @media (max-width: 980px)
-        .g-grid
-          grid-template-columns: repeat(2, 1fr)
-      @media (max-width: 680px)
+      @media (max-width: 760px)
         .g-grid
           grid-template-columns: 1fr
 
@@ -178,91 +126,27 @@ html(lang="zh-TW")
           border-color: var(--g-line-hi)
           box-shadow: var(--g-shadow)
 
-      // ---- 縮圖. 每一張都是該設計的版面比例 + 色票, 用 grid 疊出來
+      // ---- 縮圖. 是真的截圖, 不是 CSS 畫的 ( tool/shot.sh 產生, 存在
+      // web/src/raw/assets/shot/ ). 每個設計 light / dark 各一張, 裁成四五個
+      // panel 的一塊 - 整頁縮成一格會小到看不出風格, 那正是要看的東西
       .g-shot
+        position: relative
         aspect-ratio: 16 / 10
-        padding: 10px
-        display: grid
-        grid-template-columns: repeat(12, 1fr)
-        grid-auto-rows: 1fr
-      .g-shot > i
+        overflow: hidden
+        background: var(--g-bg)
+      .g-shot img
         display: block
-        border-radius: 2px
-
-      // vanilla: 四欄、素卡片. 這是其他六版的共同起點
-      .g-shot.s0
-        gap: 6px
-        grid-template-rows: .7fr 1fr 1fr
-        background: var(--t0-bg)
-      .s0 > i
-        background: var(--t0-cell)
-        border: 1px solid var(--t0-line)
-        border-radius: 3px
-
-      // desk: 有間距、圓角卡片, 12 欄
-      .g-shot.s1
-        gap: 4px
-        grid-template-rows: .7fr 1.1fr 1fr
-        background: var(--t1-bg)
-      .s1 > i
-        background: var(--t1-cell)
-        border-radius: 3px
-      .s1 > i.k
-        border-left: 2px solid currentColor
-
-      // report: 紙、細線分隔、沒有色塊
-      .g-shot.s2
-        gap: 9px
-        grid-template-rows: .6fr 1.2fr 1.1fr
-        background: var(--t2-bg)
-      .s2 > i
-        background: var(--t2-cell)
-        border-top: 1px solid var(--t2-line)
-        border-radius: 0
-
-      // wall: 色塊拼貼、縫很窄
-      .g-shot.s3
-        gap: 2px
-        grid-template-rows: .7fr 1.2fr 1fr
-        background: var(--t3-bg)
-        padding: 4px
-      .s3 > i
-        background: var(--t3-cell)
-        border-radius: 0
-
-      // pocket: 一欄. 縮圖裡就是中間那一條
-      .g-shot.s4
-        gap: 5px
-        grid-template-rows: .5fr .5fr 1fr 1fr
-        background: var(--t4-bg)
-        padding: 8px 0
-      .s4 > i
-        background: var(--t4-cell)
-        border-radius: 6px
-
-      // terminal: 等寬、單色、1px 的框
-      .g-shot.s5
-        gap: 5px
-        grid-template-rows: .6fr 1.2fr 1fr
-        background: var(--t5-bg)
-      .s5 > i
-        background: var(--t5-cell)
-        border: 1px solid var(--t5-line)
-        border-radius: 0
-
-      // rail: 左側一欄四格, 右邊一張主圖
-      .g-shot.s6
-        gap: 7px
-        grid-template-rows: 1fr 1fr 1.1fr 1.1fr
-        background: var(--t6-bg)
-      .s6 > i
-        background: var(--t6-cell)
-        border-radius: 0
-      // rail 的格子沒有框, 只有標題上的那條粗線 - 縮圖裡就畫那條線,
-      // 底下帶一層淡掉的填色, 不然會看起來像三條浮在空中的線
-      .s6 > i.r
-        background: linear-gradient(var(--t6-cell), transparent 72%)
-        border-top: 2px solid var(--t6-rule)
+        width: 100%
+        height: 100%
+        object-fit: cover
+        object-position: left top
+      .g-shot .g-dark
+        display: none
+      :root[data-mode=dark] .g-shot
+        .g-light
+          display: none
+        .g-dark
+          display: block
 
       .g-meta
         flex: 1 1 auto
@@ -331,16 +215,9 @@ html(lang="zh-TW")
 
       .g-grid
         a.g-card(href="/initiative/variation/vanilla/")
-          .g-shot.s0
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 6")
-            i(style="grid-column:span 6")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 6")
-            i(style="grid-column:span 3")
+          .g-shot
+            img.g-light(src="/assets/shot/vanilla-light.jpg",alt="vanilla 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/vanilla-dark.jpg",alt="vanilla 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id vanilla
@@ -352,16 +229,9 @@ html(lang="zh-TW")
               li 深色模式只換了 <code>--dash-*</code> 幾個變數
             .g-go 打開 →
         a.g-card(href="/initiative/variation/desk/")
-          .g-shot.s1
-            i.k(style="grid-column:span 3;color:#7f9cf5")
-            i.k(style="grid-column:span 3;color:#5ddba4")
-            i.k(style="grid-column:span 3;color:#ffd08a")
-            i.k(style="grid-column:span 3;color:#4fc3b0")
-            i(style="grid-column:span 6")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3;grid-row:span 2")
-            i(style="grid-column:span 5")
-            i(style="grid-column:span 4")
+          .g-shot
+            img.g-light(src="/assets/shot/desk-light.jpg",alt="desk 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/desk-dark.jpg",alt="desk 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id desk
@@ -373,14 +243,9 @@ html(lang="zh-TW")
               li def 是右側滑出的抽屜, 可以直接改
             .g-go 打開 →
         a.g-card(href="/initiative/variation/report/")
-          .g-shot.s2
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 12")
-            i(style="grid-column:span 8")
-            i(style="grid-column:span 4")
+          .g-shot
+            img.g-light(src="/assets/shot/report-light.jpg",alt="report 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/report-dark.jpg",alt="report 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id report
@@ -392,16 +257,9 @@ html(lang="zh-TW")
               li def 不是抽屜, 是文件最後的附錄
             .g-go 打開 →
         a.g-card(href="/initiative/variation/wall/")
-          .g-shot.s3
-            i(style="grid-column:span 3;background:var(--t3-a)")
-            i(style="grid-column:span 3;background:var(--t3-b)")
-            i(style="grid-column:span 3;background:var(--t3-c)")
-            i(style="grid-column:span 3;background:var(--t3-d)")
-            i(style="grid-column:span 9")
-            i(style="grid-column:span 3;grid-row:span 2")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
+          .g-shot
+            img.g-light(src="/assets/shot/wall-light.jpg",alt="wall 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/wall-dark.jpg",alt="wall 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id wall
@@ -413,13 +271,9 @@ html(lang="zh-TW")
               li 沒有 def 編輯器 — 牆上的螢幕不接鍵盤
             .g-go 打開 →
         a.g-card(href="/initiative/variation/pocket/")
-          .g-shot.s4
-            i(style="grid-column:4/span 2")
-            i(style="grid-column:7/span 2")
-            i(style="grid-column:4/span 2")
-            i(style="grid-column:7/span 2")
-            i(style="grid-column:4/span 5")
-            i(style="grid-column:4/span 5")
+          .g-shot
+            img.g-light(src="/assets/shot/pocket-light.jpg",alt="pocket 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/pocket-dark.jpg",alt="pocket 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id pocket
@@ -431,16 +285,9 @@ html(lang="zh-TW")
               li def 唯讀。320px 寬不是拿來編輯的
             .g-go 打開 →
         a.g-card(href="/initiative/variation/terminal/")
-          .g-shot.s5
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 7")
-            i(style="grid-column:span 5")
-            i(style="grid-column:span 5")
-            i(style="grid-column:span 4")
-            i(style="grid-column:span 3")
+          .g-shot
+            img.g-light(src="/assets/shot/terminal-light.jpg",alt="terminal 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/terminal-dark.jpg",alt="terminal 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id terminal
@@ -452,14 +299,9 @@ html(lang="zh-TW")
               li 狀態列一行講完: 幾列資料、幾個條件
             .g-go 打開 →
         a.g-card(href="/initiative/variation/rail/")
-          .g-shot.s6
-            i(style="grid-column:span 3")
-            i.r(style="grid-column:5/span 8;grid-row:1/span 2")
-            i(style="grid-column:span 3")
-            i(style="grid-column:span 3")
-            i.r(style="grid-column:5/span 5;grid-row:3/span 2")
-            i.r(style="grid-column:11/span 2;grid-row:3/span 2")
-            i(style="grid-column:span 3")
+          .g-shot
+            img.g-light(src="/assets/shot/rail-light.jpg",alt="rail 的畫面 ( 淺色 )",loading="lazy",decoding="async")
+            img.g-dark(src="/assets/shot/rail-dark.jpg",alt="rail 的畫面 ( 深色 )",loading="lazy",decoding="async")
           .g-meta
             .g-name
               .g-id rail

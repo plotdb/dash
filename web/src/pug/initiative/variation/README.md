@@ -91,5 +91,31 @@
 前兩個在七份 README 裡都出現過，是跨主題時最容易漏的兩個。
 反過來說，**中間調的顏色兩個底色通常都活得下去** —— vanilla 那六個色就原封不動。
 
+## 入口頁的縮圖
+
+是**真的截圖**，不是 CSS 畫的：每個設計 light / dark 各一張，裁成四五個 panel
+的一塊（整頁縮成一格會小到看不出風格，而風格正是這一組在分的東西）。
+存在 `web/src/raw/assets/shot/`，用 `tool/shot.sh` 重拍：
+
+    npx server -r web -p 64500 &     # 先把 dev server 跑起來
+    ./tool/shot.sh
+    # 拍完重開 dev server: 圖在 web/src/raw/, 是開機時才複製到 web/static/ 的
+
+裁切的位置寫在 `tool/shot-crop.py`，一個設計一組 `(x, y, 寬)` 的比例 ——
+滿版的那幾個裁左上角，版心置中的 `report` 要往中間移，`pocket` 直接用手機的寬度拍。
+
+兩件跟截圖有關、但其實是頁面本身該有的事，順便補上了：
+
+ - **`?mode=light|dark`**：網址可以指定模式（不寫進 localStorage）。
+   headless chrome 沒辦法先寫 localStorage，也不方便改系統的 prefers-color-scheme；
+   順便也方便把某一個模式的連結傳給別人
+ - **`prefers-reduced-motion`**：`dash.css` 現在會把動畫與轉場關掉，
+   四個有數字補間的 KPI block 也會直接換數字。headless 一個頁面只畫得出兩三格 frame，
+   原本截到的都是跑到一半的數字（3,736 而不是 3,765）
+
+`vanilla` 的縮圖從 KPI 那一列底下開始裁，因為它的 KPI 是 `@makechart/number`，
+數字的跑動在那個 block 裡面，這邊關不掉。
+
+
 每一版各自的理由寫在自己的 `README.md`。desk 的那一份另外記了
 **三個深色底踩到的核心問題**與**順手修掉的配色 bug**，那些是這一整組的副產品。

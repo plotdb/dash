@@ -111,3 +111,12 @@
   background: var(--dash-panel-bg)
   border: 1px solid var(--dash-border)
   border-radius: var(--dash-radius)
+
+// 使用者在系統裡說了「減少動態」就不要動態. 這一條放在這裡而不是各頁面裡,
+// 是因為它跟版面一樣是每個用到這套 CSS 的頁面都該有的.
+// ( 副作用: headless 截圖也會直接拿到最終畫面, 不會截到跑到一半的補間 )
+@media (prefers-reduced-motion: reduce)
+  *, *:before, *:after
+    animation-duration: .001ms !important
+    animation-iteration-count: 1 !important
+    transition-duration: .001ms !important
