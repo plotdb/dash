@@ -33,7 +33,7 @@ amber =
   txt: \#9aa0a8                       # 圖裡的一般文字
   grid: \#22262b
   face: \#111214                      # panel 底 ( 未選的那一段往這裡退 )
-  outline: \#2e343b
+  outline: \#4d5258
   ref: \#ffb000
   brush:
     fill: \#ffb000
@@ -48,14 +48,14 @@ amber =
     'cat-ramp': colors: <[#3a2c12 #ffb000]>
     chn: colors: <[#ffd79a #c77f00 #7d5200]>
     geo: colors: <[#ffb000]>
-    'geo-ramp': colors: <[#2a2318 #ffb000]>
+    'geo-ramp': colors: <[#332917 #664b11 #996c0c #cc8e06 #ffb000]>
 
 paper =
   ink: \#767b83
   txt: \#4a4e55
   grid: \#d5d2c9
   face: \#f8f7f3
-  outline: \#b5b1a7
+  outline: \#a5a198
   ref: \#9a5e00
   brush:
     fill: \#9a5e00
@@ -69,7 +69,7 @@ paper =
     'cat-ramp': colors: <[#efe6d4 #9a5e00]>
     chn: colors: <[#ddb77e #c08a3c #7a4a00]>
     geo: colors: <[#9a5e00]>
-    'geo-ramp': colors: <[#eeebe2 #9a5e00]>
+    'geo-ramp': colors: <[#e4dac7 #d2bb95 #bf9c64 #ac7d32 #9a5e00]>
 
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
 
@@ -93,7 +93,7 @@ theme-of = (mode, p) ->
       subset: {background: c.face}
       brush: c.brush
   if p.hue => th.palette = c.hue[p.hue]
-  if p.id == \map => th.border = {color: c.outline, width: 0.7}
+  if p.id == \map => th.border = {color: c.outline, width: 1}
   if p.id == \trend => th.common.annotation = {color: c.ref}
   th
 

@@ -26,8 +26,11 @@ mgr = new block.manager do
 
 palette = colors: <[#0b7fab #6ab7d4 #f2a154 #b6c454 #9b8bbd #dd6e6e]>
 
-light = {fg: \#55585c, line: \#d8dadd, face: \#fff, geo: colors: <[#e8f2f6 #0b7fab]>, border: {color: \#c9ccd4, width: 0.8}}
-dark  = {fg: \#9aa0a8, line: \#343a41, face: \#1d2024, geo: colors: <[#2b3138 #4db6dd]>, border: {color: \#454c55, width: 0.8}}
+# geo 與 border 的大括號要寫出來. 寫成 `geo: colors: <[...]>, border: {...}` 的話,
+# 隱式物件會一路吃到行尾, border 會變成 geo 的一個 key - 於是地圖的邊線設定跑進
+# palette 底下, 圖表拿不到它, 畫面上就是「台灣沒有輪廓」
+light = {fg: \#55585c, line: \#d8dadd, face: \#fff, geo: {colors: <[#d0e5ee #9fccdd #6eb2cc #3c98bc #0b7fab]>}, border: {color: \#a5a7ae, width: 1}}
+dark  = {fg: \#9aa0a8, line: \#343a41, face: \#1d2024, geo: {colors: <[#2c353d #345565 #3c768d #4596b5 #4db6dd]>}, border: {color: \#565c64, width: 1}}
 
 theme-of = (mode, p) ->
   c = if mode == \dark => dark else light

@@ -30,7 +30,7 @@ day =
   txt: \#4a5260                       # 圖裡的一般文字
   grid: 'rgba(20,25,35,.10)'
   face: \#ffffff                      # 卡片底 ( 未選的那一段往這裡退 )
-  outline: 'rgba(20,25,35,.14)'
+  outline: 'rgba(20,25,35,.38)'
   ref: \#c2721c
   brush:
     fill: \#3b4bd8
@@ -43,14 +43,14 @@ day =
     'cat-ramp': colors: <[#3b4bd8 #8b43cf]>
     chn: colors: <[#f0b968 #c2721c #86490f]>
     geo: colors: <[#0f8f86]>
-    'geo-ramp': colors: <[#e9ecf1 #0f8f86]>
+    'geo-ramp': colors: <[#d8e5e8 #a6d0d0 #74bab7 #41a49e #0f8f86]>
 
 night =
   ink: \#7f8796
   txt: \#b9c0cc
   grid: 'rgba(255,255,255,.11)'
   face: \#171a21                      # 深色模式的卡片是亮的那一塊
-  outline: 'rgba(255,255,255,.16)'
+  outline: 'rgba(255,255,255,.27)'
   ref: \#ffc078
   brush:
     fill: \#fff
@@ -63,7 +63,7 @@ night =
     'cat-ramp': colors: <[#8ea2ff #c58bff]>
     chn: colors: <[#ffc078 #e8914a #a85c22]>
     geo: colors: <[#4fd1c5]>
-    'geo-ramp': colors: <[#242830 #4fd1c5]>
+    'geo-ramp': colors: <[#263037 #30585a #3a807e #45a9a2 #4fd1c5]>
 
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
 
@@ -88,7 +88,7 @@ theme-of = (mode, p) ->
       subset: {background: c.face}
       brush: c.brush
   if p.hue => th.palette = c.hue[p.hue]
-  if p.id == \map => th.border = {color: c.outline, width: 0.7}
+  if p.id == \map => th.border = {color: c.outline, width: 1}
   if p.id == \trend => th.common.annotation = {color: c.ref}
   th
 

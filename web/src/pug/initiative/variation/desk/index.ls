@@ -42,7 +42,7 @@ dark =
   # partial 模式下「沒被選中」的那一段, 顏色是該色的灰階往背景靠.
   # 背景預設是白色, 深色底不設這個就會冒出一塊亮灰
   face: \#18202a
-  outline: 'rgba(255,255,255,.16)'   # 地圖的縣市邊界
+  outline: 'rgba(255,255,255,.27)'   # 地圖的縣市邊界
   ref: \#ffd08a                      # 參考線
   # 刷選框. d3 的慣例是淺底白邊, 深色底上會變成一塊發亮的方塊.
   # 這本來得在頁面層寫 CSS 蓋掉圖表 block 自己的 DOM, 現在是設定
@@ -61,14 +61,14 @@ dark =
     geo: colors: <[#4fc3b0]>                              # 地區 ( 單色 )
     # 低端不能太接近卡片底色 - 沒有資料的縣市拿的就是低端色, 太暗整座島會消失,
     # 剩下幾塊亮的浮在黑底上, 看不出那是地圖
-    'geo-ramp': colors: <[#223139 #5fe0c8]>               # 地區 ( 漸層 )
+    'geo-ramp': colors: <[#24383f #336261 #428c84 #50b6a6 #5fe0c8]>               # 地區 ( 漸層 )
 
 light =
   ink: \#6c7a8c
   txt: \#3b4757
   grid: 'rgba(20,30,45,.14)'
   face: \#ffffff                      # 卡片是純白的, 未選的那一段往白色退
-  outline: 'rgba(20,30,45,.18)'
+  outline: 'rgba(20,30,45,.39)'
   ref: \#b4772a
   brush:
     fill: \#1b2a3a
@@ -82,7 +82,7 @@ light =
     chn: colors: <[#e0a53f #c0742a #8a4f17]>
     geo: colors: <[#0f8f86]>
     # 淺色底的低端是反過來的: 不能太深, 沒有資料的縣市該看起來像沒上色
-    'geo-ramp': colors: <[#eaeff4 #0c7d75]>
+    'geo-ramp': colors: <[#d6e5e9 #a4cbcc #71b1af #3e9792 #0c7d75]>
 
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
 fb-block = {ns: \local, name: \filterbar, version: \0.0.1}
@@ -107,6 +107,13 @@ theme-of = (mode, p) ->
   th =
     color: c.txt
     margin: 2
+    # 固定帶一個 xlfont 的字型.
+    #
+    # 七個設計裡只有這一版帶, 當成字型那條路的長期回歸點: 它會走 @makechart/base
+    # 的 konfig 字型元件 -> xlfont 子集載入 -> 把 xfl-* 掛到 svg 上, 所以每次重拍
+    # 縮圖就會順便驗到那一串. ( 名字必須在 xlfont 的 meta 裡, 不在的話拿到的是
+    # 一個空物件, 畫面上就是瀏覽器的預設字型, 不會報錯也不會有人發現 )
+    font: {family: {name: 'Taipei Sans TC'}}
     xaxis: axis
     # 格線只開 y 軸. x 軸在長條圖是類別軸, 一個類別一條會變雜訊 -
     # 該開哪一軸是看軸的性質, 不是看圖的種類, 所以核心預設關閉、逐軸打開.
@@ -119,7 +126,7 @@ theme-of = (mode, p) ->
       subset: {background: c.face}
       brush: c.brush
   if p.hue => th.palette = c.hue[p.hue]
-  if p.id == \map => th.border = {color: c.outline, width: 0.7}
+  if p.id == \map => th.border = {color: c.outline, width: 1}
   if p.id == \trend => th.common.annotation = {color: c.ref}
   th
 

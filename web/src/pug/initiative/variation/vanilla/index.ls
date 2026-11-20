@@ -41,17 +41,17 @@ light =
   fg: \#55585c
   line: \#d8dadd
   face: \#fff                          # 卡片底 ( 未選的那一段往這裡退 )
-  geo: colors: <[#e8f2f6 #0b7fab]>
+  geo: colors: <[#d0e5ee #9fccdd #6eb2cc #3c98bc #0b7fab]>
   # 沒資料的縣市底色接近白, 沒有邊線就整個看不見
-  border: {color: \#c9ccd4, width: 0.8}
+  border: {color: \#a5a7ae, width: 1}
 
 dark =
   fg: \#9aa0a8
   line: \#343a41
   face: \#1d2024
   # 低端換成比卡片亮一點的灰: 貼著底色的規則沒變, 只是底色變深了
-  geo: colors: <[#2b3138 #4db6dd]>
-  border: {color: \#454c55, width: 0.8}
+  geo: colors: <[#2c353d #345565 #3c768d #4596b5 #4db6dd]>
+  border: {color: \#565c64, width: 1}
 
 theme-of = (mode, p) ->
   c = if mode == \dark => dark else light

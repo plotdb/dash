@@ -34,7 +34,7 @@ night =
   txt: \#cfc7bc                      # 圖裡的一般文字
   grid: 'rgba(255,255,255,.10)'
   face: \#1c1a19                     # 磚底
-  outline: 'rgba(255,255,255,.14)'   # 地圖的縣市邊界
+  outline: 'rgba(255,255,255,.27)'   # 地圖的縣市邊界
   ref: \#ffd166                      # 參考線
   brush:
     fill: \#fff
@@ -51,14 +51,14 @@ night =
     geo: colors: <[#26c6a6]>                           # 地區 ( 單色 )
     # 低端不能太接近磚底 ( #1c1a19 ) - 沒有資料的縣市拿的就是低端色,
     # 太暗整座島會消失, 剩下幾塊亮的浮在黑底上
-    'geo-ramp': colors: <[#36403d #26c6a6]>            # 地區 ( 漸層 )
+    'geo-ramp': colors: <[#36403d #326257 #2e8372 #2aa48c #26c6a6]>            # 地區 ( 漸層 )
 
 day =
   ink: \#6e675e
   txt: \#36322c
   grid: 'rgba(0,0,0,.12)'
   face: \#faf8f4                     # 白天的磚
-  outline: 'rgba(0,0,0,.18)'
+  outline: 'rgba(0,0,0,.35)'
   ref: \#c07800
   brush:
     fill: \#000
@@ -72,7 +72,7 @@ day =
     chn: colors: <[#e0a21f #c4521f #8f2113]>
     geo: colors: <[#00796b]>
     # 白天的限制反過來: 低端不能太深, 沒有資料的縣市要像沒上色的磚
-    'geo-ramp': colors: <[#e9e6df #00796b]>
+    'geo-ramp': colors: <[#d6ddd6 #a0c4bb #6baba0 #369286 #00796b]>
 
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
 
@@ -95,7 +95,7 @@ theme-of = (mode, p) ->
       subset: {background: c.face}
       brush: c.brush
   if p.hue => th.palette = c.hue[p.hue]
-  if p.id == \map => th.border = {color: c.outline, width: 0.7}
+  if p.id == \map => th.border = {color: c.outline, width: 1}
   if p.id == \trend => th.common.annotation = {color: c.ref}
   th
 

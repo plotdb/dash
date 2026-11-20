@@ -38,7 +38,7 @@ paper =
   grid-opacity: 0.16
   # 未選的那一段往紙色退, 不是往白色退 - 預設的白在米色紙上會浮出來
   face: \#fbfaf7
-  outline: 'rgba(40,34,24,.2)'        # 地圖的縣市邊界
+  outline: 'rgba(40,34,24,.4)'        # 地圖的縣市邊界
   ref: \#a9772b                       # 參考線
   brush:
     fill: \#2f4b7c
@@ -53,7 +53,7 @@ paper =
     geo: colors: <[#2f4b7c]>                             # 地區 ( 單色 )
     # 低端貼著紙色: 沒有資料的縣市就該看起來像沒印到東西.
     # ( desk 的限制剛好相反 - 深色底上低端太暗, 整座島會消失 )
-    'geo-ramp': colors: <[#ece9e2 #2f4b7c]>              # 地區 ( 漸層 )
+    'geo-ramp': colors: <[#dfdedb #b3b9c3 #8794ac #5b7094 #2f4b7c]>              # 地區 ( 漸層 )
 
 night =
   ink: \#8b8376
@@ -63,7 +63,7 @@ night =
   grid-line: \#ebe1cd
   grid-opacity: 0.14
   face: \#1c1a17                      # 深色的紙
-  outline: 'rgba(235,225,205,.22)'
+  outline: 'rgba(235,225,205,.3)'
   ref: \#d9a94f
   brush:
     fill: \#7a9ddb
@@ -77,7 +77,7 @@ night =
     chn: colors: <[#e8c0aa #d98f6a #a65540]>
     geo: colors: <[#7a9ddb]>
     # 一樣貼著紙色, 只是這張紙是深的
-    'geo-ramp': colors: <[#252320 #7a9ddb]>
+    'geo-ramp': colors: <[#2e2f33 #414a5d #546687 #6782b1 #7a9ddb]>
 
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
 
@@ -102,7 +102,7 @@ theme-of = (mode, p) ->
       subset: {background: c.face}
       brush: c.brush
   if p.hue => th.palette = c.hue[p.hue]
-  if p.id == \map => th.border = {color: c.outline, width: 0.6}
+  if p.id == \map => th.border = {color: c.outline, width: 1}
   if p.id == \trend => th.common.annotation = {color: c.ref}
   th
 
