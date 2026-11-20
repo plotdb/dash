@@ -354,10 +354,59 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
    後面六版有 ( 這也是搬家時刻意沒動的: 它是原本那一版的行為 )
 
 
+## 給宿主用的三個介面
+
+這三項是為了把 dash 接進別的系統 ( 第一個對象是 makechart 的儀表板功能 ) 加的。
+示範頁自己也換成這些寫法 —— 不然等於留一份不會被執行到的 API。
+
+**具名運算，讓 def 能純 JSON 化。** `measures.op` 與 `groupby` 原本可以直接塞
+function，寫在程式裡的 def 這樣最短，但 def 就不能 JSON 化 —— 而「存進資料庫再讀回來
+執行」等於把儲存的內容當程式跑。所以要能儲存、傳輸、或由另一個 UI 產生的 def，
+一律用具名運算：名字存在 def 裡，實作註冊在程式裡。
+
+    dash.op \unit-price, (rows, field, m) -> ...
+    dash.key \quarter, (row, o) -> ...
+
+    measures: [{name: "單價", field: \amount, op: \unit-price}]
+    groupby: {op: \quarter, field: \date}
+
+額外參數寫在 measure / groupby 自己身上（實作拿得到整個物件），不另外包一層 ——
+measure 本來就帶著 field 了，參數再包一層只是多一個位置要記。認不出來的名字直接報錯；
+原本是 `agg[op]` 查不到就 `undefined`，要等到呼叫時才炸 `f is not a function`，
+看不出是哪個 op 拼錯。
+
+內建的有 `sum` / `count` / `avg` / `max` / `min` / `distinct` / `ratio`，加上
+`scale` / `div` / `round` 三個算完之後的常數換算。這幾個不是隨便挑的，是把示範頁裡
+原本塞 function 的兩個 KPI 拆出來的：
+
+ - `{op: \sum, field: \amount, div: 10000}` —— 元換萬元。單位換算不值得為它各寫一個 op
+ - `{op: \ratio, field: \amount, by: \qty}` —— 平均單價是 `sum(amount) / sum(qty)`，
+   **不是** `avg(單價)`。後者每一筆的權重一樣，賣一本的小單會跟賣五百本的大單一樣重
+ - `groupby: {op: \bucket, field: \amount, size: 1000}` —— 數值分組。這是「不能用欄位名
+   表達」的典型：它算的是 row 上沒有的那一欄。組是半開區間 `[v, v + size)`，
+   跟 board 的 range filter 用 `closed: left` 對得上
+
+function 的寫法沒有拿掉，寫在程式裡的 def 照樣可以用。
+
+**`board.setRows(rows)`** —— 換一批資料，def 與篩選都不動。資料源重跑（換時間範圍、
+flow 重算）之後要讓畫面跟上，但不該重建版面：`reload(def)` 是 destroy + 重建，
+而且會清掉 `filters`。
+
+刻意不清 filters：使用者篩選中資料更新把篩選彈掉，他會以為自己按錯了。篩的值在新資料裡
+不存在時結果就是空集合 —— 這是對的，篩選本來就是「要這幾項」；清掉的話畫面會從「空的」
+變成「全部」，更難發現資料換了。另外會發一個 `rows` 事件。
+
+**`panel.chart` 收內嵌定義。** 原本只能寫 `{name, version}` 去指 registry 上已發佈的
+chart block；現在也可以寫 `{code}`，整份 block 定義就在 def 裡。使用者自己寫的圖表不在
+registry 上（makechart 的自訂 code 是這種），需要這一條。code 裡的 dependency 仍然由
+同一個 manager 的 registry 解析，所以 `@makechart/base` 這些不必跟著內嵌進來。
+
+內嵌的 code **是程式，不是資料** —— 誰能把 code 放進 def，就等於誰能在這一頁執行程式。
+存別人的 def 來畫的場合（例如公開的儀表板），沙箱是宿主的責任，不是 dash 的。
+
+
 ## 要決定的事
 
- - def 要走到多純？目前 `measures.op` 與 `groupby` 允許塞 function，
-   彈性夠但就不能純 JSON 化。要不要改成註冊具名運算 ( 例如 `op: "unit-price"` )？
  - panel 與 chart 的界線：現在 panel block 認得 `chart.mod.dimension` 來自動 binding。
    這讓 def 很短，但也讓 panel 綁死在 `@plotdb/chart` 上
  - 全域 filter ( 時段、子產業 ) 要不要進 def，還是留給宿主頁面自己處理

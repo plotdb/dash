@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# 把 web/src/ls/dash.ls 編成套件的發佈檔.
+#
+#   ./build          或   npm run build
+#
+# 輸出在 repo 根目錄 ( 不是 dist/ ):
+#
+#   index.js       lsc 的輸出, 可讀, 給 debug 用
+#   index.min.js   uglify 過的, package.json 的 main / browser 指這個
+#
+# 為什麼在根目錄: fedep 預設就是把套件的根目錄複製 ( 或 link ) 到
+# web/static/assets/lib/<name>/<version>/, dist/ 是 --use-dist 的 legacy 模式.
+# 所以頁面上拿到的網址是 /assets/lib/@plotdb/dash/main/index.min.js.
+# 同系列的 @plotdb/semver、@plotdb/layout、@plotdb/block 都是這個形狀.
+# ( fedep publish 自己會另外做一個 dist/ 當發佈的暫存區, 那是另一回事 )
+#
+# 相依的 @plotdb/block、@plotdb/chart、ld$ ( @loadingio/ldquery )、Papa ( papaparse )
+# 都是全域, 刻意不打包進來 - 套用的頁面本來就會載這些, 包進來只會變成第二份.
+set -e
+cd "$(dirname "$0")"
+
+src=web/src/ls/dash.ls
+ver=$(node -e 'console.log(require("./package.json").version)')
+
+npx lsc -cp "$src" > index.js
+echo "/*! @plotdb/dash $ver | MIT */" > index.min.js
+npx uglifyjs index.js -c -m >> index.min.js
+
+printf '%-14s %8s bytes\n' index.js "$(wc -c < index.js | tr -d ' ')" index.min.js "$(wc -c < index.min.js | tr -d ' ')"

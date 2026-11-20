@@ -110,7 +110,7 @@ def =
     * id: \gross, title: "總銷售額", unit: "萬元", accent: 'var(--pk-acc-1)'
       panel: kpi-block, area: {col: [1, 1], row: [1, 1]}
       data:
-        measures: [{name: "銷售額", op: (rows) -> dash.agg.sum(rows, \amount) / 10000}]
+        measures: [{name: "銷售額", field: \amount, op: \sum, div: 10000}]
         compare: true
 
     * id: \qty, title: "總銷售冊數", unit: "冊", accent: 'var(--pk-acc-2)'
@@ -122,12 +122,9 @@ def =
     * id: \price, title: "平均單價", unit: "元 / 冊", accent: 'var(--pk-acc-3)', note: \delta
       panel: kpi-block, area: {col: [1, 1], row: [2, 1]}
       data:
-        measures: [
-          * name: "單價"
-            op: (rows) ->
-              [a, q] = [dash.agg.sum(rows, \amount), dash.agg.sum(rows, \qty)]
-              if q => a / q else 0
-        ]
+        # ratio 是 sum(amount) / sum(qty), 不是 avg(單價) - 後者每一筆的權重一樣,
+        # 賣一本的小單會跟賣五百本的大單一樣重
+        measures: [{name: "單價", field: \amount, op: \ratio, by: \qty}]
         compare: true
 
     * id: \coverage, title: "涵蓋地區", unit: "縣市", accent: 'var(--pk-acc-4)'

@@ -1,11 +1,12 @@
 {
   "name": "@plotdb/dash",
   "version": "0.0.1",
-  "description": "",
-  "browser": "dist/index.min.js",
-  "main": "dist/index.min.js",
+  "description": "dashboard utility, based on @plotdb/block",
+  "browser": "index.min.js",
+  "main": "index.min.js",
   "scripts": {
-    "start": "npx server -r web"
+    "start": "npx server -r web",
+    "build": "./build"
   },
   "keywords": [],
   "author": "",
@@ -61,10 +62,12 @@
     "ldcover": "^3.6.0",
     "ldloader": "^3.0.3",
     "ldview": "^1.7.2",
+    "livescript": "^1.6.0",
     "papaparse": "^5.3.1",
     "pdmaptw": "^2.4.0",
     "proxise": "^1.0.1",
     "topojson-client": "^3.1.0",
+    "uglify-js": "^3.19.3",
     "wrap-svg-text": "^0.0.8",
     "zmgr": "^2.2.3"
   },

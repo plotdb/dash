@@ -55,6 +55,61 @@ dash.agg = agg =
   min: (rows, f) -> rows.reduce ((a, b) -> Math.min(a, +b[f] or 0)), Infinity
   distinct: (rows, f) -> (new Set(rows.map -> it[f])).size
 
+# 具名運算的註冊表.
+#
+# op 與 groupby 本來可以直接塞 function. 寫在程式裡的 def 這樣最短, 但 def 就不能
+# 純 JSON 化 - 而「存進資料庫再讀回來執行」等於把儲存的內容當程式跑. 所以 def 要能
+# 儲存、傳輸、或由另一個 UI 產生的場合, 一律用具名運算: 名字存在 def 裡, 實作註冊
+# 在程式裡.
+#
+#   dash.op \unit-price, (rows, field, m) -> ...
+#   measures: [{name: "單價", op: \unit-price, field: \amount}]
+#
+# 額外參數寫在 measure 自己身上 ( 第三個參數拿得到整個 measure ), 不另外包一層 -
+# measure 本來就帶著 field 了, 參數再包一層只是多一個位置要記.
+dash.ops = ops = {}
+dash.op = (name, fn) -> ops[name] = fn; dash.op
+
+# 比值. 「平均單價」是 sum(amount) / sum(qty), 不是 avg(unit_price) -
+# 後者是每一筆單價的平均, 賣一本的小單會跟賣五百本的大單一樣重
+ops.ratio = (rows, field, m = {}) ->
+  d = agg.sum rows, (m.by or m.denominator)
+  if d => (agg.sum rows, field) / d else 0
+
+# 分組用的具名 key function, 跟 ops 同一個道理.
+#
+#   groupby: "region"                                   欄位名
+#   groupby: {op: \bucket, field: \amount, size: 1000}   具名運算
+dash.keys = keys = {}
+dash.key = (name, fn) -> keys[name] = fn; dash.key
+
+# 數值分組. 這是「不能用欄位名表達」的典型 - 它算的是 row 上沒有的那一欄.
+# 組是半開區間 [v, v + size), 跟 board 的 range filter 用 closed: left 對得上
+keys.bucket = (r, o = {}) ->
+  size = (+o.size) or 1
+  v = +r[o.field]
+  if !isFinite(v) => null else Math.floor(v / size) * size
+
+# op 算完之後的常數換算. 「元 -> 萬元」不值得為它各寫一個 op, 而這是最常見的需求之一.
+# scale 乘、div 除 - 兩個都留著是因為同一件事寫哪一個清楚得看情況
+# ( 萬元是 div: 10000, 百分比是 scale: 100, 反過來寫都要想一下 )
+post-op = (v, m) ->
+  if m.scale? => v *= m.scale
+  if m.div? => v /= m.div
+  if !m.round? => return v
+  if m.round == true => return Math.round v
+  p = Math.pow 10, m.round
+  (Math.round (v * p)) / p
+
+# 名字 -> 實作. 認不出來就報錯: 原本是 agg[op] 查不到就 undefined, 要等到呼叫
+# 的時候才炸 "f is not a function", 看不出是哪個 op 拼錯
+op-of = (op) ->
+  if typeof(op) == \function => return op
+  if !op => return agg.sum
+  if agg[op] => return agg[op]
+  if ops[op] => return ops[op]
+  throw new Error("[dash] unknown measure op: #op")
+
 # 回傳 {raw, meta}. meta.key 是 group 欄位名, meta.fields 是各數值欄位,
 # 兩者一起餵給 dash.binding 就能自動接上圖表的 dimension.
 dash.query = (rows = [], def = {}) ->
@@ -65,6 +120,10 @@ dash.query = (rows = [], def = {}) ->
   if def.raw => return {raw: rows, meta: {key: null, fields: [], raw: true}}
   measures = def.measures or [{name: \value, op: \count}]
   keyfn = if typeof(def.groupby) == \function => def.groupby
+  else if def.groupby and typeof(def.groupby) == \object => do ->
+    o = def.groupby
+    if !(f = keys[o.op]) => throw new Error("[dash] unknown groupby op: #{o.op}")
+    (r) -> f r, o
   else if def.groupby => (r) -> r[def.groupby]
   else -> \all
 
@@ -78,8 +137,8 @@ dash.query = (rows = [], def = {}) ->
     groups[k].push r
 
   run = (sub, m) ->
-    f = if typeof(m.op) == \function => m.op else agg[m.op or \sum]
-    f sub, m.field
+    f = op-of m.op
+    post-op (f sub, m.field, m), m
 
   # series: 把某欄位的每個值展開成獨立數值欄 ( 多線折線圖、堆疊長條圖用 )
   fields = if def.series =>
@@ -296,6 +355,18 @@ board.prototype = Object.create(Object.prototype) <<<
     @root.innerHTML = ''
     @panels = []
 
+  # 換一批資料, def 與篩選都不動. 給宿主用: 資料源重跑 ( 換時間範圍、flow 重算 )
+  # 之後要讓畫面跟上, 但不該重建版面.
+  #
+  # 刻意不清 filters: 使用者篩選中資料更新把篩選彈掉, 他會以為自己按錯了.
+  # 篩的值在新資料裡不存在時結果就是空集合 - 這是對的, 篩選本來就是「要這幾項」,
+  # 而且清掉的話畫面會從「空的」變成「全部」, 更難發現資料換了.
+  set-rows: (rows) ->
+    @rows = rows or []
+    @fire \rows, @rows
+    @render!
+    @
+
   # 換一份 def 重來. 給編輯器用: 改完 def 直接看結果.
   reload: (def) ->
     @destroy!
@@ -344,7 +415,7 @@ dash.spec = [
       * key: \title, type: "string", desc: "標題列文字"
       * key: \subtitle, type: "string", desc: "標題右側的小字, 例如操作提示"
       * key: \area, type: "{col: [起點, 跨幅], row: [起點, 跨幅]}", desc: "在 layout 格線上的位置"
-      * key: \chart, type: "{name, version}", desc: "要用哪個 @plotdb/chart block"
+      * key: \chart, type: "{name, version} | {code}", desc: "要用哪個 @plotdb/chart block. {name, version} 是 registry 上已發佈的; {code} 是內嵌定義, 給不在 registry 上的自訂圖表用 ( code 裡的 dependency 仍由 manager 的 registry 解析 )"
       * key: \data, type: "query def", desc: "資料對應. 見「資料對應」那組"
       * key: \binding, type: "chart binding", desc: "不給就自動推導. 見「資料綁定」那組"
       * key: \cfg, type: "chart config", desc: "圖的樣式, 原封不動交給 chart.config. lib 層的共用設定在 cfg.common 之下 ( 例如 common.subset.mode )"
@@ -356,19 +427,26 @@ dash.spec = [
     desc: "panel.data. 描述「從共用 rows 聚合出這張圖要的 raw」. 產出的 meta 會拿去自動推導 binding."
     sample: """
     data:
-      groupby: "region"              # 欄位名, 或 (row) -> key
+      groupby: "region"              # 欄位名, 或具名運算, 或 (row) -> key
       series: "category"             # 選用. 把該欄位的每個值展開成獨立數值欄
       measures: [
         * name: "銷售額", field: "amount", op: "sum", unit: "元"
+        # 換算: 元 -> 萬元. 不必為單位換算各寫一個 op
+        * name: "銷售額", field: "amount", op: "sum", div: 10000, unit: "萬元"
+        # 比值: sum(amount) / sum(qty). 不是 avg(單價) - 那會讓小單跟大單一樣重
+        * name: "單價", field: "amount", op: "ratio", by: "qty", unit: "元 / 冊"
       ]
       sort: {by: "銷售額", dir: "desc"}
       limit: 10
       const: {unit: "萬元"}           # 常數欄, 例如給 number 圖的單位
+
+    # 數值分組: 連續欄位要先切成組才能當分類用
+    data: {groupby: {op: "bucket", field: "amount", size: 1000}}
     """
     fields: [
-      * key: \groupby, type: "string | (row) -> key", desc: "分組依據. 不給就全部併成一組 ( number 圖用 )"
+      * key: \groupby, type: "string | {op, ...} | (row) -> key", desc: "分組依據. 不給就全部併成一組 ( number 圖用 ). 字串是欄位名; {op: 名稱} 是 dash.keys 裡的具名運算 ( 內建 bucket: 數值分組, 額外參數寫在同一個物件裡 ); function 彈性最大但 def 就不能純 JSON 化"
       * key: \series, type: "string", desc: "把該欄位的每個值展開成一欄, 給多線折線圖 / 堆疊長條圖用"
-      * key: \measures, type: "[{name, field, op, unit}]", desc: "op: sum / count / avg / max / min / distinct, 或直接給 (rows) -> value"
+      * key: \measures, type: "[{name, field, op, unit, by, scale, div, round}]", desc: "op: sum / count / avg / max / min / distinct / ratio ( sum(field) / sum(by) ), 或 dash.ops 裡的具名運算, 或直接給 (rows, field, measure) -> value ( 但 def 就不能純 JSON 化 ). scale / div / round 是算完之後的常數換算, 例如 div: 10000 把元換成萬元"
       * key: \sort, type: "{by, dir}", desc: "by 是 measure 名稱或 key; dir 是 asc / desc"
       * key: \limit, type: "number", desc: "取前幾筆"
       * key: \const, type: "object", desc: "每一列都補上的常數欄"

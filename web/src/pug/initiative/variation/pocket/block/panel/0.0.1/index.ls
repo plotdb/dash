@@ -36,7 +36,7 @@ module.exports =
     {def, board} = @
     p = if local.chart => Promise.resolve(local.chart)
     else
-      @manager.get ({version: \main} <<< def.chart)
+      @chart-class!
         .then (bc) -> bc.create {data: {delay-render: false}}
         .then (bi) -> bi.attach {root: node} .then -> bi.interface!
         .then (chart) ~>
@@ -67,6 +67,21 @@ module.exports =
         if fs[dim] or (@pushed or {})[dim] => need = true
       @pushed = fs
       if need => chart.filter fs
+
+  # def.chart 的兩種寫法:
+  #
+  #  - {name, version}  registry 上已發佈的 chart block. 平常都是這個
+  #  - {code}           內嵌定義. 使用者自己寫的圖表不在 registry 上, 整份定義就寫在
+  #                     def 裡 ( makechart 的自訂 code 是這種 ). code 裡的 dependency
+  #                     仍然由同一個 manager 的 registry 解析, 所以 @makechart/base
+  #                     這些不必跟著內嵌進來
+  #
+  # 內嵌的 code 是程式, 不是資料 - 誰能把 code 放進 def 就等於誰能在這一頁執行程式.
+  # 存別人的 def 來畫的場合 ( 例如公開的儀表板 ), 沙箱是宿主的責任, 不是這裡的
+  chart-class: ->
+    c = @def.chart or {}
+    if c.code => Promise.resolve(new block['class'] {code: c.code, manager: @manager})
+    else @manager.get ({version: \main} <<< c)
 
   # 維度 -> 資料欄位的對應.
   #

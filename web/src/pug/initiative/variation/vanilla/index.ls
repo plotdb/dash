@@ -81,7 +81,7 @@ def =
       chart: {name: "@makechart/number"}
       data:
         const: {unit: "萬元"}
-        measures: [{name: "銷售額", op: (rows) -> Math.round(dash.agg.sum(rows, \amount) / 10000)}]
+        measures: [{name: "銷售額", field: \amount, op: \sum, div: 10000, round: true}]
       binding: {value: {key: "銷售額"}, unit: {key: \unit}}
 
     * id: \qty, title: "總銷售冊數", area: {col: [2, 1], row: [1, 1]}
@@ -95,12 +95,9 @@ def =
       chart: {name: "@makechart/number"}
       data:
         const: {unit: "元 / 冊"}
-        measures: [
-          * name: "單價"
-            op: (rows) ->
-              [a, q] = [dash.agg.sum(rows, \amount), dash.agg.sum(rows, \qty)]
-              if q => Math.round(a / q) else 0
-        ]
+        # ratio 是 sum(amount) / sum(qty), 不是 avg(單價) - 後者每一筆的權重一樣,
+        # 賣一本的小單會跟賣五百本的大單一樣重
+        measures: [{name: "單價", field: \amount, op: \ratio, by: \qty, round: true}]
       binding: {value: {key: "單價"}, unit: {key: \unit}}
 
     * id: \coverage, title: "涵蓋地區", area: {col: [4, 1], row: [1, 1]}
