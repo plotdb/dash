@@ -10,10 +10,11 @@
 #   index.min.js            uglify 過的, package.json 的 main / browser 指這個
 #   index.css               dash.styl 的輸出 ( 版面與卡片的基本 CSS )
 #   index.min.css           package.json 的 style 指這個
-#   block/panel/index.html  預設的 panel block
+#   block/panel/index.html  預設的 panel block ( 另有主題各自帶的那幾份 )
+#   theme/*.json            內建主題
 #
-# 後面三個由 tool/pack.js 產生, 來源都在示範頁底下 - 它們本來就是示範頁在用的
-# 那一份, 不是另外抄一份給套件.
+# 後面那幾個由 tool/pack.js 產生, 來源都在 web/src 底下 - 它們本來就是示範頁在用
+# 的那一份, 不是另外抄一份給套件.
 #
 # 為什麼在根目錄: fedep 預設就是把套件的根目錄複製 ( 或 link ) 到
 # web/static/assets/lib/<name>/<version>/, dist/ 是 --use-dist 的 legacy 模式.

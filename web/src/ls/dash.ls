@@ -260,6 +260,118 @@ dash.fields = (rows = [], opt = {}) ->
     ret
 
 
+# ------------------------------------------------------------------ theme
+#
+# 一個「主題」= 讓同一份 def 長成另一個樣子的那一層. 它有三個部分, 少一個就只能
+# 換半套:
+#
+#  1. blocks   panel / kpi / filterbar 的外觀. 這一部分是 block ( pug + stylus ),
+#              CSS 變數搆不到 - 有沒有卡片、是 1px 的框還是 3px 的縫, 是結構的事
+#  2. vars     CSS custom property. block 不是 shadow DOM, 寫在 board.root 上就
+#              繼承得進去; 寫在 root 而不是 html, 一頁放兩個 board 才不會打架
+#  3. cfg      圖表的顏色. 它在 config 裡, 不吃 CSS, 所以要算一份併回每個 panel
+#              的 cfg 再重畫
+#
+# 這三部分的值都從同一組 token 長出來. 方向很要緊: 反過來 ( 從 CSS 變數推圖表
+# 色票 ) 走不通, 因為圖表要的有一半 CSS 沒有對應的概念 - 色階的五個階、「沒有
+# 資料」的顏色、未選的那一段往哪個底色退. token 當唯一來源, 使用者改一個主色
+# 才會同時走到卡片邊框與圖表配色.
+#
+# 參照語法只有一條規則: 字串剛好是 "$name" 就換成 tokens[name], 其他一律照字面.
+# 不做運算也不做巢狀表達式 - 一加運算就會變成一個要自己寫文件、要自己除錯的
+# 小語言, 而主題要能被另一個 UI 產生, 它得是純資料.
+
+dash.themes = themes = [
+  {name: \vanilla, title: "素版",   path: 'theme/vanilla.json'}
+  {name: \desk,    title: "分析台", path: 'theme/desk.json'}
+]
+
+# 深拷貝式合併: 兩邊都複製一份, 免得多張圖共用同一個巢狀物件
+# ( 圖表會把 config 併進自己的設定, 共用的話一張圖改到另一張 )
+dash.deep = deep = (a = {}, b = {}) ->
+  clone = (v) ->
+    if Array.isArray v => v.slice!
+    else if v and typeof(v) == \object => deep v
+    else v
+  ret = {}
+  for k, v of a => ret[k] = clone v
+  for k, v of b =>
+    ret[k] = if v and typeof(v) == \object and !Array.isArray(v) => deep (ret[k] or {}), v
+    else clone v
+  ret
+
+# 把 "$name" 換成 token 的值. 順便做掉深拷貝 - 這份東西等一下會併進好幾個
+# panel 的 cfg, 共用同一個巢狀物件的話一張圖改到另一張.
+#
+# 換進來的值不再往下解一次: token 指到 token 要嘛是寫錯, 要嘛是無窮迴圈,
+# 兩種都不值得支援
+sub = (o, tok = {}) ->
+  if Array.isArray o => return [sub v, tok for v in o]
+  if o and typeof(o) == \object =>
+    ret = {}
+    for k, v of o => ret[k] = sub v, tok
+    return ret
+  if typeof(o) == \string and /^\$[A-Za-z0-9_-]+$/.exec(o) =>
+    k = o.substring 1
+    return (if tok[k]? => sub tok[k], {} else o)
+  o
+
+# auto 就問系統. 問不到 ( 例如 SSR ) 當淺色: 錯的那一半至少還讀得到
+dash.mode = mode-of = (m) ->
+  if m == \light or m == \dark => return m
+  try
+    if window.match-media and window.match-media('(prefers-color-scheme: dark)').matches => \dark else \light
+  catch e
+    \light
+
+theme-cache = {}
+
+# 內建主題的本體. 路徑是套件裡的相對位置, base 預設指向 fedep 放東西的地方 -
+# 宿主換了位置就給 base, 不必為主題多設一套 registry
+fetch-theme = (name, base) ->
+  b = [x for x in themes when x.name == name].0
+  if !b => return Promise.reject new Error("[dash] unknown theme: #name")
+  url = "#{base or '/assets/lib/@plotdb/dash/main/'}#{b.path}"
+  theme-cache[url] or= ld$.fetch url, {method: \GET}, {type: \json} .then (o) -> {} <<< o <<< {name: name}
+  theme-cache[url].then (o) -> o
+
+# 把「使用者寫的那一份」( def.theme ) 解析成「可以直接用的那一份」.
+#
+# 前者是設定 ( 主題名字、模式、要覆寫的幾個 token ), 後者是解析後的結果
+# ( 這個模式下的 token、CSS 變數、每一種選擇器的 cfg ). 兩份都留著:
+# spec 要寫回 def, 解析後的那份才是 board 用的
+resolve-theme = (b = {}, t = {}) ->
+  mode = mode-of t.mode
+  tk = b.tokens or {}
+  # common 是兩個模式共用的那幾個 ( 例如圓角、字型 ), 不必各寫一次
+  tok = deep (deep (tk.common or {}), (tk[mode] or {})), (t.tokens or {})
+  r = (o) -> sub (o or {}), tok
+  {
+    name: b.name or null
+    title: b.title or null
+    mode: mode
+    spec: t
+    tokens: tok
+    vars: r b.vars
+    layout: r b.layout
+    blocks: b.blocks or {}
+    cfg: r b.cfg
+    hue: r b.hue
+    chart: r b.chart
+    role: r b.role
+    # 使用者額外的那一層: 比主題晚, 比 panel 自己的 cfg 早
+    user-cfg: deep {}, (t.cfg or {})
+    schema: b.schema or []
+  }
+
+# t 可以是內建主題的名字、一個 {name, mode, tokens, cfg} 設定, 或一份自己寫的
+# 完整主題 ( 沒有 name 就不去抓內建的 )
+dash.theme = (t, opt = {}) ->
+  t = if typeof(t) == \string => {name: t} else (t or {})
+  base = if !t.name => Promise.resolve({}) else fetch-theme t.name, opt.base
+  base.then (b) -> resolve-theme b, t
+
+
 # ------------------------------------------------------------------- board
 #
 # board 負責版面與 panel 的生命週期, 以及 crossfilter 的協調.
@@ -270,6 +382,9 @@ board = dash.board = (opt = {}) ->
   @mgr = opt.manager
   @def = opt.def or {}
   @panel-block = opt.panel or {name: \panel, version: \0.0.1}
+  # 內建主題的位置. 預設是 fedep 放東西的地方, 宿主換了位置才要給
+  @theme-base = opt.theme-base or null
+  @theme = null
   @panels = (@def.panels or []).map (d, i) -> {} <<< d <<< {id: d.id or "panel-#i"}
   @rows = []
   @filters = {}   # panel id -> {field, values}
@@ -284,6 +399,10 @@ board.prototype = Object.create(Object.prototype) <<<
 
   init: ->
     Promise.resolve!
+      # 主題要在 layout 之前: 它可能補上 def.layout 沒寫的鍵, 也可能換掉
+      # panel block. 這時候還沒有 @leaf, set-theme 看得出來, 只把 cfg 與
+      # CSS 變數準備好就回來
+      .then ~> if @def.theme => @set-theme @def.theme
       .then ~> dash.driver(@def.data).load!
       .then (rows) ~>
         @rows = rows or []
@@ -298,7 +417,7 @@ board.prototype = Object.create(Object.prototype) <<<
   # 外觀與呈現方式由 block 決定 ( 例如 KPI 用不掛圖表的卡片 ). 沒指定就用 board
   # 的預設; 同一個 block 只取一次 ( cache 掛在 board 上, 之後 add-panel 也用得到 ).
   _mount: (p) ->
-    b = p.panel or @panel-block
+    b = @_block-of p
     k = JSON.stringify b
     @_bc or= {}
     (@_bc[k] or= @mgr.get b).then (bc) ~>
@@ -322,6 +441,7 @@ board.prototype = Object.create(Object.prototype) <<<
     if [x for x in @panels when x.id == id].0 => return Promise.reject new Error("[dash] duplicated panel id: #id")
     p = {} <<< d <<< {id}
     @panels.push p
+    if @theme => @_retheme!
     @_mount p
       .then ~> @fire \panel, {type: \add, id, panel: p}
       .then -> p
@@ -357,10 +477,14 @@ board.prototype = Object.create(Object.prototype) <<<
     p = [x for x in @panels when x.id == id].0
     if !p => return Promise.reject new Error("[dash] no such panel: #id")
     swap = patch.chart? and JSON.stringify(patch.chart) != JSON.stringify(p.chart)
-    # 主題層把 theme 併在 p._cfg 之上 ( 見示範頁的 mode.ls ), 所以改 cfg 要連
-    # _cfg 一起改 - 只改 cfg 的話, 下次重算主題會把舊的那份又翻出來
-    if patch.cfg? and p._cfg? => p._cfg = patch.cfg
     p <<< patch
+    # 主題併在 p._cfg 之上, 所以編輯器改的是 _cfg ( 「這張圖自己的設定」),
+    # 不是合併後的結果. 只改 cfg 的話, 下次重算主題會把舊的那份又翻出來;
+    # 反過來把合併後的結果存成 _cfg, 等於把這個主題的顏色焊死在這張圖上.
+    # ( 要在 p <<< patch 之後算: 選擇器看的 hue / chart / role 可能也在 patch 裡 )
+    if patch.cfg? =>
+      p._cfg = patch.cfg
+      if @theme => p.cfg = deep (@_theme-cfg p), p._cfg
     next = if !swap => Promise.resolve p
     else
       if p.itf and p.itf.destroy => p.itf.destroy!
@@ -704,9 +828,131 @@ board.prototype = Object.create(Object.prototype) <<<
     dash.compare {base: (@_apply @globals!), subset: sub, def: d}
 
 
+  # ---------------------------------------------------------- 主題
+  #
+  # set-theme 跟 reload 的差別就是「篩選會不會消失」: 換個長相不該讓使用者
+  # 正在看的篩選彈掉. 所以它只做四件事 - 寫 CSS 變數、重算每張圖的 cfg、
+  # 需要時換掉 panel block、重畫.
+
+  set-theme: (t) ->
+    dash.theme t, {base: @theme-base} .then (th) ~>
+      old = @theme
+      @theme = th
+      # 存回 def: dump 出去就帶著主題, 讀回來長得一樣
+      @def.theme = th.spec
+      @_theme-vars old
+      @_theme-mq!
+      @_theme-layout!
+      @_retheme!
+      # 還沒 init: cfg 與變數準備好就夠了, 沒有東西可以重畫
+      if !@leaf => return @
+      @layout!
+      # 換主題可能連 block 都換了 - 有沒有卡片、是 1px 的框還是 3px 的縫,
+      # 是結構的事, 不是顏色的事
+      moved = [p for p in @panels when @_block-key(p, th) != @_block-key(p, old)]
+      if !moved.length => (@render!; return @)
+      Promise.all [@_remount p for p in moved] .then ~> @render!; @
+
+  set-mode: (m) -> @set-theme ({} <<< (@def.theme or {}) <<< {mode: m})
+
+  # 找 block 的順序: panel 自己指定的 -> 主題給這個角色的 -> 主題的預設 ->
+  # board 的預設.
+  #
+  # 中間那一段退回主題的預設很要緊: 不是每個主題都有每一種角色的 block
+  # ( 例如 vanilla 沒有自己的 kpi block ), 退回 board 的預設會變成一張畫不出來
+  # 的空卡片 - 退回主題的 panel block, 它至少會把 def 裡那張圖畫出來
+  _block-of: (p, th = @theme) ->
+    bs = (th or {}).blocks or {}
+    p.panel or (if p.role => bs[p.role]) or bs.panel or @panel-block
+
+  _block-key: (p, th) -> JSON.stringify @_block-of(p, th)
+
+  _remount: (p) ->
+    if p.itf and p.itf.destroy => p.itf.destroy!
+    p.itf = null
+    if (n = @leaf[p.id]) => n.innerHTML = ''
+    @_mount p
+
+  # 變數寫在 board.root 上, 不是 html: 一頁放兩個 board 才不會打架.
+  # block 不是 shadow DOM, custom property 照樣繼承得進去, 所以 panel 與 KPI
+  # 的外觀不必接任何 JS.
+  #
+  # 上一個主題有、這一個沒有的要拿掉 - 不拿掉的話, 從一個變數多的主題換到
+  # 變數少的, 舊的那幾個會留在 style 屬性上繼續起作用
+  _theme-vars: (old) ->
+    if !@root => return
+    vars = @theme.vars or {}
+    for k of ((old or {}).vars or {}) => if !vars[k]? => @root.style.remove-property k
+    for k, v of vars => @root.style.set-property k, "#v"
+    # 頁面層的 CSS 可能還想自己分支 ( 例如 board 以外的地方 ), 給它一個鉤子
+    @root.dataset.mode = @theme.mode
+
+  # mode 沒寫死成 light / dark 就是跟著系統走, 而且要持續跟 - 系統在白天與
+  # 夜晚之間切換時畫面要換, 不是只在開頁面時讀一次.
+  #
+  # 「要不要記住使用者的選擇、記在哪」是宿主的政策 ( localStorage 的 key、
+  # 網址參數 ), 套件不碰
+  _theme-mq: ->
+    auto = ((@theme.spec or {}).mode or \auto) not in <[light dark]>
+    if @_mq and !auto =>
+      @_mq.mq.remove-event-listener \change, @_mq.cb
+      @_mq = null
+    if !auto or @_mq => return
+    try
+      mq = window.match-media '(prefers-color-scheme: dark)'
+    catch e
+      return
+    cb = ~> @set-theme (@def.theme or {})
+    mq.add-event-listener \change, cb
+    @_mq = {mq: mq, cb: cb}
+
+  # 主題的版面只是建議值: def.theme.layout 給 true 才套, 而且只補 def.layout
+  # 沒寫的鍵 - 版面是 def 的事, 換個長相不該把人家排好的格子洗掉.
+  #
+  # split 只認 gap: 它的位置在一棵樹上 ( layout.root ), col / row 塞進去不會
+  # 有任何作用, 只會讓存回去的 def 多兩個看不懂的鍵
+  _theme-layout: ->
+    if !(@theme.spec or {}).layout => return
+    l = @def.layout or (@def.layout = {})
+    src = @theme.layout or {}
+    ks = if l.type == \split => <[gap]> else Object.keys(src)
+    for k in ks => if src[k]? and !l[k]? => l[k] = src[k]
+
+  # 每次都從 panel 原始的 cfg 重算.
+  #
+  # 拿已經套過主題的那一份再套一次新主題的話, 上一個主題的值會留在新主題沒
+  # 覆蓋到的 key 上 - 例如只有深色底才需要設的 brush, 切到淺色底會留著一塊
+  # 發亮的方塊. 所以原始的那一份收在 p._cfg, 每次都從它開始
+  _retheme: ->
+    for p in @panels
+      if !p.chart => continue
+      if !p._cfg? => p._cfg = p.cfg or {}
+      p.cfg = deep (@_theme-cfg p), p._cfg
+
+  # 合併順序: 主題的共通層 -> hue -> 圖種 -> role -> 使用者額外的 -> panel 自己的.
+  #
+  # 三個選擇器對應三種「逐 panel 不同、但值跟著主題走」的設定:
+  #
+  #  - hue    這張圖畫的是哪個維度 ( 書系 / 通路 / 地區 ). def 只說維度,
+  #           哪個維度在這個主題下是什麼顏色是主題的事
+  #  - chart  依圖種. 地圖的邊界、色階這些只有地圖有
+  #  - role   其餘的逐 panel 差異 ( 例如有參考線的那張圖, 線要什麼顏色 )
+  #
+  # panel 自己的 cfg 放在最後: 使用者調過的那一張圖, 換主題不該把他的調整洗掉
+  _theme-cfg: (p) ->
+    th = @theme
+    if !th => return {}
+    c = deep {}, (th.cfg or {})
+    if p.hue and (th.hue or {})[p.hue] => c = deep c, th.hue[p.hue]
+    if (n = (p.chart or {}).name) and (th.chart or {})[n] => c = deep c, th.chart[n]
+    if p.role and (th.role or {})[p.role] => c = deep c, th.role[p.role]
+    deep c, (th.user-cfg or {})
+
+
   render: -> @panels.map (p) -> if p.itf => p.itf.render!
 
   destroy: ->
+    if @_mq => @_mq.mq.remove-event-listener \change, @_mq.cb; @_mq = null
     @panels.map (p) -> if p.itf and p.itf.destroy => p.itf.destroy!
     @root.innerHTML = ''
     @panels = []
@@ -751,6 +997,18 @@ dash.spec = [
       * key: \url, type: "string", desc: "json / csv driver 的資料位置"
       * key: \rows, type: "array", desc: "inline driver 的資料本體"
       * key: \parse, type: "(raw) -> rows", desc: "原始結構不是 rows 時的轉換, 例如 {head, body} 展開成物件陣列"
+    ]
+
+  * key: \theme
+    title: "主題"
+    path: <[theme]>
+    desc: "讓同一份 def 長成另一個樣子的那一層: panel block 的外觀、CSS 變數、圖表的顏色. 三者的值都從同一組 token 長出來, 所以改一個主色會同時走到卡片邊框與圖表配色. 換主題不清篩選 ( board.setTheme )."
+    fields: [
+      * key: \name, type: "string", desc: "內建主題的名字 ( dash.themes 列出有哪些 ). 不給就是自己寫一份完整的主題"
+      * key: \mode, type: "light | dark | auto", desc: "auto ( 預設 ) 跟著系統走, 而且系統換的時候畫面會跟著換. 要不要記住使用者的選擇是宿主的事"
+      * key: \tokens, type: "{key: value}", desc: "覆寫主題的 token. 使用者自訂主要走這裡 - 主題的 schema 說它開放哪幾個、各是什麼型別"
+      * key: \cfg, type: "object", desc: "額外併進每張圖的設定. 比主題晚, 比 panel 自己的 cfg 早"
+      * key: \layout, type: "boolean", desc: "要不要吃主題建議的版面. 預設 false; 給 true 也只補 def.layout 沒寫的鍵, split 版面只認 gap"
     ]
 
   * key: \layout

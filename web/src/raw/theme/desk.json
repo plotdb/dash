@@ -1,0 +1,215 @@
+{
+  "name": "desk",
+  "title": "分析台",
+  "desc": "坐在螢幕前面、正在找原因的人。密集、滿版不捲動；介面狀態只用亮度不用色相，色相全部留給資料。",
+
+  "blocks": {
+    "panel":     {"name": "@plotdb/dash", "path": "block/panel/desk/index.html"},
+    "kpi":       {"name": "@plotdb/dash", "path": "block/kpi/desk/index.html"},
+    "filterbar": {"name": "@plotdb/dash", "path": "block/filterbar/desk/index.html"}
+  },
+
+  "layout": {
+    "col": ["1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr"],
+    "row": ["3.1em", "6.4em", "1.15fr", "1fr"],
+    "gap": "14px"
+  },
+
+  "tokens": {
+    "common": {
+      "radius": "12px",
+      "gap": "14px",
+      "font": "Taipei Sans TC"
+    },
+    "dark": {
+      "bg": "#0e1319",
+      "glow-a": "rgba(127,156,245,.10)",
+      "glow-b": "rgba(79,195,176,.09)",
+      "fg": "#e7eef6",
+      "fg-dim": "#7f8d9d",
+      "fg-strong": "#f4f8fc",
+      "eyebrow": "#566477",
+      "panel-a": "#1a222d",
+      "panel-b": "#151c25",
+      "line": "rgba(255,255,255,.10)",
+      "line-hi": "rgba(255,255,255,.22)",
+      "soft": "rgba(255,255,255,.05)",
+      "soft-hi": "rgba(255,255,255,.10)",
+      "shadow": "0 1px 2px rgba(0,0,0,.35), 0 14px 34px -20px rgba(0,0,0,.9)",
+      "num": "#f3f7fb",
+      "up": "#5ddba4",
+      "down": "#f0a3b4",
+      "mask": "rgba(5,8,12,.62)",
+      "win": "#121a23",
+      "win-shadow": "-24px 0 70px rgba(0,0,0,.6)",
+      "code": "#8fd3c6",
+      "code-bg": "#0d141b",
+
+      "ink": "#8b98a8",
+      "txt": "#c3ced4",
+      "grid": "rgba(255,255,255,.13)",
+      "face": "#18202a",
+      "outline": "rgba(255,255,255,.27)",
+      "ref": "#ffd08a",
+      "brush": {
+        "fill": "#fff",
+        "fillOpacity": 0.06,
+        "stroke": "rgba(255,255,255,.28)",
+        "strokeWidth": 1,
+        "handleFill": "rgba(255,255,255,.22)"
+      },
+      "cat": ["#7f9cf5", "#5ddba4", "#f0a3b4", "#c08ef0"],
+      "cat-ramp": ["#7f9cf5", "#c08ef0"],
+      "chn": ["#ffd08a", "#f0a04b", "#b4702a"],
+      "geo": ["#4fc3b0"],
+      "geo-ramp": ["#24383f", "#336261", "#428c84", "#50b6a6", "#5fe0c8"],
+      "empty": "#1f2a30",
+      "acc-1": "#7f9cf5",
+      "acc-2": "#5ddba4",
+      "acc-3": "#ffd08a",
+      "acc-4": "#4fc3b0"
+    },
+    "light": {
+      "bg": "#eef1f6",
+      "glow-a": "rgba(63,95,214,.07)",
+      "glow-b": "rgba(15,143,134,.06)",
+      "fg": "#253142",
+      "fg-dim": "#6c7a8c",
+      "fg-strong": "#121a24",
+      "eyebrow": "#94a0b2",
+      "panel-a": "#ffffff",
+      "panel-b": "#fbfcfe",
+      "line": "rgba(20,30,45,.13)",
+      "line-hi": "rgba(20,30,45,.30)",
+      "soft": "rgba(20,30,45,.05)",
+      "soft-hi": "rgba(20,30,45,.11)",
+      "shadow": "0 1px 2px rgba(20,30,45,.07), 0 14px 30px -22px rgba(20,30,45,.45)",
+      "num": "#101822",
+      "up": "#0f8f6b",
+      "down": "#c94f74",
+      "mask": "rgba(30,40,55,.40)",
+      "win": "#ffffff",
+      "win-shadow": "-24px 0 70px rgba(20,30,45,.25)",
+      "code": "#0f7a6e",
+      "code-bg": "#f4f6f9",
+
+      "ink": "#6c7a8c",
+      "txt": "#3b4757",
+      "grid": "rgba(20,30,45,.14)",
+      "face": "#ffffff",
+      "outline": "rgba(20,30,45,.39)",
+      "ref": "#b4772a",
+      "brush": {
+        "fill": "#1b2a3a",
+        "fillOpacity": 0.07,
+        "stroke": "rgba(20,30,45,.32)",
+        "strokeWidth": 1,
+        "handleFill": "rgba(20,30,45,.26)"
+      },
+      "cat": ["#3f5fd6", "#0f9d79", "#d0608a", "#8a4fd1"],
+      "cat-ramp": ["#3f5fd6", "#8a4fd1"],
+      "chn": ["#e0a53f", "#c0742a", "#8a4f17"],
+      "geo": ["#0f8f86"],
+      "geo-ramp": ["#d6e5e9", "#a4cbcc", "#71b1af", "#3e9792", "#0c7d75"],
+      "empty": "#e3e8ea",
+      "acc-1": "#3f5fd6",
+      "acc-2": "#0f9d79",
+      "acc-3": "#c0742a",
+      "acc-4": "#0f8f86"
+    }
+  },
+
+  "vars": {
+    "--dk-bg": "$bg",
+    "--dk-glow-a": "$glow-a",
+    "--dk-glow-b": "$glow-b",
+    "--dk-fg": "$fg",
+    "--dk-fg-dim": "$fg-dim",
+    "--dk-fg-strong": "$fg-strong",
+    "--dk-eyebrow": "$eyebrow",
+    "--dk-panel-a": "$panel-a",
+    "--dk-panel-b": "$panel-b",
+    "--dk-line": "$line",
+    "--dk-line-hi": "$line-hi",
+    "--dk-soft": "$soft",
+    "--dk-soft-hi": "$soft-hi",
+    "--dk-shadow": "$shadow",
+    "--dk-num": "$num",
+    "--dk-up": "$up",
+    "--dk-down": "$down",
+    "--dk-mask": "$mask",
+    "--dk-win": "$win",
+    "--dk-win-shadow": "$win-shadow",
+    "--dk-code": "$code",
+    "--dk-code-bg": "$code-bg",
+    "--dk-radius": "$radius",
+    "--dk-acc-1": "$acc-1",
+    "--dk-acc-2": "$acc-2",
+    "--dk-acc-3": "$acc-3",
+    "--dk-acc-4": "$acc-4",
+    "--dash-gap": "$gap"
+  },
+
+  "cfg": {
+    "color": "$txt",
+    "margin": 2,
+    "font": {"family": {"name": "$font"}},
+    "xaxis": {
+      "caption": {"show": false},
+      "label": {"format": ".2~s", "color": "$ink", "font": {"size": ".78em"}},
+      "tick": {"color": "$grid", "inner": 4},
+      "baseline": {"color": "$grid"}
+    },
+    "yaxis": {
+      "caption": {"show": false},
+      "label": {"format": ".2~s", "color": "$ink", "font": {"size": ".78em"}},
+      "tick": {"color": "$grid", "inner": 0},
+      "baseline": {"show": false},
+      "grid": {"show": true}
+    },
+    "common": {"subset": {"background": "$face"}, "brush": "$brush"}
+  },
+
+  "hue": {
+    "cat":      {"palette": {"colors": "$cat"}},
+    "cat-ramp": {"palette": {"colors": "$cat-ramp"}},
+    "chn":      {"palette": {"colors": "$chn"}},
+    "geo":      {"palette": {"colors": "$geo"}},
+    "geo-ramp": {"palette": {"colors": "$geo-ramp"}}
+  },
+
+  "chart": {
+    "@makechart/taiwan-map": {"border": {"color": "$outline", "width": 1}},
+    "@makechart/twmapadv": {
+      "border": {"color": "$outline", "width": 0.6},
+      "heat": {"sequential": {"colors": "$geo-ramp"}, "empty": "$empty"},
+      "label": {"color": "$ink", "halo": "$face"},
+      "village": {"mode": "none"}
+    }
+  },
+
+  "role": {
+    "ref": {"common": {"annotation": {"color": "$ref"}}}
+  },
+
+  "schema": [
+    {"key": "acc-1",    "type": "color",  "label": "強調色 1", "desc": "KPI 的四道色條，def 裡寫 var(--dk-acc-N) 而不是色碼"},
+    {"key": "acc-2",    "type": "color",  "label": "強調色 2"},
+    {"key": "acc-3",    "type": "color",  "label": "強調色 3"},
+    {"key": "acc-4",    "type": "color",  "label": "強調色 4"},
+    {"key": "cat",      "type": "colors", "label": "類別色票",   "desc": "並列的類別（書系）用這一組，四個色相"},
+    {"key": "cat-ramp", "type": "colors", "label": "類別漸層",   "desc": "依占比上色的圖用；同一個色族，但不假裝每一條都對得上"},
+    {"key": "chn",      "type": "colors", "label": "次維度色票", "desc": "另一個維度（通路），不跟類別搶色相"},
+    {"key": "geo",      "type": "colors", "label": "地區單色"},
+    {"key": "geo-ramp", "type": "colors", "label": "地圖色階",   "desc": "由淺到深。低端不能太接近卡片底色，不然整座島會消失"},
+    {"key": "empty",    "type": "color",  "label": "沒有資料",   "desc": "刻意跟資料色分開：沒有資料跟「數值最低」是兩件事"},
+    {"key": "bg",       "type": "color",  "label": "頁面底色"},
+    {"key": "panel-a",  "type": "color",  "label": "卡片底色"},
+    {"key": "line",     "type": "color",  "label": "卡片邊線"},
+    {"key": "fg",       "type": "color",  "label": "文字"},
+    {"key": "fg-dim",   "type": "color",  "label": "次要文字"},
+    {"key": "radius",   "type": "length", "label": "圓角"},
+    {"key": "gap",      "type": "length", "label": "格子間距"},
+    {"key": "font",     "type": "font",   "label": "字型",       "desc": "xlfont 的字型名。不在 xlfont 的 meta 裡的話拿到的是瀏覽器預設字型，不會報錯"}
+  ]
+}
