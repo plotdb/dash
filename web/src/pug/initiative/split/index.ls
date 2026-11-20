@@ -267,6 +267,26 @@ bd.on \panel, ->
   node \out .textContent = dash.dump bd.def.layout.root
   paint!
 
+# 篩選面板要開放哪些欄位、怎麼稱呼, 也是 update-panel 改的.
+#
+# filterbar 每次 render 都會比對這幾個值, 改了就重建控制項 - 並且把不再開放的
+# 那些欄位發出的篩選一起清掉 ( 不清的話, 那個篩選還在起作用, 但畫面上沒有任何
+# 地方看得到它, 使用者也就取消不了 )
+cols =
+  * only: <[month region category channel]>
+    labels: {month: "月份", region: "地區", category: "書系", channel: "通路"}
+  * only: <[month region]>
+    labels: {month: "月份", region: "縣市"}
+few = false
+
+node \cols .addEventListener \click, ->
+  few := !few
+  bd.update-panel \header, cols[if few => 1 else 0]
+  node \cols .textContent = "篩選欄位: #{cols[if few => 1 else 0].only.length} 欄"
+  node \msg .textContent = if few =>
+    "只開放月份與地區 · 收起來的那幾欄, 它們發出的篩選也一起清掉了"
+  else "四個欄位都開放 · 地區的顯示名稱也換回來了"
+
 node \mode .addEventListener \click, -> dmode.toggle!
 dmode.on -> node \mode .textContent = "#{dmode.icon!} #{dmode.label!}"
 

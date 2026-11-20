@@ -29,7 +29,6 @@ module.exports =
     @def = data.def
     @board = board = data.board
     @id = @def.id or \header
-    @labels = @def.labels or {}
     @bar = root.querySelector '[ld=fb]'
     @pfx = @bar.dataset.pfx or \dash
     @items = root.querySelector '[ld=items]'
@@ -51,11 +50,28 @@ module.exports =
   k: (n) -> "#{@pfx}-fb-#n"
 
   refresh: ->
+    @sig = @_sig!
+    @labels = @def.labels or {}
     fs = dash.fields @board.rows, {skip: (@def.skip or [])}
     # def 可以指定要哪幾欄、照什麼順序 - 一份資料的欄位不一定都值得篩
     @fields = if !@def.only => fs
     else @def.only.map((k) -> [f for f in fs when f.key == k].0).filter -> it
     @build!
+    @drop-stale!
+
+  # 欄位的設定 ( 哪幾欄、怎麼稱呼 ) 的指紋. 比字串是因為 labels 是物件,
+  # 而這三個值都小, 每次 render 比一次不划算的問題不存在
+  _sig: -> JSON.stringify [(@def.only or null), (@def.skip or null), (@def.labels or null)]
+
+  # 不再開放的欄位, 它原本發出的篩選要一起清掉.
+  #
+  # 不清的話那個篩選還在起作用, 但畫面上沒有任何地方看得到它 - 使用者會看到一份
+  # 篩過的資料, 卻找不到是哪裡篩的, 也取消不了. ( 清的時機要在 @sig 更新之後:
+  # set-filter 會觸發 render, 那時候指紋已經對上了, 不會再重建一次 )
+  drop-stale: ->
+    live = {}
+    for f in @fields => live[f.key] = true
+    for f in @board.filters-of(@id) => if !live[f.dim] => @board.set-filter @id, null, f.dim
 
   build: ->
     @items.innerHTML = ''
@@ -217,5 +233,10 @@ module.exports =
     c.val.textContent = if !cur => '全部' else "#{fmt lo} – #{fmt hi}"
     if cur => 1 else 0
 
-  render: -> @sync!
+  # def 會被 board.update-panel 改掉 ( 編輯器調整「開放哪些欄位、怎麼稱呼」),
+  # 而 panel block 拿到的 def 跟 board 那邊是同一個物件 - 所以不必有人通知,
+  # 每次 render 比對一下指紋就知道要不要重建控制項
+  render: ->
+    if @_sig! != @sig => @refresh! else @sync!
+
   interface: -> @

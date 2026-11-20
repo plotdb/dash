@@ -472,6 +472,14 @@ registry 上（makechart 的自訂 code 是這種），需要這一條。code �
 只用 `dash.css` 的 `--dash-*`，所以它也是**套件發出去的那一份**
 （`block/filterbar/index.html`）：宿主載了 `index.css` 就會長對，不必再給一組變數。
 
+`only` / `skip` / `labels` 是**活的**：編輯器用 `board.updatePanel` 改了它們，
+filterbar 每次 render 都會比對一次指紋，變了就重建控制項 —— 不必有人通知它，
+因為 panel block 拿到的 def 跟 board 那邊是同一個物件。
+
+連帶一條：**不再開放的欄位，它發出的篩選要一起清掉**。不清的話那個篩選還在起作用，
+但畫面上沒有任何地方看得到它，使用者會看到一份篩過的資料卻找不到是哪裡篩的，
+也就取消不了。
+
 兩件做下去才知道的事：
 
  - **格線要給它絕對高度**（`row: <[2.6em 6.5em 1fr 1fr]>`）。給 `fr` 的話它會跟圖表
