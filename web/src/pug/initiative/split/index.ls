@@ -165,7 +165,10 @@ def =
       binding:
         town: {key: \key}
         value: {key: "銷售額", name: "銷售額", unit: "元"}
-      cfg: {legend: {enabled: true}}
+      # village.mode 預設是 click: 點一個縣市會展開成它底下的鄉鎮. 這一頁只有
+      # 縣市資料, 展開之後每一個鄉鎮都是「沒有資料」- 使用者點下去, 看到的是
+      # 自己剛剛選的那一塊變成一片空白. 所以關掉, 點選就只是發篩選
+      cfg: {legend: {enabled: true}, village: {mode: \none}}
   ]
 
 # ---------------------------------------------------------------- runtime
