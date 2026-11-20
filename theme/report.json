@@ -1,0 +1,505 @@
+{
+  "name": "report",
+  "title": {
+    "zh-TW": "報告",
+    "en": "Report"
+  },
+  "desc": {
+    "zh-TW": "要把結論讀完的人。紙、襯線、無卡片、整頁往下捲；色票是印刷的邏輯，低彩度、每個色相都壓暗。",
+    "en": "For someone who will read the conclusion to the end. Paper, serifs, no cards, one page that scrolls; the palette follows print logic — low chroma, every hue pushed down."
+  },
+  "blocks": {
+    "panel": {
+      "name": "@plotdb/dash",
+      "path": "block/panel/report/index.html"
+    },
+    "kpi": {
+      "name": "@plotdb/dash",
+      "path": "block/kpi/report/index.html"
+    },
+    "filterbar": {
+      "name": "@plotdb/dash",
+      "path": "block/filterbar/index.html"
+    }
+  },
+  "_filterbar": "這一版的設計沒有自己的篩選列，沿用素版那一份；外觀是素版的，顏色由下面 vars 裡的 --dash-* 對應過去。",
+  "layout": {
+    "col": [
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr"
+    ],
+    "row": [
+      "7.6em",
+      "19em",
+      "24em",
+      "15.5em"
+    ],
+    "gap": "26px"
+  },
+  "tokens": {
+    "common": {
+      "serif": "\"Iowan Old Style\", Palatino, \"Palatino Linotype\", \"Songti TC\", \"Noto Serif TC\", serif",
+      "sans": "-apple-system, \"PingFang TC\", \"Noto Sans TC\", system-ui, sans-serif",
+      "gap": "26px",
+      "radius": "0"
+    },
+    "light": {
+      "desk": "#efece4",
+      "paper": "#fbfaf7",
+      "sheet-edge": "rgba(40,34,24,.07)",
+      "sheet-shadow": "0 18px 60px -30px rgba(40,34,24,.45)",
+      "ink": "#2a251d",
+      "text": "#4a443b",
+      "ink-dim": "#78726a",
+      "line": "rgba(40,34,24,.16)",
+      "line-hi": "rgba(40,34,24,.40)",
+      "accent": "#b4553f",
+      "accent-soft": "rgba(180,85,63,.4)",
+      "on-accent": "#fbfaf7",
+      "up": "#5a6b38",
+      "down": "#b4553f",
+      "code": "#2f4b7c",
+      "code-bg": "#f5f2ea",
+      "acc-1": "#2f4b7c",
+      "acc-2": "#7d8a4f",
+      "acc-3": "#a9772b",
+      "acc-4": "#b4553f",
+      "axis": "#6b665e",
+      "txt": "#5f5a52",
+      "baseline": "rgba(40,34,24,.16)",
+      "grid": "rgba(40,34,24,.10)",
+      "grid-line": "#282218",
+      "grid-opacity": 0.16,
+      "face": "#fbfaf7",
+      "outline": "rgba(40,34,24,.4)",
+      "ref": "#a9772b",
+      "brush": {
+        "fill": "#2f4b7c",
+        "fillOpacity": 0.07,
+        "stroke": "rgba(47,75,124,.45)",
+        "strokeWidth": 1,
+        "handleFill": "rgba(47,75,124,.3)"
+      },
+      "cat": [
+        "#2f4b7c",
+        "#b4553f",
+        "#7d8a4f",
+        "#a9772b"
+      ],
+      "cat-ramp": [
+        "#ccd3e0",
+        "#2f4b7c"
+      ],
+      "chn": [
+        "#dba894",
+        "#b4553f",
+        "#70301f"
+      ],
+      "geo": [
+        "#2f4b7c"
+      ],
+      "geo-ramp": [
+        "#dfdedb",
+        "#b3b9c3",
+        "#8794ac",
+        "#5b7094",
+        "#2f4b7c"
+      ],
+      "empty": "#ebe9e4"
+    },
+    "dark": {
+      "desk": "#131210",
+      "paper": "#1c1a17",
+      "sheet-edge": "rgba(235,225,205,.09)",
+      "sheet-shadow": "0 18px 60px -30px rgba(0,0,0,.8)",
+      "ink": "#e9e3d7",
+      "text": "#c3bcae",
+      "ink-dim": "#938b7d",
+      "line": "rgba(235,225,205,.18)",
+      "line-hi": "rgba(235,225,205,.42)",
+      "accent": "#d98f6a",
+      "accent-soft": "rgba(217,143,106,.4)",
+      "on-accent": "#131210",
+      "up": "#9fb06d",
+      "down": "#d98f6a",
+      "code": "#93b4e8",
+      "code-bg": "#141311",
+      "acc-1": "#7a9ddb",
+      "acc-2": "#a8b377",
+      "acc-3": "#d9a94f",
+      "acc-4": "#d98f6a",
+      "axis": "#8b8376",
+      "txt": "#b0a99c",
+      "baseline": "rgba(235,225,205,.22)",
+      "grid": "rgba(235,225,205,.14)",
+      "grid-line": "#ebe1cd",
+      "grid-opacity": 0.14,
+      "face": "#1c1a17",
+      "outline": "rgba(235,225,205,.3)",
+      "ref": "#d9a94f",
+      "brush": {
+        "fill": "#7a9ddb",
+        "fillOpacity": 0.1,
+        "stroke": "rgba(122,157,219,.5)",
+        "strokeWidth": 1,
+        "handleFill": "rgba(122,157,219,.36)"
+      },
+      "cat": [
+        "#7a9ddb",
+        "#d98f6a",
+        "#a8b377",
+        "#d9a94f"
+      ],
+      "cat-ramp": [
+        "#2b3240",
+        "#7a9ddb"
+      ],
+      "chn": [
+        "#e8c0aa",
+        "#d98f6a",
+        "#a65540"
+      ],
+      "geo": [
+        "#7a9ddb"
+      ],
+      "geo-ramp": [
+        "#2e2f33",
+        "#414a5d",
+        "#546687",
+        "#6782b1",
+        "#7a9ddb"
+      ],
+      "empty": "#24231f"
+    }
+  },
+  "vars": {
+    "--rp-serif": "$serif",
+    "--rp-sans": "$sans",
+    "--rp-desk": "$desk",
+    "--rp-paper": "$paper",
+    "--rp-sheet-edge": "$sheet-edge",
+    "--rp-sheet-shadow": "$sheet-shadow",
+    "--rp-ink": "$ink",
+    "--rp-text": "$text",
+    "--rp-ink-dim": "$ink-dim",
+    "--rp-line": "$line",
+    "--rp-line-hi": "$line-hi",
+    "--rp-accent": "$accent",
+    "--rp-accent-soft": "$accent-soft",
+    "--rp-up": "$up",
+    "--rp-down": "$down",
+    "--rp-code": "$code",
+    "--rp-code-bg": "$code-bg",
+    "--rp-acc-1": "$acc-1",
+    "--rp-acc-2": "$acc-2",
+    "--rp-acc-3": "$acc-3",
+    "--rp-acc-4": "$acc-4",
+    "--dash-gap": "$gap",
+    "--dash-radius": "$radius",
+    "--dash-bg": "$desk",
+    "--dash-panel-bg": "$paper",
+    "--dash-border": "$line",
+    "--dash-fg": "$text",
+    "--dash-fg-dim": "$ink-dim",
+    "--dash-accent": "$accent",
+    "--dash-on-accent": "$on-accent",
+    "--dash-face": "$code-bg"
+  },
+  "cfg": {
+    "color": "$txt",
+    "margin": 2,
+    "xaxis": {
+      "caption": {
+        "show": false
+      },
+      "label": {
+        "format": ".2~s",
+        "color": "$axis",
+        "font": {
+          "size": ".76em"
+        }
+      },
+      "tick": {
+        "color": "$grid",
+        "inner": 4
+      },
+      "baseline": {
+        "color": "$baseline"
+      }
+    },
+    "yaxis": {
+      "caption": {
+        "show": false
+      },
+      "label": {
+        "format": ".2~s",
+        "color": "$axis",
+        "font": {
+          "size": ".76em"
+        }
+      },
+      "tick": {
+        "color": "$grid",
+        "inner": 0
+      },
+      "baseline": {
+        "show": false
+      },
+      "grid": {
+        "show": true,
+        "color": "$grid-line",
+        "opacity": "$grid-opacity",
+        "dash": "2 3"
+      }
+    },
+    "common": {
+      "subset": {
+        "background": "$face"
+      },
+      "brush": "$brush"
+    }
+  },
+  "hue": {
+    "cat": {
+      "palette": {
+        "colors": "$cat"
+      }
+    },
+    "cat-ramp": {
+      "palette": {
+        "colors": "$cat-ramp"
+      }
+    },
+    "chn": {
+      "palette": {
+        "colors": "$chn"
+      }
+    },
+    "geo": {
+      "palette": {
+        "colors": "$geo"
+      }
+    },
+    "geo-ramp": {
+      "palette": {
+        "colors": "$geo-ramp"
+      }
+    }
+  },
+  "chart": {
+    "@makechart/taiwan-map": {
+      "border": {
+        "color": "$outline",
+        "width": 1
+      }
+    },
+    "@makechart/twmapadv": {
+      "border": {
+        "color": "$outline",
+        "width": 0.6
+      },
+      "heat": {
+        "sequential": {
+          "colors": "$geo-ramp"
+        },
+        "empty": "$empty"
+      },
+      "label": {
+        "color": "$axis",
+        "halo": "$face"
+      },
+      "village": {
+        "mode": "none"
+      }
+    }
+  },
+  "role": {
+    "ref": {
+      "common": {
+        "annotation": {
+          "color": "$ref"
+        }
+      }
+    }
+  },
+  "schema": [
+    {
+      "key": "accent",
+      "type": "color",
+      "label": {
+        "zh-TW": "強調色",
+        "en": "Accent"
+      }
+    },
+    {
+      "key": "acc-1",
+      "type": "color",
+      "label": {
+        "zh-TW": "指標色 1",
+        "en": "KPI accent 1"
+      },
+      "desc": {
+        "zh-TW": "KPI 的四道色條",
+        "en": "The four KPI bars"
+      }
+    },
+    {
+      "key": "acc-2",
+      "type": "color",
+      "label": {
+        "zh-TW": "指標色 2",
+        "en": "KPI accent 2"
+      }
+    },
+    {
+      "key": "acc-3",
+      "type": "color",
+      "label": {
+        "zh-TW": "指標色 3",
+        "en": "KPI accent 3"
+      }
+    },
+    {
+      "key": "acc-4",
+      "type": "color",
+      "label": {
+        "zh-TW": "指標色 4",
+        "en": "KPI accent 4"
+      }
+    },
+    {
+      "key": "desk",
+      "type": "color",
+      "label": {
+        "zh-TW": "桌面底色",
+        "en": "Desk background"
+      },
+      "desc": {
+        "zh-TW": "紙張以外的那一圈",
+        "en": "The ring outside the sheet"
+      }
+    },
+    {
+      "key": "paper",
+      "type": "color",
+      "label": {
+        "zh-TW": "紙張底色",
+        "en": "Paper"
+      }
+    },
+    {
+      "key": "ink",
+      "type": "color",
+      "label": {
+        "zh-TW": "標題文字",
+        "en": "Heading text"
+      }
+    },
+    {
+      "key": "text",
+      "type": "color",
+      "label": {
+        "zh-TW": "內文",
+        "en": "Body text"
+      }
+    },
+    {
+      "key": "serif",
+      "type": "font",
+      "label": {
+        "zh-TW": "襯線字",
+        "en": "Serif"
+      },
+      "desc": {
+        "zh-TW": "這一版的身分就在這個字型上",
+        "en": "This design's identity rests on this font"
+      }
+    },
+    {
+      "key": "gap",
+      "type": "length",
+      "label": {
+        "zh-TW": "格子間距",
+        "en": "Cell gap"
+      }
+    },
+    {
+      "key": "cat",
+      "type": "colors",
+      "label": {
+        "zh-TW": "類別色票",
+        "en": "Category palette"
+      },
+      "desc": {
+        "zh-TW": "並列的類別（書系）用這一組",
+        "en": "For side-by-side categories"
+      }
+    },
+    {
+      "key": "cat-ramp",
+      "type": "colors",
+      "label": {
+        "zh-TW": "類別漸層",
+        "en": "Category ramp"
+      },
+      "desc": {
+        "zh-TW": "依占比上色的圖用；同一個色族，但不假裝每一條都對得上",
+        "en": "For charts coloured by share; same family, but it does not pretend each item lines up"
+      }
+    },
+    {
+      "key": "chn",
+      "type": "colors",
+      "label": {
+        "zh-TW": "次維度色票",
+        "en": "Secondary palette"
+      },
+      "desc": {
+        "zh-TW": "另一個維度（通路），不跟類別搶色相",
+        "en": "A second dimension; it does not compete with the category hues"
+      }
+    },
+    {
+      "key": "geo",
+      "type": "colors",
+      "label": {
+        "zh-TW": "地區單色",
+        "en": "Region, single colour"
+      }
+    },
+    {
+      "key": "geo-ramp",
+      "type": "colors",
+      "label": {
+        "zh-TW": "地圖色階",
+        "en": "Map ramp"
+      },
+      "desc": {
+        "zh-TW": "由淺到深。低端貼著底色，底色換了它就得換",
+        "en": "Light to dark. The low end sits against the background, so it has to change when the background does"
+      }
+    },
+    {
+      "key": "empty",
+      "type": "color",
+      "label": {
+        "zh-TW": "沒有資料",
+        "en": "No data"
+      },
+      "desc": {
+        "zh-TW": "刻意跟資料色分開：沒有資料跟「數值最低」是兩件事",
+        "en": "Deliberately separate from the data colours: no data and lowest value are two different things"
+      }
+    }
+  ]
+}

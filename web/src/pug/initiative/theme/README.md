@@ -137,15 +137,35 @@ key、網址參數）是宿主的政策，套件不碰。
 主題存在 `def.theme`，所以 `dash.dump(bd.def.theme)` 印出來的就是可以存回去的那一份。
 
 
+## 五份內建主題
+
+| | 給誰看 | 自己帶的 block |
+|---|---|---|
+| `vanilla` 素版 | 要知道這東西由什麼組成的人 | panel / filterbar（也是預設） |
+| `desk` 分析台 | 坐在螢幕前面、正在找原因的人 | panel / kpi / filterbar |
+| `report` 報告 | 要把結論讀完的人 | panel / kpi |
+| `wall` 牆面 | 十公尺外走過去的人 | panel / kpi |
+| `terminal` 主控台 | 整天開著它的人 | panel / kpi |
+
+來源就是 `variation/` 底下那五個設計，不是另外抄一份 —— 收進套件的是它們的
+`theme-of` 與 CSS 變數，攤平成 token。
+
+後面三版**沒有自己的篩選列**（那是後來才加的功能，只有 `vanilla` 與 `desk` 寫了），
+所以它們的 `blocks.filterbar` 指向素版那一份，再由各自的 `vars` 把 `--dash-*` 對應過去 ——
+**外觀是素版的，顏色是這個主題的**。素版的篩選列本來就只用 `--dash-*`（只有兩個 box-shadow
+是硬寫的），所以這條路走得通；但形狀（圓角卡片、藥丸按鈕）跟 `wall` 的 3px 縫或 `terminal`
+的 1px 框不是同一種語言，要完全對齊就得各寫一份。
+
+
 ## 路徑
 
 ```
 theme/vanilla.json              內建主題
-theme/desk.json
+theme/desk.json  theme/report.json  theme/wall.json  theme/terminal.json
 block/panel/index.html          預設的 panel block ( = vanilla 的那一份 )
 block/filterbar/index.html
-block/panel/desk/index.html     主題自己帶的
-block/kpi/desk/index.html
+block/panel/<主題>/index.html    主題自己帶的
+block/kpi/<主題>/index.html
 block/filterbar/desk/index.html
 ```
 
@@ -175,7 +195,9 @@ block/filterbar/desk/index.html
 
 ## 還沒做的
 
- - 其餘三版（`report` / `wall` / `terminal`）還沒收進來
+ - `report` / `wall` / `terminal` 沒有自己的篩選列，沿用素版那一份（見上面）
  - `vanilla` 沒有自己的 kpi block（見上面「`role` 的界線」）
+ - `pocket` / `rail` 還沒收進來 —— 那兩版換的主要是版面不是主題，要先想清楚
+   「版面也算主題的一部分嗎」
  - 沒有「從現在的主題另存成一份新主題」的 API —— 目前要自己把 `board.theme.tokens` 抄出來
  - `schema` 只有 `color` / `colors` / `length` / `font` 四種型別，沒有分組、沒有條件顯示

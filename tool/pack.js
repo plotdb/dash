@@ -67,7 +67,12 @@ for (const b of blocks) pack('vanilla', b, `block/${b}/index.html`);
 // 一個主題不只是顏色: 有沒有卡片、是 1px 的框還是 3px 的縫, 是 pug 的結構,
 // CSS 變數搆不到. 所以主題要帶自己的 block ( theme/<name>.json 的 blocks 指到
 // 這裡 ). vanilla 不在這裡面 - 它用的就是上面那組預設的, 不必出兩份.
-const themed = {desk: ['panel', 'kpi', 'filterbar']};
+const themed = {
+  desk:     ['panel', 'kpi', 'filterbar'],
+  report:   ['panel', 'kpi'],
+  wall:     ['panel', 'kpi'],
+  terminal: ['panel', 'kpi'],
+};
 for (const [design, bs] of Object.entries(themed)) {
   for (const b of bs) pack(design, b, `block/${b}/${design}/index.html`);
 }

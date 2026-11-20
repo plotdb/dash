@@ -427,6 +427,27 @@
         en: "Desk"
       },
       path: 'theme/desk.json'
+    }, {
+      name: 'report',
+      title: {
+        'zh-TW': "報告",
+        en: "Report"
+      },
+      path: 'theme/report.json'
+    }, {
+      name: 'wall',
+      title: {
+        'zh-TW': "牆面",
+        en: "Wall"
+      },
+      path: 'theme/wall.json'
+    }, {
+      name: 'terminal',
+      title: {
+        'zh-TW': "主控台",
+        en: "Terminal"
+      },
+      path: 'theme/terminal.json'
     }
   ];
   dash.text = function(v, locale, fallback){

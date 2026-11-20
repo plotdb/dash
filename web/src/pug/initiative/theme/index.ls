@@ -246,7 +246,7 @@ mk-switch = (name) -> ->
   custom := {}
   apply {name: name, tokens: {}}
 
-for name in <[vanilla desk]>
+for name in <[vanilla desk report wall terminal]>
   b = node "t-#name"
   if b => b.addEventListener \click, mk-switch(name)
 

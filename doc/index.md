@@ -22,6 +22,7 @@ dashboard utility, based on `@plotdb/block`.
 
 `def.theme` 讓同一份 def 長成另一個樣子。一個主題是三件事 —— panel block 的外觀、
 CSS custom property、圖表的 config —— 三者的值都從同一組 token 長出來。
+內建五份：`vanilla` / `desk` / `report` / `wall` / `terminal`。
 見 `web/src/pug/initiative/theme/README.md`。
 
 ```js
@@ -48,9 +49,8 @@ board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
     index.min.css           `package.json` 的 `style`
     block/panel/index.html      預設的 panel block（= vanilla 的那一份）
     block/filterbar/index.html  全域篩選列
-    block/*/desk/index.html     desk 主題自己帶的那幾份
-    theme/vanilla.json          內建主題
-    theme/desk.json
+    block/*/<主題>/index.html    主題自己帶的那幾份
+    theme/<主題>.json            內建主題（vanilla / desk / report / wall / terminal）
 
 `index.js` / `index.min.js` 以外的由 `tool/pack.js` 產生，來源都在 `web/src` 底下 —— 它們本來就是示範頁在用的那一份，
 不是另外抄一份給套件。panel block 的來源是 `variation/vanilla/block/panel/0.0.1/`：
