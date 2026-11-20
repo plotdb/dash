@@ -1,18 +1,25 @@
-# 模組化儀表板 - 第一版概念示範
+# design-0「原型」— 第一版概念示範
 
 這是把 `case/taicca/vis2` 的 dashboard 拆成可重用模組的第一個可運行版本。
 目的是先把「一個儀表板由哪些東西組成」講清楚，用實作把介面固定下來，
 之後再討論哪裡要改。
 
-看畫面：`npm start` 後開 `http://localhost:8080/initiative/1st/index.html`。
+**這一份原本在 `web/src/pug/initiative/1st/`**，後來搬進 `2nd/design-0/`，
+變成這一組七個設計的第一張 —— 它是其他六版的共同起點：
+`design-1` ~ `design-6` 換掉的東西，都是從這一版換起的。
+搬家只動了兩件事：block 的 registry 路徑，以及補上 light / dark。
+
+看畫面：`npx server -r web -p 64500` 後開
+`http://localhost:64500/initiative/2nd/design-0/`
+( 入口頁在 `/initiative/2nd/` )。
 
 
 ## 檔案
 
  - `web/src/ls/dash.ls` — 框架本體，輸出 `window.dash`，內含 driver / query / board
  - `web/src/styl/dash.styl` — 基本 CSS，提供 `.dash`、`.dash-cell`、`.dash-panel` 等組裝用 class
- - `web/src/pug/initiative/1st/block/panel/0.0.1/` — 通用 panel block ( 標題列 + 一張圖 )
- - `web/src/pug/initiative/1st/index.ls` — 示範用的 dashboard def 與啟動碼
+ - `web/src/pug/initiative/2nd/design-0/block/panel/0.0.1/` — 通用 panel block ( 標題列 + 一張圖 )
+ - `web/src/pug/initiative/2nd/design-0/index.ls` — 示範用的 dashboard def 與啟動碼
  - `web/src/raw/assets/data/sales.json` — 示範資料 ( 合成，864 筆獨立書店銷售紀錄 )
 
 
@@ -307,6 +314,26 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
 序列化與讀回是 `dash.dump` / `dash.load`，只給編輯器用。
 
 
+## light / dark
+
+這一版的深色模式是整組裡最便宜的一個，因為它幾乎沒有自己的樣式：
+版面與卡片的顏色全部來自 `dash.css`，而 `dash.css` 的顏色本來就走 custom property
+（它自己的註解寫著「讓套用的專案能只改變數就換皮」）—— 所以 CSS 那邊就是
+在 `:root[data-mode=dark]` 底下換那幾個 `--dash-*`，加上這一頁自己硬寫的幾個白色。
+
+圖表的顏色不吃 CSS，還是得給一份，但也只有四件事非換不可：
+
+1. 文字與軸線的顏色
+2. 格線 / 基線的顏色
+3. `common.subset.background` —— 「沒被選中的那一段」要往哪個顏色退
+4. 地圖的漸層與縣市邊界 —— 低端貼著底色，所以底色換了它就得換
+
+那六個色的色票**兩個模式共用**：它們是中間調的，白底與深底都還讀得到。
+真正非換不可的永遠是「貼著底色」的那幾個設定 —— 這一點在七個設計裡都一樣。
+
+機制七版共用，寫在 `../mode.ls`。
+
+
 ## 這一版沒做的
 
  - 沒有 detail / 放大視窗，也沒有 dashboard 之間的切換 ( taicca 版的 `add-dashboard` / `toggle` )
@@ -323,6 +350,8 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
    缺一個「這張圖不支援 / 不提供這一組」的宣告機制
  - 沒有 loading 狀態與錯誤處理
  - def 檢視器是唯讀規格 + 純文字編輯，沒有依 spec 生出實際的表單控制項
+ - 圖表 legend 的「全選 / 全不選」還是英文：這一版沒有呼叫 `block.i18n.change-language`,
+   後面六版有 ( 這也是搬家時刻意沒動的: 它是原本那一版的行為 )
 
 
 ## 要決定的事

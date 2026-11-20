@@ -6,7 +6,7 @@
 #
 # 換句話說, 要換一套 panel 外觀 ( 標題列、選單、放大鈕 ) 只要換這個 block.
 #
-# 這一份跟 design-1 的 panel 逐字相同, 只有 pug 裡的外觀不同 - 這就是重點:
+# 這一份在七個設計裡逐字相同, 只有 pug 裡的外觀與那一個 class 名不同 - 這就是重點:
 # 同一份 def、同一套 crossfilter, 換掉 block 就換掉整個儀表板的長相.
 
 module.exports =

@@ -4,8 +4,37 @@ html
     meta(charset="utf-8")
     meta(name="viewport",content="width=device-width,initial-scale=1")
     title @plotdb/dash - 模組化儀表板概念示範
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var m=localStorage.getItem('dash-2nd-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
     +css([{url: "/css/dash.css"}])
     style(type="text/css"): :stylus
+      // 這一版的深色模式幾乎不必寫樣式: dash.css 的顏色本來就走 custom property
+      // ( 它自己的註解寫著「讓套用的專案能只改變數就換皮」), 所以這裡就是換那幾個變數.
+      // 剩下的是這一頁自己硬寫的幾個白色 - 按鈕底、側欄底、編輯器底
+      :root[data-mode=dark]
+        --dash-bg: #15171a
+        --dash-panel-bg: #1d2024
+        --dash-border: #2e3238
+        --dash-fg: #d8dbdf
+        --dash-fg-dim: #8b9099
+        --dash-accent: #4db6dd
+        --dash-face: #262a30
+        // 強調色上面的字. 淺色模式的 accent 是深藍, 配白字; 深色模式的 accent
+        // 提亮之後白字就讀不到了, 要換成底色
+        --dash-on-accent: #15171a
+      :root, :root[data-mode=light]
+        // 這一頁自己要用的兩個: 比 panel 再淡一階的底, 以及強調色上面的字
+        --dash-face: #fbfcfd
+        --dash-on-accent: #fff
+      // dash.css 裡這兩個的文字寫死是白的, 在這裡蓋掉
+      .dash-tag, .chip
+        color: var(--dash-on-accent)
+      .btn.primary
+        color: var(--dash-on-accent)
+        &:hover
+          color: var(--dash-on-accent)
+
       html, body
         width: 100%
         height: 100%
@@ -16,7 +45,7 @@ html
         padding: .2em .8em
         font-size: .9em
         color: var(--dash-fg)
-        background: #fff
+        background: var(--dash-panel-bg)
         border: 1px solid var(--dash-border)
         border-radius: var(--dash-radius)
         cursor: pointer
@@ -25,16 +54,13 @@ html
           border-color: var(--dash-accent)
           color: var(--dash-accent)
       .btn.primary
-        color: #fff
         background: var(--dash-accent)
         border-color: var(--dash-accent)
         &:hover
-          color: #fff
           opacity: .85
       .chip
         padding: .1em .6em
         font-size: .85em
-        color: #fff
         background: var(--dash-accent)
         border-radius: 1em
 
@@ -53,7 +79,7 @@ html
         position: absolute
         width: 100%
         height: 100%
-        background: rgba(20,22,24,.45)
+        background: rgba(20,22,24,.55)
       .defv-win
         position: absolute
         top: 50%
@@ -83,14 +109,14 @@ html
         padding: .6em
         overflow-y: auto
         border-right: 1px solid var(--dash-border)
-        background: #fbfcfd
+        background: var(--dash-face)
       .defv-item
         padding: .45em .7em
         font-size: .9em
         border-radius: var(--dash-radius)
         cursor: pointer
         &:hover
-          background: #eef4f7
+          background: var(--dash-bg)
         &.active
           color: #fff
           background: var(--dash-accent)
@@ -138,7 +164,7 @@ html
         font-size: .85em
         line-height: 1.5em
         color: var(--dash-fg)
-        background: #fbfcfd
+        background: var(--dash-face)
         border: 1px solid var(--dash-border)
         border-radius: var(--dash-radius)
         resize: vertical
@@ -155,6 +181,8 @@ html
         .dash-spacer
         .dash-sub(ld="state") 尚未篩選
         div(ld="chips",style="display:flex;gap:.4em")
+        .btn(ld="mode")
+        a.btn(href="/initiative/2nd/",style="text-decoration:none") 其他設計 ↗
         .btn(ld="clear") 清除篩選
         .btn.primary(ld="open-def") 儀表板定義
       div(ld="board",style="flex:1 1 auto;min-height:0")
@@ -198,4 +226,5 @@ html
       {name: "papaparse", path: "papaparse.min.js"},
       {url: "/js/dash.js"}
     ])
+    script(type="module"): include:lsc ../mode.ls
     script(type="module"): include:lsc index.ls

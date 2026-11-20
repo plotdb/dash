@@ -1,6 +1,7 @@
 # @plotdb/dash 第二版
 #
-# 跟 1st 比, 框架、資料、crossfilter 的語意一模一樣. 換掉的只有兩件事:
+# 跟 design-0 ( 原本的 initiative/1st ) 比, 框架、資料、crossfilter 的語意一模一樣.
+# 換掉的只有兩件事:
 #
 #  - panel block: 圖表卡片換了一套外觀, KPI 那四格換成不掛圖表的 kpi block
 #    ( board 現在允許每個 panel 指定自己的 block, 見 dash.ls 的 init )
@@ -252,7 +253,7 @@ bd = new dash.board do
   def: def
 
 # 主題套到每個有圖的 panel 上 ( panel 自己寫的贏 ), 並且在換模式時重算、重畫.
-# 見 ../mode.ls - 六個設計共用同一份機制, 各自只提供一個 theme-of
+# 見 ../mode.ls - 七個設計共用同一份機制, 各自只提供一個 theme-of
 dmode.theme bd, theme-of
 dmode.on -> if view => view.render!
 

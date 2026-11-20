@@ -5,6 +5,9 @@
 #  - 資料每次 render 都跟 board 要 ( board 會套用其他 panel 的 filter )
 #
 # 換句話說, 要換一套 panel 外觀 ( 標題列、選單、放大鈕 ) 只要換這個 block.
+#
+# 這一份在七個設計裡逐字相同, 只有 pug 裡的外觀與那一個 class 名不同 - 這就是重點:
+# 同一份 def、同一套 crossfilter, 換掉 block 就換掉整個儀表板的長相.
 
 module.exports =
   pkg: {name: \panel, version: \0.0.1}

@@ -3,7 +3,7 @@
 # 牆面版的差別是「整塊磚就是這個指標」- 背景直接上 accent 色, 數字佔滿整格.
 # 比例不是細細一條進度條, 是磚底那一道夠粗、隔十公尺也看得到的橫條.
 #
-# def 的欄位跟另外五版一樣 ( unit / accent / note ), 同一份 def 六版都能跑.
+# def 的欄位跟另外幾版一樣 ( unit / accent / note ), 同一份 def 七版都能跑.
 
 num-fmt = (n) ->
   if Math.abs(n) >= 1000 => Math.round(n).toLocaleString \en-US

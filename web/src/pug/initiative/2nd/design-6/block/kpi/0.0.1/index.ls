@@ -2,7 +2,7 @@
 #
 # 存在的理由是「panel block 可以換」: 它跟隔壁的 panel block 收到一樣的
 # {def, board}, 一樣每次 render 跟 board 要資料, 只是畫法完全不同.
-# 1st 這四格是用 @makechart/number 畫的 - 能自動放大數字, 但只有一個數字可說;
+# design-0 那四格是用 @makechart/number 畫的 - 能自動放大數字, 但只有一個數字可說;
 # 這裡自己畫, 就能順便講「這個數字是全體的多少」.
 #
 # def 多兩個欄位:

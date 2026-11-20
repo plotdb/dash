@@ -5,7 +5,7 @@
 
 <-(-> it.apply {}) _
 
-# block 名稱 -> URL. chart 走 /assets/chart, dash 自己的 panel 走 /initiative/1st/block.
+# block 名稱 -> URL. chart 走 /assets/chart, dash 自己的 panel 走 /initiative/2nd/design-0/block.
 # 沿用 makechart 的統一規則 ( server/module/makechart/registry ):
 # block 與 lib 都走 /assets/lib/<name>/<version|main>/, 差別只在預設檔名.
 # 本專案自己的 block 用 ns: local, 放在頁面旁邊.
@@ -13,13 +13,56 @@ mgr = new block.manager do
   registry: ({url, ns, name, version, path, type}) ->
     if url => return url    # block 依賴也可能直接給 URL
     if type == \block =>
-      if ns == \local => return "/initiative/1st/block/#name/#{version or '0.0.1'}/#{path or 'index.html'}"
+      if ns == \local => return "/initiative/2nd/design-0/block/#name/#{version or '0.0.1'}/#{path or 'index.html'}"
       return "/assets/lib/#name/#{version or 'main'}/#{path or 'index.html'}"
     if /^d3/.exec(name) => return "/assets/lib/#name/main/#path"
     "/assets/lib/#name/#{version or 'main'}/#{path or (if type == \css => 'index.min.css' else 'index.min.js')}"
 
 palette = colors: <[#0b7fab #6ab7d4 #f2a154 #b6c454 #9b8bbd #dd6e6e]>
 axis = {caption: {show: false}, label: {format: '.2~s'}}
+
+# ---------------------------------------------------------------- light / dark
+#
+# 這一版的深色模式是整組裡最便宜的一個, 因為它幾乎沒有自己的樣式:
+# 版面與卡片的顏色全走 dash.css 的 custom property ( 見 index.pug ),
+# 所以 CSS 那邊換幾個變數就好.
+#
+# 圖表的顏色不吃 CSS, 還是得給一份, 但也只有四件事非換不可:
+#
+#  1. 文字與軸線的顏色
+#  2. 格線 / 基線的顏色
+#  3. common.subset.background - 「沒被選中的那一段」要往哪個顏色退.
+#     不設的話程式裡的背景是常數白, 深色底上會冒出一塊亮灰
+#  4. 地圖的漸層與縣市邊界 - 低端貼著底色, 所以底色換了它就得換
+#
+# 上面那六個色的色票兩個模式共用: 它們是中間調的, 白底與深底都還讀得到.
+# 真正非換不可的永遠是「貼著底色」的那幾個設定 - 這一點在七個設計裡都一樣.
+light =
+  fg: \#55585c
+  line: \#d8dadd
+  face: \#fff                          # 卡片底 ( 未選的那一段往這裡退 )
+  geo: colors: <[#e8f2f6 #0b7fab]>
+  # 沒資料的縣市底色接近白, 沒有邊線就整個看不見
+  border: {color: \#c9ccd4, width: 0.8}
+
+dark =
+  fg: \#9aa0a8
+  line: \#343a41
+  face: \#1d2024
+  # 低端換成比卡片亮一點的灰: 貼著底色的規則沒變, 只是底色變深了
+  geo: colors: <[#2b3138 #4db6dd]>
+  border: {color: \#454c55, width: 0.8}
+
+theme-of = (mode, p) ->
+  c = if mode == \dark => dark else light
+  ax = {} <<< axis <<< {label: {format: '.2~s', color: c.fg}, tick: {color: c.line}, baseline: {color: c.line}}
+  th =
+    color: c.fg
+    xaxis: ax
+    yaxis: ax
+    common: subset: {background: c.face}
+  if p.id == \map => th <<< {palette: c.geo, border: c.border}
+  th
 
 # ------------------------------------------------------------------ def
 def =
@@ -137,10 +180,9 @@ def =
         groupby: \region
         measures: [{name: "銷售額", field: \amount, op: \sum, unit: "元"}]
       cfg:
-        palette: {colors: <[#e8f2f6 #0b7fab]>}
+        # 色票與邊線交給主題那一層 ( 見上面的 theme-of ): 它們貼著底色,
+        # 所以是這一頁唯一跟著 light / dark 換的圖
         legend: {enabled: false}
-        # 沒資料的縣市底色接近白, 沒有邊線就整個看不見
-        border: {color: \#c9ccd4, width: 0.8}
   ]
 
 # ---------------------------------------------------------------- runtime
@@ -152,6 +194,10 @@ bd = new dash.board do
   manager: mgr
   panel: {ns: \local, name: \panel, version: \0.0.1}
   def: def
+
+# 主題套到每個有圖的 panel 上, 並且在換模式時重算、重畫 ( 見 ../mode.ls )
+dmode.theme bd, theme-of
+dmode.on -> if view => view.render!
 
 bd.on \filter, -> if view => view.render!
 
@@ -174,6 +220,7 @@ apply = ->
   def[g.path.0] = v
   ui.msg = "套用中…"
   view.render \msg
+  dmode.retheme def.panels
   bd.reload def
     .then -> ui.msg = "已套用"
     .catch (e) -> ui.msg = "重建失敗: #{e.message}"
@@ -187,6 +234,7 @@ mgr.init!
       action:
         click:
           clear: -> bd.clear-filter!
+          mode: -> dmode.toggle!
           "open-def": -> ui <<< {open: true, sync: true, msg: ''}; view.render!
           "close-def": -> ui.open = false; view.render!
           apply: -> apply!
@@ -201,6 +249,7 @@ mgr.init!
           else "這一組沒有獨立位置, 寫在每個 panel 裡. 以下是寫法範例"
         msg: -> ui.msg
       handler:
+        mode: ({node}) -> node.textContent = "#{dmode.icon!} #{dmode.label!}"
         defv: ({node}) -> node.classList.toggle \show, !!ui.open
         chips: ({node}) ->
           node.innerHTML = ''
