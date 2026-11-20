@@ -17,7 +17,7 @@
     "@loadingio/ldquery": "^3.0.6",
     "@loadingio/vscroll": "^0.0.14",
     "@makechart/bar": "^0.0.12",
-    "@makechart/base": "^0.2.1",
+    "@makechart/base": "^0.2.2",
     "@makechart/line": "^0.0.8",
     "@makechart/number": "^0.0.3",
     "@makechart/percent-list": "^0.0.3",
