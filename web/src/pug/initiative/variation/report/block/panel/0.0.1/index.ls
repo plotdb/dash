@@ -32,18 +32,23 @@ module.exports =
         body: ({node, local}) ~> @draw node, local
 
   # 每次 render 都重新取資料; chart 已存在就只是 set-raw, 不會重建.
+  #
+  # local.chart 存的是 promise 而不是建好的圖: 建圖是非同步的, 存結果的話,
+  # 第一張還沒建好就來的第二次 render 會看到 local.chart 還是空的, 於是再建一張,
+  # 同一格就有兩張圖疊著 ( 慢速網路、或是圖還在載的時候別人發了 filter, 都會中 )
   draw: (node, local) ->
     {def, board} = @
-    p = if local.chart => Promise.resolve(local.chart)
-    else
-      @chart-class!
+    if !local.chart =>
+      local.chart = @chart-class!
         .then (bc) -> bc.create {data: {delay-render: false}}
-        .then (bi) -> bi.attach {root: node} .then -> bi.interface!
+        .then (bi) ~>
+          @_bi = bi
+          bi.attach {root: node} .then -> bi.interface!
         .then (chart) ~>
-          local.chart = @chart = chart
+          @chart = chart
           @bind-events chart
           chart
-    p.then (chart) ~>
+    local.chart.then (chart) ~>
       {raw, meta, subset} = board.data-for def
       binding = def.binding or dash.binding(chart.mod.dimension, meta)
       {@field-map, @group-dim} = @fields-of binding, meta
@@ -142,4 +147,11 @@ module.exports =
       if v? => board.toggle-filter def.id, field, v, dim
 
   render: -> @view.render!
+
+  # 換圖種 ( board.update-panel 改 def.chart ) 會把這個 panel 整個重建, 所以這裡
+  # 要把圖拆乾淨 - 不拆的話, 舊的那張圖還掛著 ResizeObserver 與動畫迴圈
+  destroy: ->
+    if @_bi => @_bi.detach!
+    @_bi = null
+
   interface: -> @

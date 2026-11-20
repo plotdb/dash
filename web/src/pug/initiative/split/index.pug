@@ -59,6 +59,19 @@ html
       [ld=switch]
         display: flex
         gap: .4em
+      .sp-path
+        font-size: .8em
+        font-variant-numeric: tabular-nums
+        color: var(--dash-fg)
+        margin-right: .2em
+      .btn.off
+        opacity: .4
+        pointer-events: none
+      // 選取的格子. 虛線框是空格子本來就有的, 這裡再加一圈強調色
+      .dash-cell.sel
+        outline: 2px solid var(--dash-accent)
+        outline-offset: -1px
+        border-radius: var(--dash-radius)
 
       .btn
         padding: .25em .7em
@@ -129,6 +142,11 @@ html
       div(ld="switch")
       .sp-label(style="margin-left:.6em") 分隔線
       .btn.primary(ld="pin") 分隔線: 可拖
+      .sp-label(style="margin-left:.6em") 選取的格子
+      .sp-path(ld="path") ( 還沒選 )
+      .btn.off(ld="put") 放一張圖進去
+      .btn.off(ld="swap") 換圖種
+      .btn.off(ld="hue") 換色票
     .sp-main
       .sp-board(ld="board")
       .sp-side

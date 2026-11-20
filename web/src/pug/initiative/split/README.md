@@ -100,10 +100,57 @@ grid item 與 flex item 的 `min-*` 預設都是 `auto`，意思是「不能小�
 兩邊都寫會連帶限制住跟這一刀無關的那個方向。
 
 
-## 這一頁示範的三件事
+## 編輯器要的那幾個 API
+
+`reload(def)` 什麼都做得到，但它整個重建，連篩選都清掉 —— 改一張圖的顏色不該讓使用者
+正在看的篩選消失。所以增刪改各有一支：
+
+    bd.add-panel {id: \category, title: "書系占比", chart: ..., data: ...}   # -> Promise
+    bd.remove-panel \category                                              # -> true / false
+    bd.update-panel \category, {cfg: ...}                                  # -> Promise
+    bd.panel-of \category                                                  # -> panel def
+
+**`addPanel`：順序不拘。** 位置是版面決定的（split 的葉子寫 `panel: <id>`，grid 的 panel
+自己寫 `area`），所以先 `relayout` 再 `add`、或先 `add` 再 `relayout` 都行 ——
+樹上還沒指到它的時候，格子會先建好但不進 DOM，下一次 relayout 把它接上去。
+
+**`removePanel` 是真的刪掉**，跟 relayout 那個「摘下來不銷毀」是兩回事。它會：
+
+ - 銷毀 panel 實例（panel block 的 `destroy` 會把圖也拆掉）
+ - **清掉它發出的 filter** —— 不清的話，畫面上會留著一個沒有來源的篩選，使用者找不到
+   地方取消它
+ - 把樹上那個葉子的 `panel` 拿掉，格子留在原地變成空格子（grid 版面則是把格子移除 ——
+   grid 的位置是 `area` 給的，留一個空的沒有意義）
+
+**`updatePanel` 只有換圖種才重建。** `chart` 變了就重建那一格（本來就是另一張圖），
+`data` / `cfg` / `binding` / `title` 都只是改 def 再 render —— panel block 拿到的 def
+跟 board 這邊是同一個物件，所以改了就看得到。
+
+有一個細節：主題層把 theme 併在 `p._cfg` 之上（見 `../variation/mode.ls`），所以
+`updatePanel` 改 `cfg` 時會連 `_cfg` 一起改，否則下次重算主題會把舊的那份又翻出來。
+
+三支都會發 `panel` 事件：`{type: \add | \remove | \update, id, ...}`。
+
+
+## 點格子算位置：不要自己數 index
+
+每個節點身上都寫著 `data-path`（例如 `"1.1.2"`），每次 relayout 重算，所以：
+
+    bd.path-of node      # DOM 節點 -> [1, 1, 2]；根是 []，分隔線與版面外的是 null
+    bd.spec-at path      # 位置 -> 樹上那個物件（改它就是改 def）
+    bd.node-at path      # 位置 -> DOM 節點
+
+**自己從 DOM 往上數 index 是可以算對，但它賭的是這邊的 DOM 形狀不會變。** 現在要跳過
+分隔線，之後若多包一層容器、或是不可拖的時候不再產生分隔線，那段程式就會默默算錯 ——
+錯的方式還是「選到隔壁那一格」，不會報錯。`data-path` 是這邊維護的，形狀改了它跟著改。
+
+
+## 這一頁示範的事
 
  - **兩種切法**（「主控台」「左右對開」）：同一批 panel，換一棵樹就換一個版面
  - **分隔線鎖 / 不鎖**：`resizable` 切換之後 relayout
+ - **點一格**會顯示它在樹上的位置（`pathOf`），然後可以在那一格放圖、拿掉圖、
+   換圖種、換色票 —— 編輯器會做的事就是這幾樣，只是 UI 換成三顆按鈕
  - **右邊那塊** 一直印著目前的 `layout.root`，拖完分隔線會看到 `size` 跟著變
 
 

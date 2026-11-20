@@ -288,22 +288,91 @@ board.prototype = Object.create(Object.prototype) <<<
       .then (rows) ~>
         @rows = rows or []
         @layout!
-        # 每個 panel 可以自己指定要用哪個 panel block - 同一份 def、同一套 crossfilter,
-        # 外觀與呈現方式由 block 決定 ( 例如 KPI 用不掛圖表的卡片 ).
-        # 沒指定就用 board 的預設; 同一個 block 只取一次.
-        cache = {}
-        Promise.all @panels.map (p) ~>
-          b = p.panel or @panel-block
-          k = JSON.stringify b
-          (cache[k] or= @mgr.get b).then (bc) -> p._bc = bc
-      .then ~>
-        Promise.all @panels.map (p) ~>
-          node = @_cell p
-          p._bc.create {data: {def: p, board: @}}
-            .then (bi) -> bi.attach {root: node} .then -> bi.interface!
-            .then (itf) -> p.itf = itf
+        Promise.all @panels.map (p) ~> @_mount p
       .then ~> @fire \init
       .then ~> @
+
+  # 把一個 panel 掛起來: 取它的 block、拿到格子、建實例.
+  #
+  # 每個 panel 可以自己指定要用哪個 panel block - 同一份 def、同一套 crossfilter,
+  # 外觀與呈現方式由 block 決定 ( 例如 KPI 用不掛圖表的卡片 ). 沒指定就用 board
+  # 的預設; 同一個 block 只取一次 ( cache 掛在 board 上, 之後 add-panel 也用得到 ).
+  _mount: (p) ->
+    b = p.panel or @panel-block
+    k = JSON.stringify b
+    @_bc or= {}
+    (@_bc[k] or= @mgr.get b).then (bc) ~>
+      p._bc = bc
+      node = @_cell p
+      bc.create {data: {def: p, board: @}}
+        .then (bi) -> bi.attach {root: node} .then -> bi.interface!
+        .then (itf) -> p.itf = itf
+    .then -> p
+
+  # ------------------------------------------------------ panel 的增刪改
+  #
+  # 這三個是給編輯器用的: reload(def) 什麼都做得到, 但它整個重建, 連篩選都清掉 -
+  # 改一張圖的顏色不該讓使用者正在看的篩選消失.
+
+  # 位置由版面決定 ( split 的葉子寫 panel: <id>, grid 的 panel 自己寫 area ),
+  # 所以 add 跟 relayout 的順序不拘: 樹上先指到就直接掛進那一格, 還沒指到的話
+  # 格子先放著不進 DOM, 下一次 relayout 會把它接上去
+  add-panel: (d = {}) ->
+    id = d.id or "panel-#{@panels.length}"
+    if [x for x in @panels when x.id == id].0 => return Promise.reject new Error("[dash] duplicated panel id: #id")
+    p = {} <<< d <<< {id}
+    @panels.push p
+    @_mount p
+      .then ~> @fire \panel, {type: \add, id, panel: p}
+      .then -> p
+
+  # 真的刪掉: 銷毀實例、清掉它發出的 filter, 並且把版面上那個葉子變成空格子.
+  #
+  # 跟 relayout 的「摘下來不銷毀」是兩回事 - 那個是給 undo 用的, 這個是刪除.
+  # 不順手清掉 filter 的話, 畫面上會留著一個沒有來源的篩選, 使用者找不到地方取消
+  remove-panel: (id) ->
+    p = [x for x in @panels when x.id == id].0
+    if !p => return false
+    if p.itf and p.itf.destroy => p.itf.destroy!
+    # split: 格子留在原地變成空格子 ( 編輯器要的就是「圖拿掉了, 格子還在」).
+    # grid: 格子的位置是 area 給的, 留一個空的沒有意義, 直接拿掉
+    if (n = @leaf[id])
+      if (@def.layout or {}).type == \split
+        n.innerHTML = ''
+        n.className = 'dash-cell dash-empty'
+      else if n.parentNode => n.parentNode.removeChild n
+    delete @leaf[id]
+    @panels = [x for x in @panels when x.id != id]
+    for k, v of @filters => if v.owner == id => delete @filters[k]
+    # 葉子留著, 只是不再指向任何 panel - 編輯器要的就是「圖拿掉了, 格子還在」
+    if (spec = @_spec-of id) => delete spec.panel
+    @fire \panel, {type: \remove, id}
+    @fire \filter, @filters
+    @render!
+    true
+
+  # 改一張圖. 只有換圖種 ( chart ) 才重建, 其餘 ( data / cfg / binding / title )
+  # 就是改 def 再 render - panel block 拿到的 def 跟這裡是同一個物件, 所以改了就看得到
+  update-panel: (id, patch = {}) ->
+    p = [x for x in @panels when x.id == id].0
+    if !p => return Promise.reject new Error("[dash] no such panel: #id")
+    swap = patch.chart? and JSON.stringify(patch.chart) != JSON.stringify(p.chart)
+    # 主題層把 theme 併在 p._cfg 之上 ( 見示範頁的 mode.ls ), 所以改 cfg 要連
+    # _cfg 一起改 - 只改 cfg 的話, 下次重算主題會把舊的那份又翻出來
+    if patch.cfg? and p._cfg? => p._cfg = patch.cfg
+    p <<< patch
+    next = if !swap => Promise.resolve p
+    else
+      if p.itf and p.itf.destroy => p.itf.destroy!
+      if (n = @leaf[id]) => n.innerHTML = ''
+      @_mount p
+    next
+      # 重建的那條路, _mount 自己就會畫一次; 沒重建才需要叫它重畫
+      .then ~> if !swap and p.itf => p.itf.render!
+      .then ~> @fire \panel, {type: \update, id, patch}
+      .then -> p
+
+  panel-of: (id) -> [x for x in @panels when x.id == id].0 or null
 
   # 版面有兩種, 由 def.layout.type 分支:
   #
@@ -340,9 +409,13 @@ board.prototype = Object.create(Object.prototype) <<<
     if @leaf[p.id] => return @leaf[p.id]
     node = document.createElement \div
     node.classList.add \dash-cell
-    node.style <<< @_area p
-    @root.appendChild node
-    @leaf[p.id] = node
+    # split 模式的位置是樹決定的: 樹上還沒指到它就先不進 DOM, 下一次 relayout
+    # 會把它接上去. 直接塞進 root 的話, 它會變成根容器的一個 flex 子項, 擠掉版面
+    if (@def.layout or {}).type == \split => @leaf[p.id] = node
+    else
+      node.style <<< @_area p
+      @root.appendChild node
+      @leaf[p.id] = node
 
   # ------------------------------------------------------------ split
   #
@@ -371,15 +444,17 @@ board.prototype = Object.create(Object.prototype) <<<
     # 樹上沒指到的 panel: 格子留著 ( 之後 relayout 回來還在 ), 只是不在畫面上
     for k, n of old => if !@leaf[k] => @leaf[k] = n
 
-  _fill: (host, node, l, old) ->
+  _fill: (host, node, l, old, path = []) ->
     dir = if node.dir == \row => \row else \col
     host.dataset.dir = dir
+    host.dataset.path = path.join '.'
     host.style.flexDirection = if dir == \row => \row else \column
     (node.children or []).map (c, i) ~>
+      # 分隔線不是樹上的節點, 所以它沒有 path - 編輯器算位置時也就不必跳過它
       if i => host.appendChild @_handle l, dir
-      host.appendChild @_pane c, l, old, dir
+      host.appendChild @_pane c, l, old, dir, (path ++ [i])
 
-  _pane: (c, l, old, dir) ->
+  _pane: (c, l, old, dir, path) ->
     kids = c.children or []
     node = if kids.length =>
       box = document.createElement \div
@@ -392,8 +467,9 @@ board.prototype = Object.create(Object.prototype) <<<
       cell
     # 樹的節點掛在元素上, 拖分隔線時要改的就是它 ( 改完 def.layout 就是新版面 )
     node._spec = c
+    node.dataset.path = path.join '.'
     @_size node, c, dir
-    if kids.length => @_fill node, c, l, old
+    if kids.length => @_fill node, c, l, old, path
     node
 
   _size: (node, c, dir) ->
@@ -458,6 +534,44 @@ board.prototype = Object.create(Object.prototype) <<<
     [[a, av], [b, bv]].map ([n, v]) ->
       n._spec.size = g * v / t
       n.style.flex = "#{n._spec.size} 1 0"
+
+  # ---------------------------------------------- 樹的位置 ( split 專用 )
+  #
+  # 每個節點身上都寫著 data-path ( 例如 "1.0.2" ), 每次 relayout 重算.
+  # 編輯器要「點一格知道它在樹上的哪裡」就讀這個, 不必自己從 DOM 往上數 index -
+  # 數的話要跳過分隔線, 而且一旦這邊的 DOM 形狀改了, 那段程式就默默錯掉.
+
+  # DOM 節點 -> 樹上的位置. 根是 [], 分隔線與版面外的東西是 null
+  path-of: (node) ->
+    n = node
+    while n and n != @root
+      if n.classList and n.classList.contains \dash-handle => return null
+      if n.dataset? and n.dataset.path? => return @_path n.dataset.path
+      n = n.parentNode
+    if n == @root => [] else null
+
+  _path: (s) -> [+x for x in "#s".split('.') when x != '']
+
+  # 位置 -> 樹上的節點 ( def 裡的那個物件, 改它就是改 def )
+  spec-at: (path = []) ->
+    n = (@def.layout or {}).root
+    for i in (if Array.isArray(path) => path else @_path path)
+      n = ((n or {}).children or [])[i]
+    n or null
+
+  # 位置 -> DOM 節點
+  node-at: (path = []) ->
+    p = (if Array.isArray(path) => path else @_path path).join '.'
+    if !p => @root else @root.querySelector "[data-path=\"#p\"]"
+
+  # panel id -> 樹上指到它的那個葉子
+  _spec-of: (id) ->
+    find = (n) ->
+      if !n => return null
+      if n.panel == id => return n
+      for c in (n.children or []) => if (r = find c) => return r
+      null
+    find (@def.layout or {}).root
 
   # 只換版面, 不重建 panel.
   #

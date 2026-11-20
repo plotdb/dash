@@ -182,6 +182,91 @@ mk-switch = (name) ->
 
 for name of layouts => mk-switch name
 
+# ------------------------------------------------------- 編輯器用的那幾個 API
+#
+# 點一格 -> 它在樹上的位置 -> 在那一格增 / 刪 / 改. 這一段就是編輯器會做的事,
+# 只是 UI 換成三顆按鈕.
+
+# 要放進空格子的那一張圖. 跟 def.panels 裡的寫法完全一樣
+spare =
+  id: \category, title: "書系占比", subtitle: "可點選"
+  chart: {name: "@makechart/percent-list"}
+  data:
+    groupby: \category
+    measures: [{name: "銷售額", field: \amount, op: \sum, unit: "元"}]
+    compare: true
+  cfg: {palette: palette, common: {subset: {mode: \partial}}}
+
+sel = null     # 選取的格子在樹上的位置
+
+paint = ->
+  for n in document.querySelectorAll('.dash-cell') => n.classList.remove \sel
+  spec = if sel => bd.spec-at sel else null
+  if sel and (n = bd.node-at sel) => n.classList.add \sel
+  node \path .textContent = if !sel => '( 還沒選 )' else "[#{sel.join ', '}]#{if spec?panel => " · #{spec.panel}" else ' · 空格子'}"
+  for k, b of btn => b.classList.toggle \off, !spec
+  btn.put.textContent = if spec?panel => '拿掉這張圖' else '放一張圖進去'
+  btn.swap.classList.toggle \off, !spec?panel
+  btn.hue.classList.toggle \off, !spec?panel
+
+btn =
+  put: node \put
+  swap: node \swap
+  hue: node \hue
+
+# 點格子選取. 位置直接問 board - 自己從 DOM 往上數 index 要跳過分隔線,
+# 而且這邊的 DOM 形狀一改, 那段程式就默默錯掉
+bd.root.addEventListener \click, (e) ->
+  p = bd.path-of e.target
+  if !p or !p.length => return
+  # 只選到葉子 ( 容器節點點不到, 因為它整片都被子節點蓋著 )
+  sel := p
+  paint!
+
+btn.put.addEventListener \click, ->
+  spec = if sel => bd.spec-at sel else null
+  if !spec => return
+  if spec.panel
+    id = spec.panel
+    bd.remove-panel id          # 真的刪掉: 連它發出的 filter 一起清
+    node \msg .textContent = "拿掉了「#{id}」· 它發出的篩選也一起清掉了, 格子還在"
+    paint!
+  else
+    # 先在樹上指過去, 再 relayout 把格子接起來, 最後把 panel 掛進去.
+    # 反過來 ( 先 add 再 relayout ) 也可以 - 格子會先放著不進 DOM
+    spec.panel = spare.id
+    bd.relayout!
+    bd.add-panel spare .then ->
+      node \msg .textContent = "放了一張「#{spare.title}」進去 · 其他圖沒有重建"
+      paint!
+
+btn.swap.addEventListener \click, ->
+  spec = if sel => bd.spec-at sel else null
+  if !spec?panel => return
+  p = bd.panel-of spec.panel
+  now = p?chart?name
+  next = if now == "@makechart/bar" => "@makechart/pie" else "@makechart/bar"
+  # 換圖種: 這一個會重建 chart ( 本來就是另一張圖 ), 但 panel 本身不動
+  bd.update-panel spec.panel, {chart: {name: next}}
+  node \msg .textContent = "「#{spec.panel}」換成 #{next} · 只有這一格重建"
+
+btn.hue.addEventListener \click, ->
+  spec = if sel => bd.spec-at sel else null
+  if !spec?panel => return
+  p = bd.panel-of spec.panel
+  warm = <[#dd6e6e #f2a154 #b6c454 #9b8bbd #6ab7d4 #0b7fab]>
+  cold = palette.colors
+  cur-warm = (p._cfg or p.cfg or {}).palette?colors?0 == warm.0
+  # 只改 cfg: 不重建 chart, 篩選與選取狀態都不動
+  bd.update-panel spec.panel, {cfg: {} <<< (p._cfg or p.cfg or {}) <<< {palette: {colors: (if cur-warm => cold else warm)}}}
+  node \msg .textContent = "「#{spec.panel}」換了色票 · chart 沒有重建"
+
+bd.on \relayout, -> paint!
+# 增刪改也會動到樹 ( 例如拿掉一張圖, 那個葉子就不再指向任何 panel )
+bd.on \panel, ->
+  node \out .textContent = dash.dump bd.def.layout.root
+  paint!
+
 node \mode .addEventListener \click, -> dmode.toggle!
 dmode.on -> node \mode .textContent = "#{dmode.icon!} #{dmode.label!}"
 
@@ -194,3 +279,4 @@ node \pin .addEventListener \click, ->
 
 bd.init!then ->
   node \out .textContent = dash.dump bd.def.layout.root
+  paint!

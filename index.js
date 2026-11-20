@@ -457,42 +457,169 @@
     return Promise.resolve().then(function(){
       return dash.driver(this$.def.data).load();
     }).then(function(rows){
-      var cache;
       this$.rows = rows || [];
       this$.layout();
-      cache = {};
       return Promise.all(this$.panels.map(function(p){
-        var b, k;
-        b = p.panel || this$.panelBlock;
-        k = JSON.stringify(b);
-        return (cache[k] || (cache[k] = this$.mgr.get(b))).then(function(bc){
-          return p._bc = bc;
-        });
-      }));
-    }).then(function(){
-      return Promise.all(this$.panels.map(function(p){
-        var node;
-        node = this$._cell(p);
-        return p._bc.create({
-          data: {
-            def: p,
-            board: this$
-          }
-        }).then(function(bi){
-          return bi.attach({
-            root: node
-          }).then(function(){
-            return bi['interface']();
-          });
-        }).then(function(itf){
-          return p.itf = itf;
-        });
+        return this$._mount(p);
       }));
     }).then(function(){
       return this$.fire('init');
     }).then(function(){
       return this$;
     });
+  }, ref$._mount = function(p){
+    var b, k, ref$, this$ = this;
+    b = p.panel || this.panelBlock;
+    k = JSON.stringify(b);
+    this._bc || (this._bc = {});
+    return ((ref$ = this._bc)[k] || (ref$[k] = this.mgr.get(b))).then(function(bc){
+      var node;
+      p._bc = bc;
+      node = this$._cell(p);
+      return bc.create({
+        data: {
+          def: p,
+          board: this$
+        }
+      }).then(function(bi){
+        return bi.attach({
+          root: node
+        }).then(function(){
+          return bi['interface']();
+        });
+      }).then(function(itf){
+        return p.itf = itf;
+      });
+    }).then(function(){
+      return p;
+    });
+  }, ref$.addPanel = function(d){
+    var id, x, p, ref$, this$ = this;
+    d == null && (d = {});
+    id = d.id || "panel-" + this.panels.length;
+    if ((function(){
+      var i$, ref$, len$, results$ = [];
+      for (i$ = 0, len$ = (ref$ = this.panels).length; i$ < len$; ++i$) {
+        x = ref$[i$];
+        if (x.id === id) {
+          results$.push(x);
+        }
+      }
+      return results$;
+    }.call(this))[0]) {
+      return Promise.reject(new Error("[dash] duplicated panel id: " + id));
+    }
+    p = (ref$ = import$({}, d), ref$.id = id, ref$);
+    this.panels.push(p);
+    return this._mount(p).then(function(){
+      return this$.fire('panel', {
+        type: 'add',
+        id: id,
+        panel: p
+      });
+    }).then(function(){
+      return p;
+    });
+  }, ref$.removePanel = function(id){
+    var p, x, n, res$, i$, ref$, len$, k, v, spec;
+    p = (function(){
+      var i$, ref$, len$, results$ = [];
+      for (i$ = 0, len$ = (ref$ = this.panels).length; i$ < len$; ++i$) {
+        x = ref$[i$];
+        if (x.id === id) {
+          results$.push(x);
+        }
+      }
+      return results$;
+    }.call(this))[0];
+    if (!p) {
+      return false;
+    }
+    if (p.itf && p.itf.destroy) {
+      p.itf.destroy();
+    }
+    if (n = this.leaf[id]) {
+      if ((this.def.layout || {}).type === 'split') {
+        n.innerHTML = '';
+        n.className = 'dash-cell dash-empty';
+      } else if (n.parentNode) {
+        n.parentNode.removeChild(n);
+      }
+    }
+    delete this.leaf[id];
+    res$ = [];
+    for (i$ = 0, len$ = (ref$ = this.panels).length; i$ < len$; ++i$) {
+      x = ref$[i$];
+      if (x.id !== id) {
+        res$.push(x);
+      }
+    }
+    this.panels = res$;
+    for (k in ref$ = this.filters) {
+      v = ref$[k];
+      if (v.owner === id) {
+        delete this.filters[k];
+      }
+    }
+    if (spec = this._specOf(id)) {
+      delete spec.panel;
+    }
+    this.fire('panel', {
+      type: 'remove',
+      id: id
+    });
+    this.fire('filter', this.filters);
+    this.render();
+    return true;
+  }, ref$.updatePanel = function(id, patch){
+    var p, x, swap, next, n, this$ = this;
+    patch == null && (patch = {});
+    p = (function(){
+      var i$, ref$, len$, results$ = [];
+      for (i$ = 0, len$ = (ref$ = this.panels).length; i$ < len$; ++i$) {
+        x = ref$[i$];
+        if (x.id === id) {
+          results$.push(x);
+        }
+      }
+      return results$;
+    }.call(this))[0];
+    if (!p) {
+      return Promise.reject(new Error("[dash] no such panel: " + id));
+    }
+    swap = patch.chart != null && JSON.stringify(patch.chart) !== JSON.stringify(p.chart);
+    if (patch.cfg != null && p._cfg != null) {
+      p._cfg = patch.cfg;
+    }
+    import$(p, patch);
+    next = !swap
+      ? Promise.resolve(p)
+      : (p.itf && p.itf.destroy && p.itf.destroy(), (n = this.leaf[id]) && (n.innerHTML = ''), this._mount(p));
+    return next.then(function(){
+      if (!swap && p.itf) {
+        return p.itf.render();
+      }
+    }).then(function(){
+      return this$.fire('panel', {
+        type: 'update',
+        id: id,
+        patch: patch
+      });
+    }).then(function(){
+      return p;
+    });
+  }, ref$.panelOf = function(id){
+    var x;
+    return (function(){
+      var i$, ref$, len$, results$ = [];
+      for (i$ = 0, len$ = (ref$ = this.panels).length; i$ < len$; ++i$) {
+        x = ref$[i$];
+        if (x.id === id) {
+          results$.push(x);
+        }
+      }
+      return results$;
+    }.call(this))[0] || null;
   }, ref$.layout = function(){
     var l, ref$;
     l = this.def.layout || {};
@@ -521,9 +648,13 @@
     }
     node = document.createElement('div');
     node.classList.add('dash-cell');
-    import$(node.style, this._area(p));
-    this.root.appendChild(node);
-    return this.leaf[p.id] = node;
+    if ((this.def.layout || {}).type === 'split') {
+      return this.leaf[p.id] = node;
+    } else {
+      import$(node.style, this._area(p));
+      this.root.appendChild(node);
+      return this.leaf[p.id] = node;
+    }
   }, ref$._split = function(l){
     var root, old, k, n, ref$, results$ = [];
     root = l.root || {};
@@ -551,27 +682,30 @@
       }
     }
     return results$;
-  }, ref$._fill = function(host, node, l, old){
+  }, ref$._fill = function(host, node, l, old, path){
     var dir, this$ = this;
+    path == null && (path = []);
     dir = node.dir === 'row' ? 'row' : 'col';
     host.dataset.dir = dir;
+    host.dataset.path = path.join('.');
     host.style.flexDirection = dir === 'row' ? 'row' : 'column';
     return (node.children || []).map(function(c, i){
       if (i) {
         host.appendChild(this$._handle(l, dir));
       }
-      return host.appendChild(this$._pane(c, l, old, dir));
+      return host.appendChild(this$._pane(c, l, old, dir, path.concat([i])));
     });
-  }, ref$._pane = function(c, l, old, dir){
+  }, ref$._pane = function(c, l, old, dir, path){
     var kids, node, box, cell;
     kids = c.children || [];
     node = kids.length
       ? (box = document.createElement('div'), box.className = 'dash-split', box)
       : (cell = (c.panel != null && old[c.panel]) || document.createElement('div'), cell.className = c.panel != null ? 'dash-cell' : 'dash-cell dash-empty', c.panel != null && (this.leaf[c.panel] = cell), cell);
     node._spec = c;
+    node.dataset.path = path.join('.');
     this._size(node, c, dir);
     if (kids.length) {
-      this._fill(node, c, l, old);
+      this._fill(node, c, l, old, path);
     }
     return node;
   }, ref$._size = function(node, c, dir){
@@ -660,6 +794,73 @@
       n._spec.size = g * v / t;
       return n.style.flex = n._spec.size + " 1 0";
     });
+  }, ref$.pathOf = function(node){
+    var n;
+    n = node;
+    while (n && n !== this.root) {
+      if (n.classList && n.classList.contains('dash-handle')) {
+        return null;
+      }
+      if (n.dataset != null && n.dataset.path != null) {
+        return this._path(n.dataset.path);
+      }
+      n = n.parentNode;
+    }
+    if (n === this.root) {
+      return [];
+    } else {
+      return null;
+    }
+  }, ref$._path = function(s){
+    var i$, ref$, len$, x, results$ = [];
+    for (i$ = 0, len$ = (ref$ = (s + "").split('.')).length; i$ < len$; ++i$) {
+      x = ref$[i$];
+      if (x !== '') {
+        results$.push(+x);
+      }
+    }
+    return results$;
+  }, ref$.specAt = function(path){
+    var n, i$, ref$, len$, i;
+    path == null && (path = []);
+    n = (this.def.layout || {}).root;
+    for (i$ = 0, len$ = (ref$ = Array.isArray(path)
+      ? path
+      : this._path(path)).length; i$ < len$; ++i$) {
+      i = ref$[i$];
+      n = ((n || {}).children || [])[i];
+    }
+    return n || null;
+  }, ref$.nodeAt = function(path){
+    var p;
+    path == null && (path = []);
+    p = (Array.isArray(path)
+      ? path
+      : this._path(path)).join('.');
+    if (!p) {
+      return this.root;
+    } else {
+      return this.root.querySelector("[data-path=\"" + p + "\"]");
+    }
+  }, ref$._specOf = function(id){
+    var find;
+    find = function(n){
+      var i$, ref$, len$, c, r;
+      if (!n) {
+        return null;
+      }
+      if (n.panel === id) {
+        return n;
+      }
+      for (i$ = 0, len$ = (ref$ = n.children || []).length; i$ < len$; ++i$) {
+        c = ref$[i$];
+        if (r = find(c)) {
+          return r;
+        }
+      }
+      return null;
+    };
+    return find((this.def.layout || {}).root);
   }, ref$.relayout = function(layout){
     var i$, ref$, len$, p, n;
     if (layout) {

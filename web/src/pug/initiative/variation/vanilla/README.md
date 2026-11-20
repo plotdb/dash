@@ -389,6 +389,10 @@ flow 重算）之後要讓畫面跟上，但不該重建版面：`reload(def)` �
 不存在時結果就是空集合 —— 這是對的，篩選本來就是「要這幾項」；清掉的話畫面會從「空的」
 變成「全部」，更難發現資料換了。另外會發一個 `rows` 事件。
 
+**panel 的增刪改。** `board.addPanel` / `removePanel` / `updatePanel`，給編輯器用 ——
+`reload(def)` 整個重建還會清掉篩選，改一張圖的顏色不該讓使用者正在看的篩選消失。
+細節與 split 版面的位置 API 寫在 `../../split/README.md`。
+
 **`panel.chart` 收內嵌定義。** 原本只能寫 `{name, version}` 去指 registry 上已發佈的
 chart block；現在也可以寫 `{code}`，整份 block 定義就在 def 裡。使用者自己寫的圖表不在
 registry 上（makechart 的自訂 code 是這種），需要這一條。code 裡的 dependency 仍然由
