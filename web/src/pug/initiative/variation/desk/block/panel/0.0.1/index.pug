@@ -1,0 +1,106 @@
+div
+  .dk-panel
+    .dk-head
+      div(style="min-width:0")
+        .dk-title(ld="title")
+        .dk-sub(ld="sub")
+      .dk-spacer
+      .dk-tag(ld="tag")
+        i.dk-tag-dot
+        span 篩選中
+        i.dk-tag-x ✕
+    .dk-body(ld="body")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .dk-panel
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+      flex-direction: column
+      gap: 2px
+      padding: 12px 14px 10px
+      border-radius: var(--dk-radius)
+      color: var(--dk-fg)
+      // 外觀全部走頁面定義的 custom property, 所以 light / dark 不必接 JS -
+      // 這個 block 的 index.ls 跟其他五個設計逐字相同, 連模式都不知道
+      background: linear-gradient(180deg, var(--dk-panel-a) 0%, var(--dk-panel-b) 100%)
+      border: 1px solid var(--dk-line)
+      box-shadow: var(--dk-shadow)
+      transition: border-color .2s, box-shadow .2s, background-color .25s
+      &:hover
+        border-color: var(--dk-line-hi)
+
+    .dk-head
+      flex: 0 0 auto
+      display: flex
+      align-items: flex-start
+      gap: 8px
+      padding-bottom: 6px
+
+    .dk-title
+      font-size: 13.5px
+      font-weight: 600
+      letter-spacing: .02em
+      color: var(--dk-fg)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .dk-sub
+      margin-top: 2px
+      font-size: 11px
+      line-height: 1.5
+      color: var(--dk-fg-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .dk-spacer
+      flex: 1 1 auto
+
+    .dk-body
+      flex: 1 1 auto
+      min-height: 0
+      position: relative
+
+    // 這張圖正在對外發 filter 時的狀態. 用亮度而不是色相 -
+    // 色相全部留給資料, 介面狀態不跟資料搶顏色
+    .dk-tag
+      display: none
+      flex: 0 0 auto
+      align-items: center
+      gap: 5px
+      padding: 3px 8px
+      font-size: 10.5px
+      letter-spacing: .04em
+      color: var(--dk-fg)
+      background: var(--dk-soft)
+      border: 1px solid var(--dk-line)
+      border-radius: 999px
+      cursor: pointer
+      transition: .15s
+      &:hover
+        background: var(--dk-soft-hi)
+        border-color: var(--dk-line-hi)
+    .dk-tag-dot
+      width: 5px
+      height: 5px
+      border-radius: 50%
+      background: var(--dk-acc-3)
+      box-shadow: 0 0 0 3px var(--dk-soft-hi)
+    .dk-tag-x
+      font-style: normal
+      opacity: .55
+    .dk-panel.filtering
+      border-color: var(--dk-line-hi)
+      box-shadow: var(--dk-shadow), inset 0 0 0 1px var(--dk-soft)
+      > .dk-head .dk-tag
+        display: inline-flex
+  script: include:lsc index.ls

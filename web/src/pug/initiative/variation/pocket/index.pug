@@ -1,0 +1,258 @@
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1,viewport-fit=cover")
+    title 獨立書店銷售概況 — 口袋版 / @plotdb/dash
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var m=localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // pocket「口袋」. 同一份 def, 排成一支手機.
+      //
+      // 前提: 畫面只有一欄寬, 操作的是拇指, 而且人是站著看的.
+      // 這一版的所有決定都從這三句推出來.
+      :root
+        --pk-sans: -apple-system, "SF Pro Text", "PingFang TC", "Noto Sans TC", system-ui, sans-serif
+        --dash-gap: 10px
+      :root, :root[data-mode=light]
+        --pk-bg: #eef0f4
+        --pk-card: #ffffff
+        --pk-fg: #1b2029
+        --pk-fg-strong: #0c1017
+        --pk-fg-dim: #6c7484
+        --pk-soft: rgba(20,25,35,.08)
+        --pk-line: rgba(20,25,35,.10)
+        --pk-accent: #3b4bd8
+        --pk-on-accent: #ffffff
+        --pk-up: #0b8a63
+        --pk-down: #c43a60
+        --pk-acc-1: #3b4bd8
+        --pk-acc-2: #0e9f6e
+        --pk-acc-3: #c2721c
+        --pk-acc-4: #0f8f86
+      // 深色不是為了好看, 是為了晚上在床上看不刺眼: 卡片比底色亮一階,
+      // 不是反過來 - 手機在暗處是唯一的光源, 大面積的亮色要留給卡片
+      :root[data-mode=dark]
+        --pk-bg: #0b0d12
+        --pk-card: #171a21
+        --pk-fg: #e6e9ef
+        --pk-fg-strong: #f6f8fb
+        --pk-fg-dim: #8c94a3
+        --pk-soft: rgba(255,255,255,.09)
+        --pk-line: rgba(255,255,255,.10)
+        --pk-accent: #8ea2ff
+        --pk-on-accent: #0b0d12
+        --pk-up: #42d9a0
+        --pk-down: #ff87a6
+        --pk-acc-1: #8ea2ff
+        --pk-acc-2: #42d9a0
+        --pk-acc-3: #ffc078
+        --pk-acc-4: #4fd1c5
+
+      html, body
+        margin: 0
+        padding: 0
+        min-height: 100%
+      body
+        background: var(--pk-bg)
+        color: var(--pk-fg)
+        font-family: var(--pk-sans)
+        -webkit-font-smoothing: antialiased
+        font-size: 14px
+        transition: background-color .25s, color .25s
+
+      // 版心就是一支手機的寬度. 在桌機上看也是這個寬度 -
+      // 這一版不是「會縮的儀表板」, 它只有一種寬度
+      .pk-app
+        box-sizing: border-box
+        width: 100%
+        max-width: 460px
+        min-height: 100vh
+        margin: 0 auto
+        padding: 0 12px 96px
+        background: var(--pk-bg)
+
+      // ------------------------------------------------------------ 頁首
+      // 捲動時留在上面: 一欄的版面捲起來很長, 沒有頁首就不知道自己在哪
+      .pk-top
+        position: sticky
+        top: 0
+        z-index: 20
+        display: flex
+        align-items: center
+        gap: 10px
+        padding: 14px 2px 10px
+        background: var(--pk-bg)
+      .pk-h1
+        font-size: 19px
+        font-weight: 700
+        letter-spacing: .01em
+      .pk-sub
+        margin-top: 1px
+        font-size: 11.5px
+        color: var(--pk-fg-dim)
+      .pk-spacer
+        flex: 1 1 auto
+      .pk-icon
+        flex: 0 0 auto
+        display: inline-flex
+        align-items: center
+        justify-content: center
+        width: 36px
+        height: 36px
+        font-size: 15px
+        color: var(--pk-fg)
+        background: var(--pk-card)
+        border-radius: 999px
+        cursor: pointer
+        text-decoration: none
+
+      // 篩選中的欄位. 一欄的版面放不下一整排 chip, 所以橫向捲
+      .pk-state
+        display: flex
+        gap: 7px
+        margin-bottom: 10px
+        padding-bottom: 2px
+        overflow-x: auto
+        scrollbar-width: none
+        &::-webkit-scrollbar
+          display: none
+        &:empty
+          display: none
+      .pk-chip
+        display: inline-flex
+        align-items: center
+        gap: 7px
+        flex: 0 0 auto
+        height: 32px
+        padding: 0 12px
+        font-size: 12px
+        color: var(--pk-on-accent)
+        background: var(--pk-accent)
+        border-radius: 999px
+        white-space: nowrap
+        .k
+          opacity: .6
+        .x
+          font-size: 11px
+          opacity: .75
+          cursor: pointer
+
+      // ------------------------------------------------------------ 版面
+      // 高度由內容決定, 整頁往下捲 - 跟 report 同一招, 理由不同:
+      // 那邊是因為它是一份文件, 這邊是因為一欄塞不下八格
+      .pk-board
+        .dash
+          height: auto
+          overflow: visible
+
+      // ------------------------------------------------------------ 頁尾
+      // 拇指構得到的地方. 手機上「清除篩選」比「儀表板定義」重要得多,
+      // 所以只有它常駐
+      .pk-dock
+        position: fixed
+        left: 0
+        bottom: 0
+        z-index: 30
+        width: 100%
+        display: flex
+        justify-content: center
+        padding: 10px 12px calc(12px + env(safe-area-inset-bottom))
+        background: linear-gradient(to top, var(--pk-bg) 62%, transparent)
+        pointer-events: none
+      .pk-dock-in
+        display: flex
+        gap: 8px
+        width: 100%
+        max-width: 436px
+        pointer-events: auto
+      .pk-btn
+        flex: 1 1 auto
+        display: inline-flex
+        align-items: center
+        justify-content: center
+        height: 44px
+        font-size: 13.5px
+        font-weight: 600
+        color: var(--pk-on-accent)
+        background: var(--pk-accent)
+        border-radius: 14px
+        cursor: pointer
+        text-decoration: none
+        &.ghost
+          color: var(--pk-fg)
+          background: var(--pk-card)
+        &.off
+          opacity: .35
+          pointer-events: none
+
+      // ------------------------------------------------------------ def
+      // 手機上 def 是唯讀的: 在 320px 寬的螢幕上改 JS 物件字面量不是編輯,
+      // 是受罰. 要改去 desk 或 report
+      .pk-def
+        margin-top: 18px
+        padding: 14px
+        background: var(--pk-card)
+        border-radius: 16px
+      .pk-def summary
+        font-size: 13px
+        font-weight: 600
+        cursor: pointer
+        list-style: none
+        &::-webkit-details-marker
+          display: none
+        &:after
+          content: ' ▾'
+          color: var(--pk-fg-dim)
+      .pk-def-note
+        margin-top: 8px
+        font-size: 12px
+        line-height: 1.75
+        color: var(--pk-fg-dim)
+      .pk-def pre
+        margin: 10px 0 0
+        padding: 12px
+        max-height: 20em
+        overflow: auto
+        font-family: ui-monospace, "SF Mono", monospace
+        font-size: 10.5px
+        line-height: 1.6
+        color: var(--pk-fg)
+        background: var(--pk-bg)
+        border-radius: 10px
+  body
+    .pk-app
+      .pk-top
+        div
+          .pk-h1 獨立書店銷售概況
+          .pk-sub pocket「口袋」· 2024
+        .pk-spacer
+        .pk-icon(ld="mode")
+        a.pk-icon(href="/initiative/variation/",title="其他設計") ↗
+      .pk-state(ld="chips")
+      .pk-board(ld="board")
+      details.pk-def
+        summary 儀表板定義 ( def )
+        .pk-def-note
+          | 這一頁跟其他五個設計載入的是同一份 def。手機上它是唯讀的 ——
+          | 要改去 desk 的抽屜或 report 的附錄。
+        pre(ld="dump")
+    .pk-dock
+      .pk-dock-in
+        .pk-btn(ld="clear") 清除篩選
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc ../mode.ls
+    script(type="module"): include:lsc index.ls

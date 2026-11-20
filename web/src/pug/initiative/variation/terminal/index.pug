@@ -1,0 +1,162 @@
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title 獨立書店銷售概況 — 主控台 / @plotdb/dash
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var m=localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // terminal「主控台」. 同一份 def, 當成一個終端機畫面.
+      //
+      // 兩個決定推出其餘全部:
+      //  1. 整頁等寬字 - 包括圖表裡的文字 ( svg text 吃 CSS 繼承 )
+      //  2. 整頁只有一個色相 - 連四條線都是同一個色的四階
+      :root
+        --tm-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono", monospace
+        --dash-gap: 8px
+      // 深色是這一版的預設 ( 終端機的預設 ). 強調色是琥珀色的螢光幕,
+      // 不是因為好看 - 單色畫面的「亮」只有一個方向, 色相不能再拿來分類
+      :root, :root[data-mode=dark]
+        --tm-bg: #0b0b0c
+        --tm-panel: #111214
+        --tm-fg: #c8ccd2
+        --tm-fg-dim: #6f757e
+        --tm-line: #262a30
+        --tm-line-hi: #3a4049
+        --tm-hot: #ffb000
+        --tm-up: #86c06a
+        --tm-down: #e0714c
+      // 淺色不是把終端機反白, 是換一種紙本: 報表紙.
+      // 強調色跟著壓成同色相的深琥珀 - 螢光色在紙上不存在
+      :root[data-mode=light]
+        --tm-bg: #eceae3
+        --tm-panel: #f8f7f3
+        --tm-fg: #26282c
+        --tm-fg-dim: #767b83
+        --tm-line: #c9c6bd
+        --tm-line-hi: #9a968c
+        --tm-hot: #9a5e00
+        --tm-up: #3f6b2b
+        --tm-down: #a8431f
+
+      html, body
+        width: 100%
+        height: 100%
+        margin: 0
+        padding: 0
+      body
+        background: var(--tm-bg)
+        color: var(--tm-fg)
+        font-family: var(--tm-mono)
+        -webkit-font-smoothing: antialiased
+        font-size: 13px
+        overflow: hidden
+        transition: background-color .25s, color .25s
+
+      .tm-screen
+        box-sizing: border-box
+        width: 100%
+        height: 100%
+        min-height: 600px
+        display: flex
+        flex-direction: column
+        gap: 8px
+        padding: 10px
+
+      // ------------------------------------------------------------ 狀態列
+      // 終端機的第一行是狀態, 不是標題. 所有東西都寫成一行可以讀的字串
+      .tm-bar
+        flex: 0 0 auto
+        display: flex
+        align-items: center
+        gap: 14px
+        padding: 7px 10px
+        font-size: 11.5px
+        letter-spacing: .04em
+        background: var(--tm-panel)
+        border: 1px solid var(--tm-line)
+      .tm-path
+        color: var(--tm-hot)
+        white-space: nowrap
+      .tm-stat
+        color: var(--tm-fg-dim)
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
+      .tm-spacer
+        flex: 1 1 auto
+      .tm-btn
+        flex: 0 0 auto
+        padding: 3px 9px
+        font-family: var(--tm-mono)
+        font-size: 11px
+        letter-spacing: .06em
+        color: var(--tm-fg)
+        background: none
+        border: 1px solid var(--tm-line-hi)
+        cursor: pointer
+        white-space: nowrap
+        text-decoration: none
+        &:hover
+          color: var(--tm-bg)
+          background: var(--tm-fg)
+          border-color: var(--tm-fg)
+        &.off
+          opacity: .3
+          pointer-events: none
+
+      // 篩選中的欄位也是字串: field=value, 跟指令列一樣
+      .tm-chips
+        display: flex
+        align-items: center
+        gap: 12px
+        flex-wrap: nowrap
+        overflow: hidden
+      .tm-chip
+        display: inline-flex
+        align-items: baseline
+        gap: 2px
+        font-size: 11.5px
+        color: var(--tm-hot)
+        white-space: nowrap
+        .k
+          color: var(--tm-fg-dim)
+        .x
+          margin-left: 5px
+          color: var(--tm-fg-dim)
+          cursor: pointer
+          &:hover
+            color: var(--tm-fg)
+
+      .tm-board
+        flex: 1 1 auto
+        min-height: 0
+      // 沒有進場動畫. 值班畫面重開的次數比誰都多, 每次都等它飄一次是折磨
+  body
+    .tm-screen
+      .tm-bar
+        .tm-path dash://variation/terminal
+        .tm-stat(ld="stat")
+        .tm-spacer
+        .tm-chips(ld="chips")
+        .tm-btn(ld="mode")
+        .tm-btn(ld="clear") [ CLEAR ]
+        a.tm-btn(href="/initiative/variation/") [ OTHERS ]
+      .tm-board(ld="board")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc ../mode.ls
+    script(type="module"): include:lsc index.ls

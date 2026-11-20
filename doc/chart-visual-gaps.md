@@ -1,6 +1,6 @@
 # 圖表的視覺缺口 — 討論中
 
-做 `initiative/2nd/design-1` ( 深色儀表板 ) 時撞到的東西。每一項都附實際的程式位置，
+做 `initiative/variation/desk` ( 深色儀表板 ) 時撞到的東西。每一項都附實際的程式位置，
 結論是**不改圖表的畫法，補圖表的設定面** —— 畫得對不對是資料正確性，已經是對的；
 「好看」是主題層的事，而現在主題層能調的太少。
 
@@ -161,7 +161,7 @@
 anchor 的簽名現在定下來了（就是 `space`），所以 direct labeling 可以接著用同一個東西。
 
 **實際用過之後冒出來的一項：參考線的標籤沒有避讓。** 標籤錨在線的末端，而末端正是
-資料線最密的地方，所以 `2nd` 的趨勢圖最後是把說明文字改用視圖座標的 `notes` 擺到
+資料線最密的地方，所以 `variation` 的趨勢圖最後是把說明文字改用視圖座標的 `notes` 擺到
 左下角的空白處。這跟第 3 項（direct labeling）要的是同一個東西 —— 一個吃
 「一組標籤 + 各自的 anchor」、負責擺放與避讓的工具。`percent-list` 已經有一份可以抽出來共用。
 
@@ -192,7 +192,7 @@ anchor 的簽名現在定下來了（就是 `space`），所以 direct labeling 
 
 現況查證：`legend.selectable: false` **會連點選一起關掉**（`legend.ls:88` 直接 return），
 不只是收掉那兩顆按鈕。所以「要 legend 可點、但不要那兩顆按鈕」目前辦不到 ——
-我在 2nd 的圓餅圖上就是因此破版，只好把面板加寬。
+我在 variation 的圓餅圖上就是因此破版，只好把面板加寬。
 
 這不是樣式問題，是兩件事被焊在一起了。最小的修法是拆開：
 
@@ -206,7 +206,7 @@ position 加 `top` / `left` 一併處理。
 
 結論是**不需要核心支援**。圖表的 config 結構一致（都從 `chart.utils.config.preset`
 長出來），所以宿主準備一份 generic config、deep clone 後併進每張圖的 cfg 就夠了。
-`initiative/2nd/design-1/index.ls` 現在就是這樣做的（`theme` + `deep`），
+`initiative/variation/desk/index.ls` 現在就是這樣做的（`theme` + `deep`），
 每張圖少抄五行，換主題只改一處。
 
 ~~**但還有一個洞：d3 brush 的選取框不能 customize。**~~ 已經做了（chart 3.12.0）：
@@ -218,7 +218,7 @@ position 加 `top` / `left` 一併處理。
 不設就完全不碰，所以沒用到的圖序列化結果一模一樣（107 個 case 驗證過），
 `@makechart/bar` 自己設的 `shape-rendering` 也不會被蓋掉。
 
-`2nd` 的頁面層 CSS hack 已經移除。順帶一提拉桿預設是透明的（只當熱區），
+`variation` 的頁面層 CSS hack 已經移除。順帶一提拉桿預設是透明的（只當熱區），
 `handleFill` 會讓兩端看得見。
 
 **相容性要求（`@makechart/bar` 那邊提的）**：新增可設定的樣式時，**預設值必須跟現在
