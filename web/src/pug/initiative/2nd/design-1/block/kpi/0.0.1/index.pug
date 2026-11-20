@@ -27,13 +27,13 @@ div
       gap: 6px
       padding: 12px 15px 13px
       border-radius: var(--n2-radius)
-      background: linear-gradient(180deg, #1a222d 0%, #151c25 100%)
-      border: 1px solid rgba(255,255,255,.065)
-      box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 14px 34px -20px rgba(0,0,0,.9)
+      background: linear-gradient(180deg, var(--n2-panel-a) 0%, var(--n2-panel-b) 100%)
+      border: 1px solid var(--n2-line)
+      box-shadow: var(--n2-shadow)
       overflow: hidden
-      transition: border-color .2s
+      transition: border-color .2s, background-color .25s
       &:hover
-        border-color: rgba(255,255,255,.12)
+        border-color: var(--n2-line-hi)
       // 左緣的一道色條, 是這張卡片唯一的顏色
       &:before
         content: ''
@@ -65,12 +65,12 @@ div
       flex: 0 0 auto
       font-size: 10.5px
       font-variant-numeric: tabular-nums
-      color: #6c7a8a
+      color: var(--n2-fg-dim)
       white-space: nowrap
       &.up
-        color: #5ddba4
+        color: var(--n2-up)
       &.down
-        color: #f0a3b4
+        color: var(--n2-down)
 
     .n2-kpi-value
       display: flex
@@ -84,7 +84,7 @@ div
       line-height: 1.1
       letter-spacing: -.01em
       font-variant-numeric: tabular-nums
-      color: #f3f7fb
+      color: var(--n2-num)
 
     .n2-kpi-unit
       font-size: 11.5px
@@ -94,7 +94,7 @@ div
     .n2-kpi-rail
       height: 2px
       border-radius: 2px
-      background: rgba(255,255,255,.07)
+      background: var(--n2-soft)
       overflow: hidden
     .n2-kpi-fill
       width: 100%

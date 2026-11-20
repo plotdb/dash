@@ -1,0 +1,192 @@
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title 獨立書店銷售概況 — 側欄版 / @plotdb/dash
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var m=localStorage.getItem('dash-2nd-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // design-6「側欄」. 同一份 def, 把四個數字立起來.
+      //
+      // 另外五個設計的 KPI 都是橫的一排; 這一版把它們放進左邊一整欄,
+      // 直的疊起來. 換掉的只有 def.layout 裡的 area - 版面在 def 裡,
+      // 不在版型檔裡, 所以「重排」就是改幾個數字.
+      :root
+        --ed-sans: "Helvetica Neue", Inter, -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
+        --dash-gap: 26px
+      :root, :root[data-mode=light]
+        --ed-bg: #ffffff
+        --ed-fg: #2b2f36
+        --ed-fg-strong: #0a0c0f
+        --ed-fg-dim: #767d88
+        --ed-line: rgba(10,12,15,.16)
+        --ed-soft: rgba(10,12,15,.09)
+        --ed-accent: #d7263d
+        --ed-on-accent: #ffffff
+        --ed-up: #1a7f5a
+        --ed-down: #d7263d
+        --ed-acc-1: #d7263d
+        --ed-acc-2: #0a0c0f
+        --ed-acc-3: #767d88
+        --ed-acc-4: #1f4ea8
+      // 深色版把紙換成墨, 但關係不變: 一個紅、其餘全是灰階.
+      // 強調色要提亮一級才壓得住黑底 - 同一個紅在黑底上看起來更暗
+      :root[data-mode=dark]
+        --ed-bg: #0c0d10
+        --ed-fg: #d4d8de
+        --ed-fg-strong: #f7f8fa
+        --ed-fg-dim: #858c97
+        --ed-line: rgba(247,248,250,.20)
+        --ed-soft: rgba(247,248,250,.12)
+        --ed-accent: #ff4d60
+        --ed-on-accent: #0c0d10
+        --ed-up: #3ec28f
+        --ed-down: #ff4d60
+        --ed-acc-1: #ff4d60
+        --ed-acc-2: #f7f8fa
+        --ed-acc-3: #858c97
+        --ed-acc-4: #6f9bff
+
+      html, body
+        width: 100%
+        margin: 0
+        padding: 0
+      body
+        background: var(--ed-bg)
+        color: var(--ed-fg)
+        font-family: var(--ed-sans)
+        -webkit-font-smoothing: antialiased
+        font-size: 14px
+        transition: background-color .25s, color .25s
+
+      .ed-page
+        box-sizing: border-box
+        width: 100%
+        min-height: 100vh
+        display: flex
+        flex-direction: column
+        gap: 22px
+        padding: 30px 36px 32px
+
+      // ------------------------------------------------------------ 頁首
+      // 刊頭貼齊左邊那一欄的寬度, 跟底下的 KPI 側欄對齊成同一條線
+      .ed-bar
+        flex: 0 0 auto
+        display: flex
+        align-items: flex-end
+        gap: 22px
+        padding-bottom: 14px
+        border-bottom: 3px solid var(--ed-fg-strong)
+      .ed-kicker
+        font-size: 10.5px
+        font-weight: 700
+        letter-spacing: .2em
+        text-transform: uppercase
+        color: var(--ed-accent)
+      .ed-h1
+        margin-top: 6px
+        font-size: 34px
+        font-weight: 800
+        line-height: 1.05
+        letter-spacing: -.035em
+        color: var(--ed-fg-strong)
+      .ed-h2
+        margin-top: 6px
+        max-width: 42em
+        font-size: 12.5px
+        line-height: 1.6
+        color: var(--ed-fg-dim)
+      .ed-spacer
+        flex: 1 1 auto
+      .ed-tools
+        display: flex
+        align-items: center
+        gap: 8px
+        flex-wrap: wrap
+        justify-content: flex-end
+        max-width: 50vw
+      .ed-btn
+        padding: 7px 14px
+        font-family: var(--ed-sans)
+        font-size: 12px
+        font-weight: 600
+        color: var(--ed-fg)
+        background: none
+        border: 1px solid var(--ed-line)
+        cursor: pointer
+        white-space: nowrap
+        text-decoration: none
+        &:hover
+          color: var(--ed-bg)
+          background: var(--ed-fg-strong)
+          border-color: var(--ed-fg-strong)
+        &.off
+          opacity: .3
+          pointer-events: none
+      .ed-chip
+        display: inline-flex
+        align-items: center
+        gap: 7px
+        padding: 6px 11px
+        font-size: 12px
+        color: var(--ed-on-accent)
+        background: var(--ed-accent)
+        white-space: nowrap
+        .k
+          opacity: .66
+        .x
+          font-size: 10px
+          opacity: .8
+          cursor: pointer
+
+      // 高度由 def.layout.row 的絕對行高決定, 不夠就往下捲 - 跟 design-2 一樣
+      // 要蓋掉 dash.css 的 .dash { height: 100% }
+      .ed-board
+        flex: 1 1 auto
+        min-height: 0
+        .dash
+          height: auto
+          overflow: visible
+      // 進場: 整面一起淡入, 不逐格 - 這一版的格子沒有框, 逐格亮起來看起來像壞掉
+      .dash
+        animation: ed-in .5s ease both
+      @keyframes ed-in
+        from
+          opacity: 0
+        to
+          opacity: 1
+
+      @media (max-width: 1100px)
+        .ed-h1
+          font-size: 26px
+  body
+    .ed-page
+      .ed-bar
+        div
+          .ed-kicker Independent Bookstores · 2024
+          .ed-h1 獨立書店銷售概況
+          .ed-h2 design-6「側欄」— 四個數字立在左邊, 一張主圖佔掉其餘的全部
+        .ed-spacer
+        .ed-tools
+          div(ld="chips",style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end")
+          .ed-btn(ld="mode")
+          .ed-btn(ld="clear") 清除篩選
+          a.ed-btn(href="/initiative/2nd/") 其他設計 ↗
+      .ed-board(ld="board")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc ../mode.ls
+    script(type="module"): include:lsc index.ls

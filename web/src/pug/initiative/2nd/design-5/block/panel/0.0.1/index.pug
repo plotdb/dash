@@ -1,0 +1,84 @@
+div
+  .tm-panel
+    .tm-head
+      .tm-title(ld="title")
+      .tm-spacer
+      .tm-tag(ld="tag") [FILTERED ✕]
+    .tm-sub(ld="sub")
+    .tm-body(ld="body")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    // 框是一條 1px 的線, 沒有圓角也沒有陰影 - 終端機畫面上的框是字元畫出來的,
+    // 本來就不可能有這些東西
+    .tm-panel
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+      flex-direction: column
+      padding: 7px 10px 8px
+      color: var(--tm-fg)
+      // 整塊 panel 設等寬字, 圖表裡的 svg text 會跟著繼承 -
+      // 跟 design-2 把整頁換成襯線是同一招
+      font-family: var(--tm-mono)
+      background: var(--tm-panel)
+      border: 1px solid var(--tm-line)
+      transition: border-color .15s, background-color .25s
+
+    .tm-head
+      flex: 0 0 auto
+      display: flex
+      align-items: baseline
+      gap: 8px
+
+    .tm-title
+      font-size: 11.5px
+      font-weight: 700
+      letter-spacing: .12em
+      text-transform: uppercase
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .tm-spacer
+      flex: 1 1 auto
+
+    // 狀態也是一行字. 這一版沒有圓角藥丸, 只有方括號
+    .tm-tag
+      display: none
+      flex: 0 0 auto
+      font-size: 10.5px
+      letter-spacing: .06em
+      color: var(--tm-hot)
+      cursor: pointer
+      &:hover
+        color: var(--tm-fg)
+
+    .tm-sub
+      flex: 0 0 auto
+      margin-top: 2px
+      font-size: 10.5px
+      line-height: 1.5
+      letter-spacing: .02em
+      color: var(--tm-fg-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .tm-body
+      flex: 1 1 auto
+      min-height: 0
+      position: relative
+      margin-top: 4px
+
+    .tm-panel.filtering
+      border-color: var(--tm-hot)
+      > .tm-head .tm-tag
+        display: block
+  script: include:lsc index.ls

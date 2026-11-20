@@ -1,0 +1,80 @@
+div
+  .pk-kpi
+    .pk-kpi-label(ld="label")
+    .pk-kpi-value
+      span.pk-kpi-num(ld="num") 0
+      span.pk-kpi-unit(ld="unit")
+    .pk-kpi-note(ld="note")
+    .pk-kpi-rail
+      .pk-kpi-fill(ld="fill")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .pk-kpi
+      --pk-kpi-accent: var(--pk-accent)
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      display: flex
+      flex-direction: column
+      justify-content: center
+      gap: 3px
+      padding: 12px 14px 13px
+      border-radius: 16px
+      background: var(--pk-card)
+      overflow: hidden
+      transition: background-color .25s
+
+    .pk-kpi-label
+      font-size: 12px
+      color: var(--pk-fg-dim)
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .pk-kpi-value
+      display: flex
+      align-items: baseline
+      gap: 5px
+      min-width: 0
+
+    // 一行兩格, 所以數字跟著欄寬縮. 直式手機只有 ~190px 可用
+    .pk-kpi-num
+      font-size: clamp(22px, 7.2vw, 30px)
+      font-weight: 650
+      line-height: 1.1
+      letter-spacing: -.015em
+      font-variant-numeric: tabular-nums
+      color: var(--pk-fg-strong)
+    .pk-kpi-unit
+      font-size: 11px
+      color: var(--pk-fg-dim)
+
+    .pk-kpi-note
+      margin-top: 2px
+      font-size: 11px
+      font-variant-numeric: tabular-nums
+      color: var(--pk-fg-dim)
+      white-space: nowrap
+      &.up
+        color: var(--pk-up)
+      &.down
+        color: var(--pk-down)
+
+    .pk-kpi-rail
+      margin-top: 7px
+      height: 3px
+      border-radius: 3px
+      background: var(--pk-soft)
+      overflow: hidden
+    .pk-kpi-fill
+      width: 100%
+      height: 100%
+      border-radius: 3px
+      background: var(--pk-kpi-accent)
+      transition: width .45s cubic-bezier(.22,.8,.3,1)
+  script: include:lsc index.ls

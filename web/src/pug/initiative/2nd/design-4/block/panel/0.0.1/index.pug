@@ -1,0 +1,79 @@
+div
+  .pk-panel
+    .pk-head
+      .pk-title(ld="title")
+      .pk-spacer
+      .pk-tag(ld="tag") 篩選中 ✕
+    .pk-sub(ld="sub")
+    .pk-body(ld="body")
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    // 手機上一格就是一整排, 卡片的左右邊界就是版心的左右邊界 -
+    // 所以卡片不必再畫邊框, 只要跟底色分開就夠了
+    .pk-panel
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+      flex-direction: column
+      padding: 14px 14px 10px
+      border-radius: 16px
+      color: var(--pk-fg)
+      background: var(--pk-card)
+      transition: background-color .25s
+
+    .pk-head
+      flex: 0 0 auto
+      display: flex
+      align-items: center
+      gap: 8px
+
+    .pk-title
+      font-size: 15px
+      font-weight: 600
+      letter-spacing: .01em
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+
+    .pk-spacer
+      flex: 1 1 auto
+
+    // 手指的目標: 32px 高, 跟頁尾那排按鈕同一個尺寸.
+    // 滑鼠的 hover 在這裡不存在, 所以狀態只能靠看得見的東西說
+    .pk-tag
+      display: none
+      flex: 0 0 auto
+      align-items: center
+      gap: 6px
+      height: 32px
+      padding: 0 13px
+      font-size: 12px
+      color: var(--pk-on-accent)
+      background: var(--pk-accent)
+      border-radius: 999px
+      cursor: pointer
+
+    .pk-sub
+      flex: 0 0 auto
+      margin-top: 3px
+      font-size: 12px
+      line-height: 1.5
+      color: var(--pk-fg-dim)
+
+    .pk-body
+      flex: 1 1 auto
+      min-height: 0
+      position: relative
+      margin-top: 6px
+
+    .pk-panel.filtering
+      > .pk-head .pk-tag
+        display: inline-flex
+  script: include:lsc index.ls

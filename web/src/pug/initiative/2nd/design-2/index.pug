@@ -4,6 +4,9 @@ html(lang="zh-TW")
     meta(charset="utf-8")
     meta(name="viewport",content="width=device-width,initial-scale=1")
     title 獨立書店銷售概況 — 年度報告 / @plotdb/dash
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var m=localStorage.getItem('dash-2nd-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
     +css([{url: "/css/dash.css"}])
     style(type="text/css"): :stylus
       // design-2「報告」. 同一份 def, 當成一份印出來的文件來排.
@@ -11,24 +14,62 @@ html(lang="zh-TW")
       // 跟 design-1 相反的地方都寫在對應的規則旁邊; 總的來說只有一句:
       // 不填滿視窗, 填滿的是版心.
       :root
-        --rp-paper: #fbfaf7
-        --rp-ink: #2a251d
-        --rp-ink-dim: #78726a
-        --rp-line: rgba(40,34,24,.16)
-        --rp-accent: #b4553f
-        --rp-up: #5a6b38
-        --rp-down: #b4553f
         --rp-serif: "Iowan Old Style", Palatino, "Palatino Linotype", "Songti TC", "Noto Serif TC", serif
         --rp-sans: -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
         --dash-gap: 26px
+      // 這一版的預設是紙. 深色模式不是把紙反白 - 那會變成一塊發光的板子 -
+      // 而是換一張深色的紙: 桌面更暗、紙比桌面亮一階, 墨色降到不刺眼的米白,
+      // 四色套印的色票整組提亮一級 ( 暗底上壓暗的顏色全部看不見 )
+      :root, :root[data-mode=light]
+        --rp-desk: #efece4
+        --rp-paper: #fbfaf7
+        --rp-sheet-edge: rgba(40,34,24,.07)
+        --rp-sheet-shadow: 0 18px 60px -30px rgba(40,34,24,.45)
+        --rp-ink: #2a251d
+        --rp-text: #4a443b
+        --rp-ink-dim: #78726a
+        --rp-line: rgba(40,34,24,.16)
+        --rp-line-hi: rgba(40,34,24,.40)
+        --rp-accent: #b4553f
+        --rp-accent-soft: rgba(180,85,63,.4)
+        --rp-up: #5a6b38
+        --rp-down: #b4553f
+        --rp-code: #2f4b7c
+        --rp-code-bg: #f5f2ea
+        // 摘要段四個數字的色條
+        --rp-acc-1: #2f4b7c
+        --rp-acc-2: #7d8a4f
+        --rp-acc-3: #a9772b
+        --rp-acc-4: #b4553f
+      :root[data-mode=dark]
+        --rp-desk: #131210
+        --rp-paper: #1c1a17
+        --rp-sheet-edge: rgba(235,225,205,.09)
+        --rp-sheet-shadow: 0 18px 60px -30px rgba(0,0,0,.8)
+        --rp-ink: #e9e3d7
+        --rp-text: #c3bcae
+        --rp-ink-dim: #938b7d
+        --rp-line: rgba(235,225,205,.18)
+        --rp-line-hi: rgba(235,225,205,.42)
+        --rp-accent: #d98f6a
+        --rp-accent-soft: rgba(217,143,106,.4)
+        --rp-up: #9fb06d
+        --rp-down: #d98f6a
+        --rp-code: #93b4e8
+        --rp-code-bg: #141311
+        --rp-acc-1: #7a9ddb
+        --rp-acc-2: #a8b377
+        --rp-acc-3: #d9a94f
+        --rp-acc-4: #d98f6a
 
       html
-        background: #efece4
+        background: var(--rp-desk)
       body
         margin: 0
         padding: 0
-        background: #efece4
+        background: var(--rp-desk)
         color: var(--rp-ink)
+        transition: background-color .25s, color .25s
         font-family: var(--rp-serif)
         -webkit-font-smoothing: antialiased
         font-size: 14px
@@ -41,7 +82,7 @@ html(lang="zh-TW")
         margin: 0 auto
         padding: 56px 54px 70px
         background: var(--rp-paper)
-        box-shadow: 0 0 0 1px rgba(40,34,24,.07), 0 18px 60px -30px rgba(40,34,24,.45)
+        box-shadow: 0 0 0 1px var(--rp-sheet-edge), var(--rp-sheet-shadow)
 
       // ------------------------------------------------------------ 刊頭
       .rp-masthead
@@ -65,7 +106,7 @@ html(lang="zh-TW")
         max-width: 42em
         font-size: 15px
         line-height: 1.85
-        color: #4a443b
+        color: var(--rp-text)
       .rp-byline
         margin-top: 14px
         font-family: var(--rp-sans)
@@ -75,7 +116,7 @@ html(lang="zh-TW")
         a
           color: var(--rp-accent)
           text-decoration: none
-          border-bottom: 1px solid rgba(180,85,63,.4)
+          border-bottom: 1px solid var(--rp-accent-soft)
 
       // 目前的篩選. 報告裡這是一行「本節統計範圍」的註記, 不是工具列
       .rp-state
@@ -113,7 +154,7 @@ html(lang="zh-TW")
         font-family: var(--rp-sans)
         font-size: 11px
         color: var(--rp-accent)
-        border-bottom: 1px solid rgba(180,85,63,.4)
+        border-bottom: 1px solid var(--rp-accent-soft)
         cursor: pointer
         &.off
           opacity: .3
@@ -146,7 +187,7 @@ html(lang="zh-TW")
         max-width: 44em
         font-size: 13px
         line-height: 1.8
-        color: #4a443b
+        color: var(--rp-text)
       .rp-tabs
         display: flex
         flex-wrap: wrap
@@ -173,7 +214,7 @@ html(lang="zh-TW")
         max-width: 46em
         font-size: 13px
         line-height: 1.85
-        color: #4a443b
+        color: var(--rp-text)
       .rp-field
         display: flex
         gap: 14px
@@ -187,7 +228,7 @@ html(lang="zh-TW")
           flex: 0 0 15em
           font-family: ui-monospace, "SF Mono", monospace
           font-size: 11px
-          color: #2f4b7c
+          color: var(--rp-code)
           word-break: break-all
         .desc
           flex: 1 1 auto
@@ -205,14 +246,14 @@ html(lang="zh-TW")
           font-family: ui-monospace, "SF Mono", monospace
           font-size: 11.5px
           line-height: 1.7
-          color: #2a251d
-          background: #f5f2ea
+          color: var(--rp-ink)
+          background: var(--rp-code-bg)
           border: 1px solid var(--rp-line)
           border-radius: 2px
           resize: vertical
           &:focus
             outline: none
-            border-color: rgba(40,34,24,.4)
+            border-color: var(--rp-line-hi)
       .rp-foot
         display: flex
         align-items: center
@@ -261,13 +302,14 @@ html(lang="zh-TW")
         .rp-state-label 統計範圍
         div(ld="chips",style="display:flex;gap:16px;flex-wrap:wrap;align-items:baseline")
         .rp-spacer
+        .rp-link(ld="mode")
         .rp-link(ld="clear") 清除篩選
       .rp-board(ld="board")
 
       .rp-appendix
         .rp-ap-title 附錄 — 儀表板定義 ( def )
         .rp-ap-note
-          | 一份 def 就是一個儀表板。三個設計長得完全不一樣，但這段東西是同一份結構：
+          | 一份 def 就是一個儀表板。六個設計長得完全不一樣，但這段東西是同一份結構：
           | 資料從哪來、版面怎麼切、每一格畫什麼。可以直接改，套用後整個儀表板重建。
         .rp-tabs
           .rp-tab(ld-each="group"): span(ld="label")
@@ -296,4 +338,5 @@ html(lang="zh-TW")
       {name: "papaparse", path: "papaparse.min.js"},
       {url: "/js/dash.js"}
     ])
+    script(type="module"): include:lsc ../mode.ls
     script(type="module"): include:lsc index.ls

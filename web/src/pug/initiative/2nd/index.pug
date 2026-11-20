@@ -3,16 +3,88 @@ html(lang="zh-TW")
   head
     meta(charset="utf-8")
     meta(name="viewport",content="width=device-width,initial-scale=1")
-    title 三種長相, 同一份 def / @plotdb/dash
+    title 六種長相, 同一份 def / @plotdb/dash
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var m=localStorage.getItem('dash-2nd-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.mode=m}catch(e){}
     style(type="text/css"): :stylus
-      // 入口頁. 三個設計共用一份 def, 這一頁的工作只是把差別講清楚並連過去.
+      // 入口頁. 六個設計共用一份 def, 這一頁的工作只是把差別講清楚並連過去.
       //
-      // 縮圖是 CSS 畫的, 不是截圖 - 截圖會過期, 而且這三版的差別本來就是
-      // 版面比例與色票, 用幾個 div 就講得完
-      :root
+      // 縮圖是 CSS 畫的, 不是截圖 - 截圖會過期, 而且這六版的差別本來就是
+      // 版面比例與色票, 用幾個 div 就講得完.
+      //
+      // 縮圖裡的顏色也跟著模式換: 每一張縮圖用的是那個設計自己的色票,
+      // 所以這一頁現在長什麼樣, 點進去就是什麼樣
+      :root, :root[data-mode=dark]
         --g-bg: #101317
+        --g-card: #171c23
         --g-fg: #e8ecf1
         --g-dim: #8893a2
+        --g-sub: #96a3b3
+        --g-line: rgba(255,255,255,.07)
+        --g-line-hi: rgba(255,255,255,.2)
+        --g-eyebrow: #5d6b7d
+        --g-accent: #8fd3c6
+        --g-lede: #aab6c4
+        --g-shadow: 0 24px 50px -28px rgba(0,0,0,.9)
+        // 每一張縮圖的三個色: 底、格子、重點
+        --t1-bg: #0e1319
+        --t1-cell: #1a222d
+        --t2-bg: #1c1a17
+        --t2-cell: rgba(235,225,205,.06)
+        --t2-line: rgba(235,225,205,.45)
+        --t3-bg: #0a0a09
+        --t3-cell: #1c1a19
+        --t3-a: #ffd166
+        --t3-b: #26c6a6
+        --t3-c: #ff8c61
+        --t3-d: #8ab4ff
+        --t4-bg: #0b0d12
+        --t4-cell: #171a21
+        --t4-a: #8ea2ff
+        --t5-bg: #0b0b0c
+        --t5-cell: #111214
+        --t5-line: #262a30
+        --t5-a: #ffb000
+        --t6-bg: #0c0d10
+        --t6-cell: rgba(247,248,250,.14)
+        --t6-a: #ff4d60
+        --t6-rule: #f7f8fa
+      :root[data-mode=light]
+        --g-bg: #f1f3f6
+        --g-card: #ffffff
+        --g-fg: #1b2029
+        --g-dim: #6b7484
+        --g-sub: #5d6676
+        --g-line: rgba(20,25,35,.12)
+        --g-line-hi: rgba(20,25,35,.28)
+        --g-eyebrow: #939cab
+        --g-accent: #0f7a6e
+        --g-lede: #4b5361
+        --g-shadow: 0 24px 50px -32px rgba(20,25,35,.5)
+        --t1-bg: #eef1f6
+        --t1-cell: #ffffff
+        --t2-bg: #fbfaf7
+        --t2-cell: rgba(40,34,24,.055)
+        --t2-line: rgba(40,34,24,.4)
+        --t3-bg: #c7c2b8
+        --t3-cell: #faf8f4
+        --t3-a: #c07800
+        --t3-b: #00796b
+        --t3-c: #c43c22
+        --t3-d: #2f5fc0
+        --t4-bg: #eef0f4
+        --t4-cell: #ffffff
+        --t4-a: #3b4bd8
+        --t5-bg: #eceae3
+        --t5-cell: #f8f7f3
+        --t5-line: #c9c6bd
+        --t5-a: #9a5e00
+        --t6-bg: #ffffff
+        --t6-cell: rgba(10,12,15,.10)
+        --t6-a: #d7263d
+        --t6-rule: #0a0c0f
+
       html, body
         margin: 0
         padding: 0
@@ -23,42 +95,65 @@ html(lang="zh-TW")
         font-family: -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif
         -webkit-font-smoothing: antialiased
         font-size: 14px
+        transition: background-color .25s, color .25s
 
       .g-wrap
         box-sizing: border-box
         max-width: 1200px
         margin: 0 auto
-        padding: 64px 32px 80px
+        padding: 56px 32px 80px
 
+      .g-top
+        display: flex
+        align-items: flex-start
+        gap: 20px
       .g-eyebrow
         font-size: 10px
         font-weight: 600
         letter-spacing: .22em
         text-transform: uppercase
-        color: #5d6b7d
+        color: var(--g-eyebrow)
       .g-h1
         margin: 10px 0 0
         font-family: "Iowan Old Style", Palatino, "Songti TC", "Noto Serif TC", serif
         font-size: 36px
         font-weight: 600
         line-height: 1.2
+      .g-spacer
+        flex: 1 1 auto
+      .g-mode
+        flex: 0 0 auto
+        margin-top: 4px
+        padding: 7px 15px
+        font-size: 12.5px
+        color: var(--g-fg)
+        background: var(--g-card)
+        border: 1px solid var(--g-line)
+        border-radius: 999px
+        cursor: pointer
+        white-space: nowrap
+        &:hover
+          border-color: var(--g-line-hi)
       .g-lede
         margin-top: 14px
-        max-width: 44em
+        max-width: 46em
         font-size: 15px
         line-height: 1.85
-        color: #aab6c4
+        color: var(--g-lede)
         code
           font-family: ui-monospace, "SF Mono", monospace
           font-size: 12.5px
-          color: #8fd3c6
+          color: var(--g-accent)
 
       .g-grid
         display: grid
         grid-template-columns: repeat(3, 1fr)
         gap: 22px
         margin-top: 42px
-      @media (max-width: 900px)
+      @media (max-width: 980px)
+        .g-grid
+          grid-template-columns: repeat(2, 1fr)
+      @media (max-width: 680px)
         .g-grid
           grid-template-columns: 1fr
 
@@ -67,15 +162,15 @@ html(lang="zh-TW")
         flex-direction: column
         color: inherit
         text-decoration: none
-        background: #171c23
-        border: 1px solid rgba(255,255,255,.07)
+        background: var(--g-card)
+        border: 1px solid var(--g-line)
         border-radius: 14px
         overflow: hidden
         transition: transform .2s, border-color .2s, box-shadow .2s
         &:hover
           transform: translateY(-3px)
-          border-color: rgba(255,255,255,.2)
-          box-shadow: 0 24px 50px -28px rgba(0,0,0,.9)
+          border-color: var(--g-line-hi)
+          box-shadow: var(--g-shadow)
 
       // ---- 縮圖. 每一張都是該設計的版面比例 + 色票, 用 grid 疊出來
       .g-shot
@@ -88,13 +183,13 @@ html(lang="zh-TW")
         display: block
         border-radius: 2px
 
-      // design-1: 深色、有間距、圓角卡片
+      // design-1: 有間距、圓角卡片, 12 欄
       .g-shot.s1
         gap: 4px
         grid-template-rows: .7fr 1.1fr 1fr
-        background: #0e1319
+        background: var(--t1-bg)
       .s1 > i
-        background: #1a222d
+        background: var(--t1-cell)
         border-radius: 3px
       .s1 > i.k
         border-left: 2px solid currentColor
@@ -103,21 +198,55 @@ html(lang="zh-TW")
       .g-shot.s2
         gap: 9px
         grid-template-rows: .6fr 1.2fr 1.1fr
-        background: #fbfaf7
+        background: var(--t2-bg)
       .s2 > i
-        background: rgba(40,34,24,.055)
-        border-top: 1px solid rgba(40,34,24,.4)
+        background: var(--t2-cell)
+        border-top: 1px solid var(--t2-line)
         border-radius: 0
 
       // design-3: 色塊拼貼、縫很窄
       .g-shot.s3
         gap: 2px
         grid-template-rows: .7fr 1.2fr 1fr
-        background: #0a0a09
+        background: var(--t3-bg)
         padding: 4px
       .s3 > i
-        background: #1c1a19
+        background: var(--t3-cell)
         border-radius: 0
+
+      // design-4: 一欄. 縮圖裡就是中間那一條
+      .g-shot.s4
+        gap: 5px
+        grid-template-rows: .5fr .5fr 1fr 1fr
+        background: var(--t4-bg)
+        padding: 8px 0
+      .s4 > i
+        background: var(--t4-cell)
+        border-radius: 6px
+
+      // design-5: 等寬、單色、1px 的框
+      .g-shot.s5
+        gap: 5px
+        grid-template-rows: .6fr 1.2fr 1fr
+        background: var(--t5-bg)
+      .s5 > i
+        background: var(--t5-cell)
+        border: 1px solid var(--t5-line)
+        border-radius: 0
+
+      // design-6: 左側一欄四格, 右邊一張主圖
+      .g-shot.s6
+        gap: 7px
+        grid-template-rows: 1fr 1fr 1.1fr 1.1fr
+        background: var(--t6-bg)
+      .s6 > i
+        background: var(--t6-cell)
+        border-radius: 0
+      // design-6 的格子沒有框, 只有標題上的那條粗線 - 縮圖裡就畫那條線,
+      // 底下帶一層淡掉的填色, 不然會看起來像三條浮在空中的線
+      .s6 > i.r
+        background: linear-gradient(var(--t6-cell), transparent 72%)
+        border-top: 2px solid var(--t6-rule)
 
       .g-meta
         flex: 1 1 auto
@@ -125,7 +254,7 @@ html(lang="zh-TW")
         flex-direction: column
         gap: 8px
         padding: 18px 20px 22px
-        border-top: 1px solid rgba(255,255,255,.07)
+        border-top: 1px solid var(--g-line)
       .g-name
         display: flex
         align-items: baseline
@@ -133,7 +262,7 @@ html(lang="zh-TW")
       .g-id
         font-family: ui-monospace, "SF Mono", monospace
         font-size: 11px
-        color: #66748a
+        color: var(--g-dim)
       .g-title
         font-size: 17px
         font-weight: 600
@@ -146,34 +275,43 @@ html(lang="zh-TW")
         padding-left: 1.1em
         font-size: 12.3px
         line-height: 1.8
-        color: #96a3b3
+        color: var(--g-sub)
       .g-go
         margin-top: auto
         padding-top: 12px
         font-size: 12px
         letter-spacing: .04em
-        color: #8fd3c6
+        color: var(--g-accent)
 
       .g-note
         margin-top: 46px
         padding-top: 22px
-        max-width: 50em
+        max-width: 52em
         font-size: 13px
         line-height: 1.9
         color: var(--g-dim)
-        border-top: 1px solid rgba(255,255,255,.08)
+        border-top: 1px solid var(--g-line)
         a
-          color: #8fd3c6
+          color: var(--g-accent)
           text-decoration: none
-          border-bottom: 1px solid rgba(143,211,198,.35)
+          border-bottom: 1px solid var(--g-line-hi)
+        code
+          font-family: ui-monospace, "SF Mono", monospace
+          font-size: 12px
+          color: var(--g-accent)
   body
     .g-wrap
-      .g-eyebrow @plotdb/dash · initiative / 2nd
-      h1.g-h1 三種長相, 同一份 def
+      .g-top
+        div
+          .g-eyebrow @plotdb/dash · initiative / 2nd
+          h1.g-h1 六種長相, 同一份 def
+        .g-spacer
+        .g-mode(ld="mode")
       .g-lede
-        | 下面三個儀表板載入同一份資料、同一批圖表 block、同一套 crossfilter 語意。
-        | 每一版換掉的只有兩樣東西: <code>panel block</code> 與一層套在每個 panel 上的
-        | <code>cfg</code> 主題。它們長得不像, 是因為一開始問的問題不一樣。
+        | 下面六個儀表板載入同一份資料、同一批圖表 block、同一套 crossfilter 語意。
+        | 每一版換掉的只有三樣東西: <code>panel block</code> 的外觀、一層套在每個 panel 上的
+        | <code>cfg</code> 主題, 以及 <code>def.layout</code>。
+        | 它們長得不像, 是因為一開始問的問題不一樣。六版都有 light / dark —— 第一次打開時跟著系統走。
 
       .g-grid
         a.g-card(href="/initiative/2nd/design-1/")
@@ -191,7 +329,7 @@ html(lang="zh-TW")
             .g-name
               .g-id design-1
               .g-title 分析台
-            .g-desc 給一個坐在螢幕前面、正在找原因的人。密集、深色、滿版不捲動, 每一格都可以點、可以框選。
+            .g-desc 給一個坐在螢幕前面、正在找原因的人。密集、滿版不捲動, 每一格都可以點、可以框選。
             ul.g-points
               li 12 欄格線, KPI 與圖共用同一組欄
               li 色相留給資料, 介面狀態只用亮度
@@ -218,10 +356,10 @@ html(lang="zh-TW")
             .g-go 打開 →
         a.g-card(href="/initiative/2nd/design-3/")
           .g-shot.s3
-            i(style="grid-column:span 3;background:#ffd166")
-            i(style="grid-column:span 3;background:#26c6a6")
-            i(style="grid-column:span 3;background:#ff8c61")
-            i(style="grid-column:span 3;background:#8ab4ff")
+            i(style="grid-column:span 3;background:var(--t3-a)")
+            i(style="grid-column:span 3;background:var(--t3-b)")
+            i(style="grid-column:span 3;background:var(--t3-c)")
+            i(style="grid-column:span 3;background:var(--t3-d)")
             i(style="grid-column:span 9")
             i(style="grid-column:span 3;grid-row:span 2")
             i(style="grid-column:span 3")
@@ -233,9 +371,67 @@ html(lang="zh-TW")
               .g-title 牆面
             .g-desc 給一個十公尺外走過去的人。磚與磚之間只有 3px 的縫, 數字大到佔滿整格, 狀態用面積而不是小字。
             ul.g-points
-              li 色票比另外兩版飽和一整級, 遠看才分得開
+              li 色票比其他版飽和一整級, 遠看才分得開
               li x 軸標籤用 auto, 擠不下就自己傾斜
               li 沒有 def 編輯器 — 牆上的螢幕不接鍵盤
+            .g-go 打開 →
+        a.g-card(href="/initiative/2nd/design-4/")
+          .g-shot.s4
+            i(style="grid-column:4/span 2")
+            i(style="grid-column:7/span 2")
+            i(style="grid-column:4/span 2")
+            i(style="grid-column:7/span 2")
+            i(style="grid-column:4/span 5")
+            i(style="grid-column:4/span 5")
+          .g-meta
+            .g-name
+              .g-id design-4
+              .g-title 口袋
+            .g-desc 給一支手機。一欄到底、整頁往下捲, 主要動作放在拇指構得到的地方, 一次只看一格。
+            ul.g-points
+              li <code>def.layout.col</code> 從 12 欄變成 2 欄
+              li 不開框選 — 拖曳會跟捲動搶同一個手勢
+              li def 唯讀。320px 寬不是拿來編輯的
+            .g-go 打開 →
+        a.g-card(href="/initiative/2nd/design-5/")
+          .g-shot.s5
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 7")
+            i(style="grid-column:span 5")
+            i(style="grid-column:span 5")
+            i(style="grid-column:span 4")
+            i(style="grid-column:span 3")
+          .g-meta
+            .g-name
+              .g-id design-5
+              .g-title 主控台
+            .g-desc 給一個整天開著它的人。整頁等寬字 — 包括圖表裡的文字 — 而且整頁只有一個色相。
+            ul.g-points
+              li 四個書系是同一個色的四階, 不是四個色相
+              li 進度條是字元畫的 ████░░░░
+              li 狀態列一行講完: 幾列資料、幾個條件
+            .g-go 打開 →
+        a.g-card(href="/initiative/2nd/design-6/")
+          .g-shot.s6
+            i(style="grid-column:span 3")
+            i.r(style="grid-column:5/span 8;grid-row:1/span 2")
+            i(style="grid-column:span 3")
+            i(style="grid-column:span 3")
+            i.r(style="grid-column:5/span 5;grid-row:3/span 2")
+            i.r(style="grid-column:11/span 2;grid-row:3/span 2")
+            i(style="grid-column:span 3")
+          .g-meta
+            .g-name
+              .g-id design-6
+              .g-title 側欄
+            .g-desc 把四個數字立起來。左邊一整欄是指標, 右邊一張主圖佔掉其餘的全部; 一個紅、其餘全是灰階。
+            ul.g-points
+              li 只改 <code>area</code> 就把 KPI 從一排變成一欄
+              li 沒有卡片也沒有框, 標題上的粗線就是分隔
+              li 長條圖是全黑的 — 單色圖該用最黑的那個黑
             .g-go 打開 →
 
       .g-note
@@ -244,4 +440,14 @@ html(lang="zh-TW")
         a(href="/initiative/1st/") /initiative/1st/
         | ) 問的是「一個儀表板由哪些東西組成」, 刻意用最素的樣式。
         | 這一組問的是接下來那一題: 組成固定下來之後, 長相能換到什麼程度。
-        | 三版的差異寫在各自的 <code>README.md</code> 裡。
+        | 六版共用的 light / dark 機制寫在 <code>2nd/mode.ls</code>,
+        | 各自的理由寫在自己的 <code>README.md</code> 裡。
+    //- 這一頁沒有 ldview, 切換鈕自己接. module 會被 defer, 所以等 DOMContentLoaded
+    //- ( module 一定在這個事件之前跑完, 此時 dmode 已經在 )
+    script.
+      addEventListener('DOMContentLoaded', function(){
+        var btn = document.querySelector('[ld=mode]');
+        btn.addEventListener('click', function(){ dmode.toggle(); });
+        dmode.on(function(){ btn.textContent = dmode.icon() + ' ' + dmode.label(); });
+      });
+    script(type="module"): include:lsc mode.ls
