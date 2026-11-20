@@ -368,6 +368,7 @@ resolve-theme = (b = {}, t = {}) ->
     spec: t
     tokens: tok
     vars: r b.vars
+    root: r b.root
     layout: r b.layout
     blocks: b.blocks or {}
     cfg: r b.cfg
@@ -918,6 +919,15 @@ board.prototype = Object.create(Object.prototype) <<<
     vars = @theme.vars or {}
     for k of ((old or {}).vars or {}) => if !vars[k]? => @root.style.remove-property k
     for k, v of vars => @root.style.set-property k, "#v"
+    # theme.root 是直接寫在 board.root 上的樣式 ( 底色、文字顏色、字型 ),
+    # 不是 custom property.
+    #
+    # 需要它的理由: 沒有卡片的設計 ( 例如 report ) 本來就讓底色透出來, 而宿主
+    # 不會知道這個主題的紙是什麼顏色 - 不給的話, 深色主題的文字會落在宿主的白底上.
+    # 字型也一樣: report 的襯線、terminal 的等寬是那一版的身分, 不該要宿主自己接
+    rt = @theme.root or {}
+    for k of ((old or {}).root or {}) => if !rt[k]? => @root.style.remove-property k
+    for k, v of rt => @root.style.set-property k, "#v"
     # 頁面層的 CSS 可能還想自己分支 ( 例如 board 以外的地方 ), 給它一個鉤子
     @root.dataset.mode = @theme.mode
 

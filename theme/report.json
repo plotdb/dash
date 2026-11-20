@@ -215,6 +215,11 @@
     "--dash-on-accent": "$on-accent",
     "--dash-face": "$code-bg"
   },
+  "root": {
+    "background": "$paper",
+    "color": "$text",
+    "font-family": "$sans"
+  },
   "cfg": {
     "color": "$txt",
     "margin": 2,

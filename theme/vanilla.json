@@ -127,6 +127,10 @@
     "--dash-radius": "$radius",
     "--dash-gap": "$gap"
   },
+  "root": {
+    "background": "$bg",
+    "color": "$fg"
+  },
   "cfg": {
     "color": "$ink",
     "xaxis": {

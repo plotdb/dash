@@ -216,6 +216,10 @@
     "--dk-acc-4": "$acc-4",
     "--dash-gap": "$gap"
   },
+  "root": {
+    "background": "$bg",
+    "color": "$fg"
+  },
   "cfg": {
     "color": "$txt",
     "margin": 2,

@@ -586,6 +586,7 @@
       spec: t,
       tokens: tok,
       vars: r(b.vars),
+      root: r(b.root),
       layout: r(b.layout),
       blocks: b.blocks || {},
       cfg: r(b.cfg),
@@ -1322,7 +1323,7 @@
     }
     return this._mount(p);
   }, ref$._themeVars = function(old){
-    var vars, k, v;
+    var vars, k, v, rt;
     if (!this.root) {
       return;
     }
@@ -1334,6 +1335,16 @@
     }
     for (k in vars) {
       v = vars[k];
+      this.root.style.setProperty(k, v + "");
+    }
+    rt = this.theme.root || {};
+    for (k in (old || {}).root || {}) {
+      if (rt[k] == null) {
+        this.root.style.removeProperty(k);
+      }
+    }
+    for (k in rt) {
+      v = rt[k];
       this.root.style.setProperty(k, v + "");
     }
     return this.root.dataset.mode = this.theme.mode;

@@ -178,6 +178,11 @@
     "--dash-on-accent": "$on-accent",
     "--dash-face": "$bg"
   },
+  "root": {
+    "background": "$bg",
+    "color": "$fg",
+    "font-family": "$mono"
+  },
   "cfg": {
     "color": "$txt",
     "margin": 2,

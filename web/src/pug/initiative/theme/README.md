@@ -103,6 +103,22 @@ board 的預設`。中間那一段退回**主題的** panel block 很要緊：�
 格子不必重排。
 
 
+## 主題要自己畫底色
+
+`theme.root` 是**直接寫在 `board.root` 上的樣式**（底色、文字顏色、字型），不是 custom
+property：
+
+```json
+"root": {"background": "$paper", "color": "$text", "font-family": "$sans"}
+```
+
+需要它的理由是 `report`：它**沒有卡片**，本來就讓底色透出來。只給 custom property 的話，
+宿主不會知道這個主題的紙是什麼顏色 —— 深色主題的文字就落在宿主的白底上，整頁幾乎看不見。
+字型同理：`report` 的襯線、`terminal` 的等寬是那一版的身分，不該要宿主自己接線。
+
+換主題時上一份 `root` 有而這一份沒有的屬性會被清掉，跟 `vars` 一樣。
+
+
 ## 給人看的字
 
 `title` / `desc` 與 schema 的 `label` / `desc` 可以是字串，也可以是一個以語系為 key 的
@@ -185,9 +201,10 @@ block/filterbar/desk/index.html
 
 但 `numberSizeRate` **只是止血**：`@makechart/number` 的 `resize` 只依**寬度**縮放
 （`box.height` 取了卻沒有用到），所以任何一個固定比例，換一個格子高度、或多一行單位就會
-再次溢出。desk 現在給 `1.8`，是在 46~51px 的繪圖區加一行單位這兩種幾何下都量過的保守值（單位那一行由
-`unitSizeRate` 另外算，不跟著縮，所以它等於先從可用高度扣掉一截）；
-真正的修法在圖表那邊（已回報 `@makechart/bar`）。
+再次溢出。`desk` 給 `1.8`、`wall` 給 `1.6`（`wall` 的磚留白更大），都是在 104px 的格子加一行單位下
+量出來的；單位那一行由 `unitSizeRate` 另外算、不跟著縮，所以它等於先從可用高度扣掉一截。
+`vanilla` / `report` / `terminal` 在同一個格子高度下不會裁，就不加。
+真正的修法在圖表那邊（`@makechart/number` 0.0.4 已修，待發版；發版後這兩個值都會拿掉）。
 
 換主題時值得順手檢查的就是**會自己撐滿容器的那幾種圖** —— 大數字、字雲、儀表 ——
 它們的尺寸是從容器量出來的，容器的內距一變就會溢出，而且不一定每一張都把兩個方向都量了。
