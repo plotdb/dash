@@ -113,8 +113,13 @@
    四個有數字補間的 KPI block 也會直接換數字。headless 一個頁面只畫得出兩三格 frame，
    原本截到的都是跑到一半的數字（3,736 而不是 3,765）
 
-`vanilla` 的縮圖從 KPI 那一列底下開始裁，因為它的 KPI 是 `@makechart/number`，
-數字的跑動在那個 block 裡面，這邊關不掉。
+`vanilla` 的 KPI 是 `@makechart/number`，它的數字跑動一度在這邊關不掉
+（補間寫在套件裡），所以縮圖曾經從 KPI 那一列底下開始裁。回報之後
+`@makechart/number` 0.0.3 修掉了三件事：補間改成按時間而不是按 frame
+（120Hz 的螢幕上本來會跑兩倍快）、停止條件從浮點等號改成 epsilon
+（原本 `run === number` 永遠不成立，四張 number 就是四條永遠在跑的
+`requestAnimationFrame`，實測每秒 240 次），以及新增 `tween` 設定並認
+`prefers-reduced-motion`。所以現在它跟其他六版一樣從頭拍。
 
 
 每一版各自的理由寫在自己的 `README.md`。desk 的那一份另外記了

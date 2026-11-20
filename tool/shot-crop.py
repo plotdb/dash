@@ -9,11 +9,14 @@
 import sys, os
 from PIL import Image
 
-# vanilla 從 KPI 那一列底下開始裁: 它的 KPI 是 @makechart/number, 數字會從 0
-# 跑上來, 而 headless 只畫得出兩三格 frame, 截到的會是一個跑到一半的數字.
-# ( 真的瀏覽器裡 0.5 秒就跑完, 所以這只是截圖的問題 ) 底下那四張圖一樣講得完它的風格
+# 每一版從哪裡開始裁都是各自調的: report 是版心置中的, 所以要往中間移;
+# pocket 本來就只有一種寬度, 整張拍.
+#
+# vanilla 一度從 KPI 那一列底下開始裁, 因為 @makechart/number 的數字跑動
+# 在套件裡面關不掉, headless 截到的是跑到一半的數字. 0.0.3 之後它認
+# prefers-reduced-motion 了, 所以改回從頭拍.
 BOX = {
-    'vanilla':  (0.00, 0.26, 0.60),
+    'vanilla':  (0.00, 0.00, 0.80),
     'desk':     (0.00, 0.00, 0.60),
     'report':   (0.09, 0.05, 0.60),
     'wall':     (0.00, 0.00, 0.58),
