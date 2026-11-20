@@ -237,7 +237,10 @@ block/filterbar/desk/index.html
 `board` 的 `themeBase` 預設是 `/assets/lib/@plotdb/dash/main/`（fedep 放東西的地方），
 宿主換了位置才要給。
 
-主題的來源在 `web/src/raw/theme/`，`tool/pack.js` 複製到套件根目錄 —— dev server 服務的
+上面是**裝起來之後**的路徑，不帶 `dist/`：repo 這一側產物在 `dist/` 底下，
+`fedep publish` 會把 `dist/` 攤平到發佈檔的根目錄。
+
+主題的來源在 `web/src/raw/theme/`，`tool/pack.js` 複製到 `dist/theme/` —— dev server 服務的
 那一份就是發出去的那一份，示範頁改一個顏色不必再 build 一次。
 
 

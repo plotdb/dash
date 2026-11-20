@@ -4,23 +4,26 @@
 #
 #   ./build          或   npm run build
 #
-# 輸出在 repo 根目錄 ( 不是 dist/ ):
+# 輸出在 dist/:
 #
-#   index.js                lsc 的輸出, 可讀, 給 debug 用
-#   index.min.js            uglify 過的, package.json 的 main / browser 指這個
-#   index.css               dash.styl 的輸出 ( 版面與卡片的基本 CSS )
-#   index.min.css           package.json 的 style 指這個
-#   block/panel/index.html  預設的 panel block ( 另有主題各自帶的那幾份 )
-#   theme/*.json            內建主題
+#   dist/index.js                lsc 的輸出, 可讀, 給 debug 用
+#   dist/index.min.js            uglify 過的, package.json 的 main / browser 指這個
+#   dist/index.css               dash.styl 的輸出 ( 版面與卡片的基本 CSS )
+#   dist/index.min.css           package.json 的 style 指這個
+#   dist/block/panel/index.html  預設的 panel block ( 另有主題各自帶的那幾份 )
+#   dist/theme/*.json            內建主題
 #
 # 後面那幾個由 tool/pack.js 產生, 來源都在 web/src 底下 - 它們本來就是示範頁在用
 # 的那一份, 不是另外抄一份給套件.
 #
-# 為什麼在根目錄: fedep 預設就是把套件的根目錄複製 ( 或 link ) 到
-# web/static/assets/lib/<name>/<version>/, dist/ 是 --use-dist 的 legacy 模式.
-# 所以頁面上拿到的網址是 /assets/lib/@plotdb/dash/main/index.min.js.
-# 同系列的 @plotdb/semver、@plotdb/layout、@plotdb/block 都是這個形狀.
-# ( fedep publish 自己會另外做一個 dist/ 當發佈的暫存區, 那是另一回事 )
+# 為什麼在 dist/ 而不是根目錄: `fedep publish` 會把 dist/ 的內容攤平到發佈檔的
+# 根目錄 ( 並改寫 main / style / browser 的路徑 ), 所以裝起來的套件是
+# index.min.js、block/、theme/ 都在根目錄 - 跟 @plotdb/layout、@plotdb/konfig
+# 裝起來的形狀一樣. 產物留在 dist/ 是 repo 這一側的事: 根目錄只放原始碼,
+# 產物集中一處, 要重產就是砍掉重跑.
+#
+# 主題 JSON 與 block 裡的相對路徑 ( theme/vanilla.json、block/panel/desk/index.html )
+# 都是相對於「裝起來的套件根目錄」, 攤平之後照樣對得上, 所以不必跟著改.
 #
 # 相依的 @plotdb/block、@plotdb/chart、ld$ ( @loadingio/ldquery )、Papa ( papaparse )
 # 都是全域, 刻意不打包進來 - 套用的頁面本來就會載這些, 包進來只會變成第二份.
@@ -30,9 +33,10 @@ cd "$(dirname "$0")"
 src=web/src/ls/dash.ls
 ver=$(node -e 'console.log(require("./package.json").version)')
 
-npx lsc -cp "$src" > index.js
-echo "/*! @plotdb/dash $ver | MIT */" > index.min.js
-npx uglifyjs index.js -c -m >> index.min.js
+mkdir -p dist
+npx lsc -cp "$src" > dist/index.js
+echo "/*! @plotdb/dash $ver | MIT */" > dist/index.min.js
+npx uglifyjs dist/index.js -c -m >> dist/index.min.js
 
-printf '%-24s %7s bytes\n' index.js "$(wc -c < index.js | tr -d ' ')" index.min.js "$(wc -c < index.min.js | tr -d ' ')"
+printf '%-24s %7s bytes\n' dist/index.js "$(wc -c < dist/index.js | tr -d ' ')" dist/index.min.js "$(wc -c < dist/index.min.js | tr -d ' ')"
 node tool/pack.js

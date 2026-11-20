@@ -2,8 +2,12 @@
   "name": "@plotdb/dash",
   "version": "0.0.1",
   "description": "dashboard utility, based on @plotdb/block",
-  "browser": "index.min.js",
-  "main": "index.min.js",
+  "main": "dist/index.min.js",
+  "browser": "dist/index.min.js",
+  "style": "dist/index.min.css",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "start": "npx server -r web",
     "build": "./build"
@@ -137,6 +141,5 @@
   },
   "dependencies": {
     "@plotdb/semver": "^0.0.2"
-  },
-  "style": "index.min.css"
+  }
 }

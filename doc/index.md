@@ -41,16 +41,21 @@ board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
 
     ./build        # 或 npm run build
 
-輸出全部在 repo 根目錄，不是 `dist/`：
+輸出全部在 `dist/`：
 
-    index.js                lsc 的輸出，可讀，給 debug 用
-    index.min.js            `package.json` 的 `main` / `browser`
-    index.css               `dash.styl` 的輸出（版面與卡片的基本 CSS）
-    index.min.css           `package.json` 的 `style`
-    block/panel/index.html      預設的 panel block（= vanilla 的那一份）
-    block/filterbar/index.html  全域篩選列
-    block/*/<主題>/index.html    主題自己帶的那幾份
-    theme/<主題>.json            內建主題（vanilla / desk / report / wall / terminal）
+    dist/index.js                lsc 的輸出，可讀，給 debug 用
+    dist/index.min.js            `package.json` 的 `main` / `browser`
+    dist/index.css               `dash.styl` 的輸出（版面與卡片的基本 CSS）
+    dist/index.min.css           `package.json` 的 `style`
+    dist/block/panel/index.html      預設的 panel block（= vanilla 的那一份）
+    dist/block/filterbar/index.html  全域篩選列
+    dist/block/*/<主題>/index.html    主題自己帶的那幾份
+    dist/theme/<主題>.json            內建主題（vanilla / desk / report / wall / terminal）
+
+`fedep publish` 會把 `dist/` 的內容攤平到發佈檔的根目錄，並改寫 `main` / `style` /
+`browser` 的路徑，所以**裝起來的套件裡這些都在根目錄**——`index.min.js`、`block/`、
+`theme/` 都是。下面講的路徑（以及主題 JSON 裡 `blocks` 的 `path`）都是裝起來之後的，
+不帶 `dist/`。這是 plotdb 這一系的共同形狀，`@plotdb/layout`、`@plotdb/konfig` 也是這樣。
 
 `index.js` / `index.min.js` 以外的由 `tool/pack.js` 產生，來源都在 `web/src` 底下 —— 它們本來就是示範頁在用的那一份，
 不是另外抄一份給套件。panel block 的來源是 `variation/vanilla/block/panel/0.0.1/`：
