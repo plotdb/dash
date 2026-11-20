@@ -324,13 +324,7 @@
       "label": {
         "color": "$ink",
         "halo": "$face"
-      },
-      "village": {
-        "mode": "none"
       }
-    },
-    "@makechart/number": {
-      "numberSizeRate": 1.8
     }
   },
   "role": {
@@ -515,6 +509,5 @@
         "en": "An xlfont family name. A name not in xlfont's meta silently falls back to the browser font"
       }
     }
-  ],
-  "_chart_number": "desk 的 panel block 標題列比較高, @makechart/number 預設的 numberSizeRate ( 3 ) 會讓數字上下被切掉。但這個值治標不治本: number 的 resize 只依寬度縮放 ( box.height 取了卻沒用 ), 而且單位那一行是另外算的 ( unitSizeRate, 不跟著 numberSizeRate 縮 ), 所以任何一個固定比例, 換一個格子高度、或多一行單位就會再次溢出。1.8 是在「46~51px 的繪圖區 + 一行單位」兩種幾何下都量過的保守值, 真正的修法在圖表那邊 ( 已回報 @makechart/bar )。"
+  ]
 }

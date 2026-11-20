@@ -284,9 +284,6 @@
       "label": {
         "color": "$axis",
         "halo": "$face"
-      },
-      "village": {
-        "mode": "none"
       }
     }
   },

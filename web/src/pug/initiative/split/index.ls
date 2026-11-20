@@ -165,10 +165,10 @@ def =
       binding:
         town: {key: \key}
         value: {key: "銷售額", name: "銷售額", unit: "元"}
-      # village.mode 預設是 click: 點一個縣市會展開成它底下的鄉鎮. 這一頁只有
-      # 縣市資料, 展開之後每一個鄉鎮都是「沒有資料」- 使用者點下去, 看到的是
-      # 自己剛剛選的那一塊變成一片空白. 所以關掉, 點選就只是發篩選
-      cfg: {legend: {enabled: true}, village: {mode: \none}}
+      # village.mode 不必關掉: twmapadv 0.0.4 起, click 模式下資料裡沒有村里的
+      # 列就不展開, 只發篩選 ( 這一頁只有縣市資料 ). 之後換一份有鄉鎮的資料,
+      # 同一份 def 點下去就會下鑽 - 不是被寫死成永遠不展開
+      cfg: {legend: {enabled: true}}
   ]
 
 # ---------------------------------------------------------------- runtime

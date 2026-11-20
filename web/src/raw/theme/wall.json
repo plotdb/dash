@@ -296,13 +296,7 @@
       "label": {
         "color": "$axis",
         "halo": "$face"
-      },
-      "village": {
-        "mode": "none"
       }
-    },
-    "@makechart/number": {
-      "numberSizeRate": 1.6
     }
   },
   "role": {
@@ -479,6 +473,5 @@
         "en": "Deliberately separate from the data colours: no data and lowest value are two different things"
       }
     }
-  ],
-  "_chart_number": "磚的留白比別版大, @makechart/number 預設的 numberSizeRate ( 3 ) 會讓數字與單位上下被切掉。跟 desk 一樣, 這個值治標不治本 ( number 的 resize 只依寬度縮放, 單位那一行又是另外算的 ), 1.6 是在 104px 的格子加一行單位下量出來的; 真正的修法在圖表那邊 ( @makechart/number 0.0.4, 待發版 )。"
+  ]
 }
