@@ -167,42 +167,65 @@ module.exports =
   # 操作提示: 這張圖能怎麼篩.
   #
   # 刻意不讓宿主在副標題寫「可點選 / 可框選」- 那是把介面的行為寫進資料, 換一種圖
-  # 或改一個設定, 那句話就默默變成錯的說明, 而且沒有人會發現. 這裡從 def 與圖表
-  # 自己的設定推出來, 設定改了提示就跟著改.
+  # 或改一個設定, 那句話就默默變成錯的說明, 而且沒有人會發現. 這裡問圖表自己,
+  # 設定改了提示就跟著改.
   #
-  # 推導的依據只有三件 dash 真的知道的事:
+  # 來源有兩個, 合起來才是完整的:
   #
-  #  - cfg.brush.enabled            有框選
-  #  - cfg.legend.crossfilter       圖例可以篩
-  #  - group-dim 有對應的資料欄位    點得到圖上的項目
+  #  - chart.interactions!   圖表自己宣告「哪個操作會發哪幾維的 filter」
+  #                          ( @plotdb/chart 3.16.0 起 ). 回 null = 沒宣告 = 不知道
+  #  - select 代打           圖自己不發資料點那一維時, 點選是 board 接的
+  #                          ( 見 bind-events ). 這一半圖表不知道, 只有這裡知道
   #
-  # 刻意保守: 會框選的圖通常也點得動 ( 例如 bar ), 但 line 不是 - 它的資料點按下去
-  # 不會發 filter. 從外面分不出這兩種, 所以寧可少說一句, 不要給一個按了沒反應的提示.
-  # 要說得準, 得由圖表自己宣告它支援哪些操作 ( 已經跟 @makechart 那邊提了 ).
+  # 為什麼要問圖表: 從外面看不出「會框選的圖點不點得動」. bar 兩種都像, 但它的
+  # click 是用來換對齊, 不發 filter; line 的資料點按下去也不發. 猜就會給出一個
+  # 按了沒反應的提示, 所以沒宣告的圖 ( ix == null ) 退回原本保守的推法: 只講
+  # cfg 看得出來的那幾件, 寧可少說一句.
   hints: ->
     {def} = @
     if def.crossfilter == false => return []
-    cfg = (@chart or {}).cfg or def.cfg or {}
     fm = @field-map or {}
     # 欄位的中文名: 先看這張圖自己的, 再退到整份 def 的. 兩層都沒有就用原始欄位名 -
     # 那是資料的名字, 不是給使用者看的名字, 但至少不會是空的
     all = ((@board or {}).def or {}).labels or {}
     lb = (f) -> (def.labels or {})[f] or all[f] or f
+    acts = {}
+    add = (k, f) ->
+      if !f => return
+      if !acts[k] => acts[k] = []
+      if f not in acts[k] => acts[k].push f
+    ix = if (@chart or {}).interactions => @chart.interactions! else null
     dims = if (@chart or {}).filter-dims => @chart.filter-dims! else []
     g = @group-dim
     gf = if g => fm[g] else null
-    brushy = !!(cfg.brush or {}).enabled
+    # 兩條路要寫成完整的 if / else 區塊: `if ix? => for ...` 接一行 `else` 的話,
+    # LiveScript 會把那個 else 當成 for 的 else ( 迴圈一次都沒跑時執行 ),
+    # 於是退路只在「有宣告但是空的」才跑, 沒宣告的圖就什麼提示都沒有
+    if ix?
+      for k, ds of ix => for d in (ds or []) => add k, fm[d]
+    else
+      # 退路: 圖沒宣告, 從 cfg 推. 判斷的依據只有 dash 真的知道的那幾件
+      cfg = (@chart or {}).cfg or def.cfg or {}
+      brushy = !!(cfg.brush or {}).enabled
+      # 沒宣告的圖只賭一件事: 有框選就講框選, 沒有就賭點得動. 這是舊的推法,
+      # 留著是因為它對沒宣告的圖 ( 例如 pie ) 還是比什麼都不說有用
+      if gf and brushy => add \brush, gf
+      else if gf => add \click, gf
+      lg = cfg.legend or {}
+      if lg.crossfilter and lg.enabled != false
+        # 圖例篩的通常是另一個維度 ( line 的 series ); 沒有別的維度就是跟項目同一個
+        other = [d for d in dims when d != g and fm[d]]
+        add \legend, (if other.length => fm[other.0] else gf)
+    # select 代打的那一維. 擺在兩條路之後, 因為兩種情況都可能有:
+    # 圖宣告了 click 就表示它自己發, 這裡的條件 ( 不在 filter-dims 裡 ) 自然不成立
+    if gf and g not in dims => add \click, gf
+    text =
+      click: "點圖上的項目可以篩"
+      brush: "橫向框選可以篩"
+      legend: "點圖例可以篩"
     out = []
-    if gf and brushy => out.push "橫向框選可以篩「#{lb gf}」"
-    # 自己不發這一維的 filter 時, 點選是 board 代打的 ( 見 bind-events ),
-    # 所以一定成立; 自己發的話只有「不是用框選的」才確定點得動
-    else if gf and (g not in dims or !brushy) => out.push "點圖上的項目可以篩「#{lb gf}」"
-    lg = cfg.legend or {}
-    if lg.crossfilter and lg.enabled != false
-      # 圖例篩的通常是另一個維度 ( line 的 series ); 沒有別的維度就是跟項目同一個
-      other = [d for d in dims when d != g and fm[d]]
-      f = if other.length => fm[other.0] else gf
-      if f => out.push "點圖例可以篩「#{lb f}」"
+    # 固定順序, 不照 interactions 的 key 順序 - 提示的排列不該隨圖表的宣告而變
+    for k in <[click brush legend]> => for f in (acts[k] or []) => out.push "#{text[k]}「#{lb f}」"
     out
 
   # 提示掛在標題列右側, 跟「篩選中」同一個位置 - 篩選中的時候它讓位,

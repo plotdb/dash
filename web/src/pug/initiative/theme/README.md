@@ -133,22 +133,61 @@ board 的預設`。中間那一段退回**主題的** panel block 很要緊：�
 一個設定，那句話就默默變成錯的說明，而且沒有人會發現。這裡從 def 與圖表自己的設定推出來，
 設定改了提示就跟著改。副標題回去講內容（「依書系, 每月的銷售額」）。
 
-推導只看三件 dash 真的知道的事：
+來源有兩個，合起來才完整：
 
-| 依據 | 提示 |
+ - **`chart.interactions!`** —— 圖表自己宣告哪個操作會發哪幾維的 filter，形狀是
+   `{click, brush, legend}` → 維度名陣列（`@plotdb/chart` 3.16.0 起）。回 `null` 表示
+   **沒宣告**，不是「沒有互動」
+ - **`select` 代打** —— 圖自己不發資料點那一維時，點選是 board 接的（見 `bind-events`）。
+   這一半圖表不知道，只有卡片知道，所以兩邊都要算
+
+| 來源 | 提示 |
 |---|---|
-| `cfg.brush.enabled` | 橫向框選可以篩「X」 |
-| `cfg.legend.crossfilter` | 點圖例可以篩「X」 |
-| `group-dim` 有對應的資料欄位 | 點圖上的項目可以篩「X」 |
+| `interactions!.click` | 點圖上的項目可以篩「X」 |
+| `interactions!.brush` | 橫向框選可以篩「X」 |
+| `interactions!.legend` | 點圖例可以篩「X」 |
+| 圖沒發資料點那一維（`select` 代打） | 點圖上的項目可以篩「X」 |
 
 欄位名先看這張圖自己的 `def.labels`，再退到整份 `def.labels`，都沒有就用原始欄位名。
+排列順序固定是 click / brush / legend，不照 `interactions` 的 key 順序 —— 提示的排列
+不該隨圖表的宣告而變。
 
-**刻意保守。** 會框選的圖通常也點得動（`bar` 就是），但 `line` 不是 —— 它的資料點按下去
-不會發 filter。從外面分不出這兩種，所以寧可少說一句，也不要給一個按了沒反應的提示。
-要說得準，得由圖表自己宣告它支援哪些操作；這一點已經跟 `@makechart` 那邊提了。
+**為什麼要問圖表，而不是自己猜。** 從外面看不出「會框選的圖點不點得動」：`bar` 兩種都像，
+但它的 click 是用來換對齊，不發 filter；`line` 的資料點按下去也不發。猜就會給出一個按了
+沒反應的提示。
+
+**沒宣告的圖**（`interactions!` 回 `null`，例如目前的 `pie`）退回原本的推法：有
+`cfg.brush.enabled` 就講框選，沒有就賭點得動，再加上 `cfg.legend.crossfilter`。那是個
+猜測，但對沒宣告的圖還是比什麼都不說有用。
+
+寫成完整的 `if` / `else` 區塊，不要寫成 `if ix? => for ...` 接一行 `else` ——
+LiveScript 會把那個 `else` 當成 **for 的 else**（迴圈一次都沒跑時執行），於是退路只在
+「有宣告但是空的」才跑，沒宣告的圖就什麼提示都沒有。
 
 算的時機要在 `chart.config def.cfg` **之後** —— 早一步問到的是圖表的預設值，不是這個
 panel 真正的設定（`line` 的 brush 就是這樣差一拍，提示會變成「點圖上的項目」）。
+
+`pocket` 與 `rail` 的卡片沒有提示圖示（那兩版的標題列放不下），block 的程式會自己略過。
+
+
+## block 的根要加 `ld-scope`
+
+每個 block 的最外層 `div` 都掛 `ld-scope`：
+
+```pug
+div(ld-scope)
+  .dash-panel(ld="panel")
+```
+
+**不加的話宿主的 ldview 會伸進 block 裡。** ldview 是用 `[ld=名字]` 選節點的，宿主頁面
+自己若有一個同名的 `ld`，它的 view 會連 block 裡那一個一起選到，然後照自己的 handler
+去寫。這個示範站就中過：頁面自己的編輯區有一個 `ld="hint"`，於是五個 variation 頁的卡片
+提示氣泡（`ld="hintpop"`，掛在 `ld="hint"` 底下）被宿主的 `text` handler 用 `textContent`
+整個洗掉，只有 `title` 屬性活下來 —— 看起來就是「hover 沒有氣泡，但有原生 tooltip」。
+
+`ld-scope` 掛在 block 的最外層而不是 `.dash-panel` 上，是因為那一層正好是 block 自己
+view 的 root：ldview 排除的是「自己 root **底下**某個 `[ld-scope]` 裡面」的節點，root
+本身不算自己的後代，所以 block 自己選得到，外面選不到。
 
 
 ## 主題要自己畫底色
