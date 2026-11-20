@@ -48,7 +48,9 @@ module.exports =
 
   render: ->
     {total, sub} = @values!
-    live = !!Object.keys(@board.filters).length
+    # locals 而不是 filters: 全域篩選只是把「全體」縮小, 不是「選了其中幾項」-
+    # 分子分母會是同一份, 顯示「佔全體 100.0%」看起來像壞掉
+    live = !!@board.locals!length
     v = if live and sub? => sub else total
     ratio = if total and sub? => sub / total else 1
 

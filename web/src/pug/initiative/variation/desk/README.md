@@ -25,7 +25,7 @@
 那個比例不是另外算的，是 `data.compare` 本來就會送出的子集：
 
     data:
-      measures: [{name: "銷售額", op: (rows) -> dash.agg.sum(rows, \amount) / 10000}]
+      measures: [{name: "銷售額", field: \amount, op: \sum, div: 10000}]
       compare: true
 
 分母是未篩選的全體，分子套用所有 filter —— 跟 compare 模式的圖表看到的是同一份東西。
@@ -150,8 +150,33 @@ KPI 的色條寫的是 `accent: 'var(--dk-acc-1)'` —— 一個 custom property
 所以 KPI block 連「現在是哪個模式」都不必知道。
 
 
+## 全域篩選列
+
+這一版多了一條 `block/filterbar/0.0.1`，佔 grid 的第一列。它是七個設計裡唯一有的，
+因為它是接 makechart 時才長出來的需求（那邊要一個「試算表式」的篩選標頭）。
+
+機制寫在 `vanilla/README.md` 的「全域篩選」一節，這裡只記這一版的實作決定：
+
+ - **它是 panel block，不是 board 外面的另一層。** 拿到的一樣是 `{def, board}`，
+   只是不畫資料 —— 它問的是「這份 rows 有哪些欄位」（`dash.fields`）。好處是排版、
+   主題、進場動畫全部跟其他格子一致，一行都不用另外寫
+ - **def 裡只寫要哪幾欄與怎麼稱呼**，型別與值域都是從資料推出來的：
+
+        * id: \header, panel: fb-block, area: {col: [1, 12], row: [1, 1]}
+          only: <[month region category channel amount]>
+          labels: {month: "月份", region: "地區", ...}
+
+ - **控制項的狀態不存在控制項身上。** 真實狀態在 board，每次 render 都從
+   `board.filter-of` 讀回來重寫 —— 頁首那顆「清除篩選」是別的地方按的，
+   不這樣做的話勾勾會留在畫面上
+ - **「全選」就是沒有篩選，不是「列出所有值」**；「全不選」是空集合，是有效的篩選。
+   兩者混為一談的話「全不選」按下去會彈回全選，那顆按鈕就沒意義了
+ - 第一列給的是絕對高度（`3.1em`）而不是 `fr`，而且 `.dk-board` 得打開
+   `overflow: visible`，否則下拉面板會被 `.dash` 裁掉一半
+
+
 ## 這一版沒做的
 
  - 沒有 responsive。版面是固定的 12 欄 grid，窄螢幕會擠
- - `vanilla` 列出的那些仍然沒做 ( detail 視窗、全域時間控制項、exclude 型 filter、
-   loading 與錯誤處理 )
+ - 篩選列沒有做 responsive，也沒有做欄位多到放不下時的收合
+ - `vanilla` 列出的那些仍然沒做 ( detail 視窗、exclude 型 filter、loading 與錯誤處理 )

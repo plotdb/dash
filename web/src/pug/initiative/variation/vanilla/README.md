@@ -337,9 +337,6 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
 ## 這一版沒做的
 
  - 沒有 detail / 放大視窗，也沒有 dashboard 之間的切換 ( taicca 版的 `add-dashboard` / `toggle` )
- - 沒有全域的時間區間控制項。line 的 brush 已經可以發 range，但那是某張圖發出的；
-   由 toolbar 發出的全域 filter 仍然沒有 ——
-   目前 board 只認得 panel 發出的 filter
  - 版面只有 grid 一種。`def.layout.type` 是之後要加 flow / free 版面的分支點
  - filter 還沒有排除 ( exclude )：「除了這幾項以外」。taicca 版的「出品人比例」用的是這個 ——
    選項幾十個時，要表達「不要這一兩個大宗」用值列表得點選其他四十項，而且下個月多一個
@@ -403,6 +400,67 @@ registry 上（makechart 的自訂 code 是這種），需要這一條。code �
 
 內嵌的 code **是程式，不是資料** —— 誰能把 code 放進 def，就等於誰能在這一頁執行程式。
 存別人的 def 來畫的場合（例如公開的儀表板），沙箱是宿主的責任，不是 dash 的。
+
+
+## 全域篩選
+
+原本 board 只認得 panel 發出的 filter：篩選一定是某張圖發出來的，所以「整份資料先縮小到
+2024 下半年」這種事沒有地方表達。現在 filter 上可以帶 `scope: \global`：
+
+    bd.set-filter \header, {field: \region, type: \index, values: [...], scope: \global}, \region
+
+型別仍然是既有的 `index` 與 `range`，沒有第三種。全域篩選跟 panel 發的差在兩件事：
+
+**誰會被它篩到。** 這一條不必特別做：排除規則本來就是比對 `owner`（算某張圖的資料時不套用
+它自己發出的 filter），而全域篩選的 owner 不是任何 panel 的 id，所以每一張圖都會套用，
+它自己也不排除任何人。
+
+**`compare` 的分母。** 這一條要特別做，而且是這整件事唯一真正的設計決定：分母從「整份
+資料」改成「只套用全域篩選的 rows」。沒有全域篩選時兩者相同，所以原本的行為不變；有的時候
+差很多 —— 使用者選了 2024 年，他預期「佔全體 37.8%」的全體是 2024 年的全體，不是全部年份。
+不改的話，選完之後每個百分比都莫名其妙地小，看起來像沒反應。
+
+連帶地，KPI 的「佔全體 x%」改看 `board.locals!`（排除全域之後還有沒有篩選）而不是
+`board.filters`：只有全域篩選的時候分子分母是同一份，永遠 100%，看起來像壞掉。
+這是「有人選了其中幾項」與「整份資料的範圍被縮小了」的差別。
+
+### `dash.fields(rows)`
+
+篩選面板問的問題跟 query 不一樣：query 是「這張圖要什麼」，面板是「這份資料有哪些欄位、
+各是什麼型別、值域多大」。所以另外一支，不是從 query 的 `meta` 拿（`meta` 講的是聚合
+之後的那幾欄）。
+
+型別只分三種，因為控制項只有三種：類別用多選，數值與日期用區間。判斷規則刻意簡單 ——
+數值就是數值，長得像日期的字串就是日期，其餘都是類別。不用「相異值少於幾個就當類別」
+那種啟發式：它會隨資料變來變去，同一個欄位這個月是區間、下個月多了幾筆就變多選。
+要改就用 `opt.types` 明寫。
+
+示範資料跑出來是：
+
+    month     date  12 項   2024/01 – 2024/12
+    region    cat    6 項   臺北市 / 新北市 / …   ( 依出現次數排序 )
+    category  cat    4 項
+    channel   cat    3 項
+    qty       num          11 – 561
+    amount    num          3458 – 253141
+    stores    num          1 – 14
+
+日期用零補的字串（`2024/01`）直接比字串就是對的順序，所以 range filter 不必轉型。
+
+### 篩選列做成 panel block
+
+`desk` 那一版加了一條 `block/filterbar/0.0.1`，放在 grid 的第一列。做成 panel block
+而不是 board 外面的另一層，排版與主題就跟其他格子一致 —— 它拿到的也是一樣的
+`{def, board}`，只是不畫資料。
+
+兩件做下去才知道的事：
+
+ - **格線要給它絕對高度**（`row: <[3.1em 6.4em 1.15fr 1fr]>`）。給 `fr` 的話它會跟圖表
+   一起長高，而它的內容高度是固定的
+ - **`.dash` 是 `overflow: hidden`**（不讓 svg 撐破格線），所以下拉面板會被裁掉一半。
+   有彈出層的儀表板得由頁面把它打開（`.dk-board { overflow: visible }`）；卡片自己有
+   `overflow: hidden`，圖表還是被各自的卡片關著。另一條路是把面板掛到 `document.body`，
+   但 block 的 CSS 是靠祖先的 `scope` 屬性收斂的（`@plotdb/csscope`），搬出去樣式就掉了
 
 
 ## 要決定的事

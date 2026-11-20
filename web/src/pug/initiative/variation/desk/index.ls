@@ -85,6 +85,7 @@ light =
     'geo-ramp': colors: <[#eaeff4 #0c7d75]>
 
 kpi-block = {ns: \local, name: \kpi, version: \0.0.1}
+fb-block = {ns: \local, name: \filterbar, version: \0.0.1}
 
 # 所有圖表共用的那一層. 圖表的 config 結構是一致的 ( 都從 chart.utils.config.preset
 # 長出來 ), 所以同一份東西可以套到每一張圖上, 不必每個 panel 各抄一次.
@@ -129,26 +130,41 @@ def =
   layout:
     # 12 欄, 讓 KPI ( 3 欄 ) 與圖 ( 3~8 欄 ) 共用同一組格線
     col: <[1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr]>
-    row: <[6.4em 1.15fr 1fr]>
+    # 第一條是篩選列. 絕對高度而不是 fr - 它的內容高度是固定的,
+    # 給 fr 會讓它跟著圖表一起長高
+    row: <[3.1em 6.4em 1.15fr 1fr]>
     gap: \14px
 
   panels: [
+    # ---- 全域篩選列. 它不畫資料, 所以既沒有 chart 也沒有 data:
+    # 它要的是「這份 rows 有哪些欄位」, 由 dash.fields 回答.
+    # 發出去的 filter 帶 scope: \global, 所以每一張圖都會被它篩到, 而且
+    # compare 的分母也跟著走 - 「佔全體 x%」的全體會是篩選之後的全體
+    * id: \header, panel: fb-block, area: {col: [1, 12], row: [1, 1]}
+      only: <[month region category channel amount]>
+      labels:
+        month: "月份"
+        region: "地區"
+        category: "書系"
+        channel: "通路"
+        amount: "單筆銷售額"
+
     # ---- KPI. 用 kpi block, 所以沒有 chart; compare 讓它知道「全體是多少」
     * id: \gross, title: "總銷售額", unit: "萬元", accent: 'var(--dk-acc-1)'
-      panel: kpi-block, area: {col: [1, 3], row: [1, 1]}
+      panel: kpi-block, area: {col: [1, 3], row: [2, 1]}
       data:
         measures: [{name: "銷售額", field: \amount, op: \sum, div: 10000}]
         compare: true
 
     * id: \qty, title: "總銷售冊數", unit: "冊", accent: 'var(--dk-acc-2)'
-      panel: kpi-block, area: {col: [4, 3], row: [1, 1]}
+      panel: kpi-block, area: {col: [4, 3], row: [2, 1]}
       data:
         measures: [{name: "冊數", field: \qty, op: \sum}]
         compare: true
 
     # 平均值型的指標: 「佔全體 65%」沒有意義, 要看的是比全體高還是低
     * id: \price, title: "平均單價", unit: "元 / 冊", accent: 'var(--dk-acc-3)', note: \delta
-      panel: kpi-block, area: {col: [7, 3], row: [1, 1]}
+      panel: kpi-block, area: {col: [7, 3], row: [2, 1]}
       data:
         # ratio 是 sum(amount) / sum(qty), 不是 avg(單價) - 後者每一筆的權重一樣,
         # 賣一本的小單會跟賣五百本的大單一樣重
@@ -156,14 +172,14 @@ def =
         compare: true
 
     * id: \coverage, title: "涵蓋地區", unit: "縣市", accent: 'var(--dk-acc-4)'
-      panel: kpi-block, area: {col: [10, 3], row: [1, 1]}
+      panel: kpi-block, area: {col: [10, 3], row: [2, 1]}
       data:
         measures: [{name: "地區數", field: \region, op: \distinct}]
         compare: true
 
     # ---- 圖. 這些沿用預設的 panel block
     * id: \trend, title: "月銷售趨勢", subtitle: "依書系 · 點 legend 篩書系, 橫向拖曳框選月份區間 · 虛線為單書系月均"
-      area: {col: [1, 6], row: [2, 1]}, hue: \cat
+      area: {col: [1, 6], row: [3, 1]}, hue: \cat
       chart: {name: "@makechart/line"}
       data:
         groupby: \month
@@ -191,7 +207,7 @@ def =
             notes: [{x: 0.012, y: 0.94, text: "虛線 — 單書系月均 78 萬", align: \start, size: \.72em}]
 
     * id: \channel, title: "通路占比", subtitle: "可點選 · 通路自己一組色階"
-      area: {col: [7, 3], row: [2, 1]}, hue: \chn
+      area: {col: [7, 3], row: [3, 1]}, hue: \chn
       chart: {name: "@makechart/pie"}
       data:
         groupby: \channel
@@ -205,7 +221,7 @@ def =
         legend: {crossfilter: true, subset: {mode: \dim}, position: \bottom, actions: false}
 
     * id: \region, title: "各地區銷售額", subtitle: "可框選 · 單色, 排序本身就是訊息"
-      area: {col: [1, 5], row: [3, 1]}, hue: \geo
+      area: {col: [1, 5], row: [4, 1]}, hue: \geo
       chart: {name: "@makechart/bar"}
       data:
         groupby: \region
@@ -219,7 +235,7 @@ def =
     # 刻意不排序: 項目順序跟著資料裡第一次出現的順序走, 與上面 line 的 series
     # 順序一致, 同一個書系才會是同一個顏色
     * id: \category, title: "書系占比", subtitle: "可點選 · 依占比深淺上色"
-      area: {col: [6, 4], row: [3, 1]}, hue: 'cat-ramp'
+      area: {col: [6, 4], row: [4, 1]}, hue: 'cat-ramp'
       chart: {name: "@makechart/percent-list"}
       data:
         groupby: \category
@@ -230,7 +246,7 @@ def =
 
     # 跨兩列: 臺灣本島加離島的範圍又高又窄, 放在扁格子裡會縮成右上角一小塊
     * id: \map, title: "地區分布", subtitle: "可點選 · 深淺是銷售額, 與左下長條圖同一個維度"
-      area: {col: [10, 3], row: [2, 2]}, hue: 'geo-ramp'
+      area: {col: [10, 3], row: [3, 2]}, hue: 'geo-ramp'
       chart: {name: "@makechart/taiwan-map"}
       data:
         groupby: \region

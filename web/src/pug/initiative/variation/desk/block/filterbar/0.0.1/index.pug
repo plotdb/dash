@@ -1,0 +1,205 @@
+div
+  .dk-fb
+    .dk-fb-title 全域篩選
+    .dk-fb-items(ld="items")
+    .dk-spacer
+    button.dk-fb-clear(ld="clear") 未篩選
+  style(type="text/css"): :stylus
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .dk-fb
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      display: flex
+      align-items: center
+      gap: 10px
+      padding: 0 13px
+      border-radius: var(--dk-radius)
+      background: linear-gradient(180deg, var(--dk-panel-a) 0%, var(--dk-panel-b) 100%)
+      border: 1px solid var(--dk-line)
+      box-shadow: var(--dk-shadow)
+      // 展開的面板要掛到格子外面, 所以這一層不能裁切
+      overflow: visible
+      transition: border-color .2s
+      // 有篩選的時候左緣亮一道 - 跟 panel 的 .filtering 是同一個語彙
+      &:before
+        content: ''
+        position: absolute
+        top: 0
+        left: 0
+        width: 2px
+        height: 100%
+        border-radius: var(--dk-radius) 0 0 var(--dk-radius)
+        background: var(--dk-acc-1)
+        opacity: 0
+        transition: opacity .2s
+      &.filtering:before
+        opacity: .85
+
+    .dk-fb-title
+      flex: 0 0 auto
+      font-size: 11px
+      letter-spacing: .12em
+      color: var(--dk-eyebrow)
+      text-transform: uppercase
+
+    .dk-fb-items
+      display: flex
+      align-items: center
+      gap: 7px
+      min-width: 0
+      overflow: visible
+
+    .dk-spacer
+      flex: 1 1 auto
+
+    .dk-fb-item
+      position: relative
+      flex: 0 0 auto
+
+    .dk-fb-btn
+      display: flex
+      align-items: baseline
+      gap: 6px
+      padding: 5px 9px
+      border-radius: 7px
+      border: 1px solid var(--dk-line)
+      background: var(--dk-soft)
+      color: var(--dk-fg)
+      font: inherit
+      font-size: 11.5px
+      cursor: pointer
+      white-space: nowrap
+      transition: border-color .15s, background-color .15s
+      &:hover
+        border-color: var(--dk-line-hi)
+        background: var(--dk-soft-hi)
+    .dk-fb-item.on .dk-fb-btn
+      border-color: var(--dk-acc-1)
+      color: var(--dk-fg-strong)
+
+    .dk-fb-key
+      color: var(--dk-fg-dim)
+    .dk-fb-item.on .dk-fb-key
+      color: var(--dk-acc-1)
+    .dk-fb-val
+      font-variant-numeric: tabular-nums
+
+    .dk-fb-pop
+      display: none
+      position: absolute
+      top: calc(100% + 6px)
+      left: 0
+      z-index: 40
+      min-width: 158px
+      padding: 8px
+      border-radius: 9px
+      background: var(--dk-win)
+      border: 1px solid var(--dk-line-hi)
+      box-shadow: 0 18px 40px -16px rgba(0,0,0,.75)
+    .dk-fb-item.open .dk-fb-pop
+      display: block
+
+    .dk-fb-head
+      display: flex
+      gap: 6px
+      padding-bottom: 7px
+      margin-bottom: 6px
+      border-bottom: 1px solid var(--dk-line)
+
+    .dk-fb-mini
+      flex: 1 1 auto
+      padding: 3px 0
+      border-radius: 5px
+      border: 1px solid var(--dk-line)
+      background: transparent
+      color: var(--dk-fg-dim)
+      font: inherit
+      font-size: 10.5px
+      cursor: pointer
+      &:hover
+        border-color: var(--dk-line-hi)
+        color: var(--dk-fg)
+
+    .dk-fb-list
+      display: flex
+      flex-direction: column
+      gap: 1px
+      max-height: 232px
+      overflow-y: auto
+
+    .dk-fb-row
+      display: flex
+      align-items: center
+      gap: 7px
+      padding: 4px 5px
+      border-radius: 5px
+      font-size: 11.5px
+      color: var(--dk-fg)
+      cursor: pointer
+      &:hover
+        background: var(--dk-soft)
+
+    .dk-fb-box
+      flex: 0 0 auto
+      margin: 0
+      accent-color: var(--dk-acc-1)
+
+    .dk-fb-range
+      display: flex
+      align-items: center
+      gap: 6px
+
+    .dk-fb-num, .dk-fb-sel
+      flex: 1 1 0
+      min-width: 0
+      width: 72px
+      padding: 4px 6px
+      border-radius: 5px
+      border: 1px solid var(--dk-line)
+      background: var(--dk-soft)
+      color: var(--dk-fg)
+      font: inherit
+      font-size: 11.5px
+      font-variant-numeric: tabular-nums
+      &:focus
+        outline: none
+        border-color: var(--dk-acc-1)
+
+    .dk-fb-dash
+      flex: 0 0 auto
+      color: var(--dk-fg-dim)
+
+    .dk-fb-hint
+      margin-top: 7px
+      font-size: 10.5px
+      color: var(--dk-fg-dim)
+      font-variant-numeric: tabular-nums
+
+    .dk-fb-clear
+      flex: 0 0 auto
+      padding: 4px 9px
+      border-radius: 7px
+      border: 1px dashed var(--dk-line)
+      background: transparent
+      color: var(--dk-fg-dim)
+      font: inherit
+      font-size: 11px
+      cursor: default
+      pointer-events: none
+      transition: color .15s, border-color .15s
+    .dk-fb.filtering .dk-fb-clear
+      border-style: solid
+      border-color: var(--dk-line-hi)
+      color: var(--dk-fg)
+      cursor: pointer
+      pointer-events: auto
+      &:hover
+        border-color: var(--dk-acc-1)
+        color: var(--dk-acc-1)
+  script: include:lsc index.ls

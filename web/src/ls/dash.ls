@@ -197,6 +197,69 @@ dash.binding = (dimension = {}, meta = {}) ->
   ret
 
 
+# rows -> 欄位清單.
+#
+# 全域篩選面板問的問題跟 query 不一樣: query 是「這張圖要什麼」, 這裡是「這份資料
+# 有哪些欄位、各是什麼型別、值域多大」- 所以另外一支, 而不是從 query 的 meta 拿
+# ( meta 講的是聚合之後的那幾欄 ).
+#
+# 型別只分三種, 因為篩選控制項只有三種: 類別用多選, 數值與日期用區間.
+# 判斷規則刻意簡單 - 數值就是數值, 長得像日期的字串就是日期, 其餘都是類別.
+# 不用「相異值少於幾個就當類別」那種啟發式: 它會隨資料變來變去, 同一個欄位這個月
+# 是區間、下個月多了幾筆就變多選. 要改就用 opt.types 明寫.
+#
+# 回傳 [{key, type, count, values, domain}]
+#
+#  - cat   values 是相異值, 依出現次數由多到少 ( 多選的清單照這個順序排 )
+#  - date  values 是排序過的相異值, domain 是 [最小, 最大]. 零補的日期字串
+#          ( 2024/01 ) 直接比字串就是對的順序, 所以 range filter 不必轉型
+#  - num   domain 是 [最小, 最大]
+date-like = /^\d{4}[-\/.]\d{1,2}([-\/.]\d{1,2})?$/
+
+numeric = (v) ->
+  if typeof(v) == \number => isFinite v
+  else typeof(v) == \string and !!v.trim! and isFinite(+v)
+
+dash.fields = (rows = [], opt = {}) ->
+  if !rows.length => return []
+  types = opt.types or {}
+  skip = opt.skip or []
+  # 欄位不一定每一列都有, 所以掃過全部的列, 不是只看第一列
+  ks = []
+  seen = {}
+  for r in rows => for k of r => if !seen[k]
+    seen[k] = true
+    ks.push k
+  ks = ks.filter (k) -> k.substring(0, 1) != '_' and !(k in skip)
+  ks.map (k) ->
+    vals = []
+    counts = {}
+    num = true
+    for r in rows
+      v = r[k]
+      # 空值不參與型別判斷也不進清單: 一欄裡有幾個空的不代表它不是數值欄
+      if !v? or v == '' => continue
+      if num and !numeric(v) => num = false
+      if !counts[v]?
+        counts[v] = 0
+        vals.push v
+      counts[v]++
+    type = types[k] or
+      if num => \num
+      else if vals.length and vals.every((v) -> date-like.exec "#v") => \date
+      else \cat
+    ret = {key: k, type: type, count: vals.length}
+    if type == \num =>
+      ns = vals.map (v) -> +v
+      ret.domain = [(ns.reduce (a, b) -> a <? b), (ns.reduce (a, b) -> a >? b)]
+    else if type == \date =>
+      vs = vals.slice!sort!
+      ret <<< {values: vs, domain: [vs.0, vs[vs.length - 1]]}
+    else
+      ret.values = vals.slice!sort (a, b) -> counts[b] - counts[a]
+    ret
+
+
 # ------------------------------------------------------------------- board
 #
 # board 負責版面與 panel 的生命週期, 以及 crossfilter 的協調.
@@ -306,6 +369,20 @@ board.prototype = Object.create(Object.prototype) <<<
 
   filters-of: (id) -> [v for k, v of @filters when v.owner == id]
 
+  # 全域篩選: filter 上帶 scope: \global 就是. 它不屬於任何一張圖, 所以
+  #
+  #  - 每一張圖都要套用 ( 這一條不必特別做: 排除規則是比對 owner, 而全域篩選的
+  #    owner 不是任何 panel 的 id )
+  #  - compare 的分母也要套. 這一條要特別做, 見 data-for
+  globals: -> [v for k, v of @filters when v.scope == \global]
+
+  # 排除全域篩選之後, 還有沒有篩選.
+  #
+  # 「佔全體 x%」這種對比在只有全域篩選的時候沒有意義: 分母已經跟著全域篩選走了,
+  # 分子分母是同一份, 永遠 100% - 看起來像壞掉. 所以要分得出「有人在篩某幾項」
+  # 跟「整份資料的範圍被縮小了」
+  locals: -> [v for k, v of @filters when v.scope != \global]
+
   # filter 的兩種型別:
   #  - index ( 預設 ) 值列表. 點選 / 類別軸的框選都是這種
   #  - range  區間 [lo, hi], 兩端都含. 連續軸 ( 時間、數值 ) 的框選要用這種 -
@@ -345,7 +422,13 @@ board.prototype = Object.create(Object.prototype) <<<
     d = panel.data or {}
     if !d.compare => return dash.query (@rows-for panel), d
     sub = if (d.compare or {}).exclude-self => @rows-for panel else @rows-all!
-    dash.compare {base: @rows, subset: sub, def: d}
+    # 分母是「只套用全域篩選」的 rows, 不是整份資料.
+    #
+    # 沒有全域篩選時兩者相同, 所以這跟原本的行為一致. 有的時候差很多: 使用者選了
+    # 2024 年, 他預期「佔全體 37.8%」的全體是 2024 年的全體, 不是全部年份 -
+    # 否則選完之後每個百分比都莫名其妙地小, 看起來像沒反應. partial 模式的色塊
+    # 也一樣, 被選中的那一段會縮成一條線
+    dash.compare {base: (@_apply @globals!), subset: sub, def: d}
 
 
   render: -> @panels.map (p) -> if p.itf => p.itf.render!
