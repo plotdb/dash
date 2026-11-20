@@ -640,6 +640,8 @@ board.prototype = Object.create(Object.prototype) <<<
     # 沒寫 layout.gap 就跟著 CSS 的 --dash-gap 走, 跟 grid 版面同一個來源 -
     # 不然只改變數的專案會發現 grid 換得動、split 換不動
     h.style.flex = "0 0 #{l.gap or 'var(--dash-gap)'}"
+    # 吸附要認得「同方向的其它分隔線」, 而 dir 只有這裡知道
+    h.dataset.dir = dir
     if l.resizable =>
       h.classList.add \dash-handle-on
       h.addEventListener \mousedown, (e) ~> @_drag e, h, dir
@@ -652,22 +654,78 @@ board.prototype = Object.create(Object.prototype) <<<
     horiz = dir == \row
     size = (n) -> n.getBoundingClientRect![if horiz => \width else \height]
     low = (n) -> (parse-float(getComputedStyle(n)[if horiz => \minWidth else \minHeight]) or 0)
+    mid = (n) -> (r = n.getBoundingClientRect!) and (if horiz => (r.left + r.right) else (r.top + r.bottom)) / 2
     [a0, b0] = [size(a), size(b)]
     p0 = if horiz => e.clientX else e.clientY
+    h0 = mid h
+    # 吸附點在拖曳開始時算一次就夠: _pair 只改左右兩格而且保持兩者的和, 所以
+    # 同一層的其它分隔線不會跟著移動 - 目標是不動的
+    snaps = @_snaps h, dir
     document.body.classList.add \dash-dragging
     move = (ev) ~>
       d = (if horiz => ev.clientX else ev.clientY) - p0
+      # 按著 shift 才吸附. 平常拖就是平常拖 - 吸附是「我現在想對齊」的表態,
+      # 不該是預設行為, 不然差幾個 px 的刻意位置會被偷偷改掉
+      [d, snap] = if ev.shift-key => @_snap d, snaps, h0 else [d, null]
       # 夾在兩邊的 min 之間. 不夾的話拖過頭會把對面那一格壓成 0, 壓成 0 之後
       # 分隔線就貼著邊, 再也拉不回來
       d = Math.max (low(a) - a0), (Math.min d, (b0 - low(b)))
+      # 夾過之後就不在吸附點上了, 參考線要跟著收起來 - 留著的話它指著一個
+      # 這一刀到不了的位置
+      @_guide (if snap? and Math.abs(h0 + d - snap) < 0.5 => snap else null), dir
       @_pair a, a0 + d, b, b0 - d
     up = ~>
       document.removeEventListener \mousemove, move
       document.removeEventListener \mouseup, up
       document.body.classList.remove \dash-dragging
+      @_guide null
       @fire \resize, @def.layout
     document.addEventListener \mousemove, move
     document.addEventListener \mouseup, up
+
+  # 按住 shift 時可以吸附到哪些位置 ( 螢幕座標, 沿著拖曳的那個軸 ):
+  #
+  #  - 同方向的其它分隔線. 上下兩列各自有左右分隔線時, 拖其中一條就能對齊另一條 -
+  #    這是最常要的那一個, 欄沒對齊的儀表板一眼就看得出來
+  #  - 這一刀所在容器的 1/3、1/2、2/3. 「切在正中間」用拖的很難剛好
+  #
+  # 自己不算, 不然永遠吸在原地
+  _snaps: (h, dir) ->
+    horiz = dir == \row
+    ret = []
+    for n in Array.from(@root.querySelectorAll '.dash-handle')
+      if n == h or n.dataset.dir != dir => continue
+      r = n.getBoundingClientRect!
+      ret.push (if horiz => (r.left + r.right) else (r.top + r.bottom)) / 2
+    if (p = h.parentNode)
+      r = p.getBoundingClientRect!
+      [s, len] = if horiz => [r.left, r.width] else [r.top, r.height]
+      for k in [1/3, 1/2, 2/3] => ret.push s + len * k
+    ret
+
+  # 位移 d 吸到最近的那一個 ( 閾值 8px ). 回傳修正後的位移與吸到的位置
+  _snap: (d, snaps, h0, within = 8) ->
+    best = null
+    for t in snaps
+      gap = Math.abs(h0 + d - t)
+      if gap <= within and (!best or gap < best.0) => best := [gap, t]
+    if best => [best.1 - h0, best.1] else [d, null]
+
+  # 吸附時的參考線. 畫在 body 上而不是格子裡: 它要跨過整個版面,
+  # 而格子是 overflow: hidden 的
+  _guide: (pos, dir) ->
+    if !pos?
+      if @_gl and @_gl.parentNode => @_gl.parentNode.removeChild @_gl
+      return
+    if !@_gl
+      @_gl = document.createElement \div
+      @_gl.className = \dash-snapline
+    if !@_gl.parentNode => document.body.appendChild @_gl
+    r = @root.getBoundingClientRect!
+    if dir == \row
+      @_gl.style <<< {left: "#{pos}px", top: "#{r.top}px", width: \1px, height: "#{r.height}px"}
+    else
+      @_gl.style <<< {top: "#{pos}px", left: "#{r.left}px", height: \1px, width: "#{r.width}px"}
 
   # 拖完之後兩邊各自該變成什麼.
   #
@@ -997,6 +1055,7 @@ board.prototype = Object.create(Object.prototype) <<<
 
   destroy: ->
     if @_mq => @_mq.mq.remove-event-listener \change, @_mq.cb; @_mq = null
+    @_guide null
     @panels.map (p) -> if p.itf and p.itf.destroy => p.itf.destroy!
     @root.innerHTML = ''
     @panels = []

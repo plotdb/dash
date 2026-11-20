@@ -26,9 +26,19 @@ module.exports =
         click: tag: ~> board.clear-panel def.id
       handler:
         "@": ({node}) ~>
+          # 留著節點: 圖是非同步建起來的, 提示要等它好了才算得出來 ( 見 draw )
+          @node = node
           fs = board.filters-of def.id
-          node.querySelector('.dk-panel')
+          # 用 ld 而不是 class 名: 七個設計的卡片 class 各不相同 ( .dash-panel /
+          # .dk-panel / .rp-panel ... ), 寫死 class 的話這一份就不能逐字共用了
+          node.querySelector('[ld=panel]')
             .classList.toggle \filtering, !!fs.length
+          @paint-hint node
+          # 截斷的時候整行 hover 看得到完整的「標題 · 副標題」.
+          # 寫在標題列上而不是各寫一個: 使用者看到的是被截掉的那一行, 不是某個元素
+          if (t = node.querySelector '[ld=title]') and t.parentNode
+            sub = (node.querySelector '[ld=sub]' or {}).textContent or ''
+            t.parentNode.setAttribute \title, [(def.title or def.id), sub].filter(-> it).join ' · '
         body: ({node, local}) ~> @draw node, local
 
   # 每次 render 都重新取資料; chart 已存在就只是 set-raw, 不會重建.
@@ -56,6 +66,10 @@ module.exports =
       binding = def.binding or dash.binding(chart.mod.dimension, meta)
       {@field-map, @group-dim} = @fields-of binding, meta
       if def.cfg => chart.config def.cfg
+      # 提示要等這裡才算得出來, 而且一定要在 chart.config 之後: 它看的是
+      # field-map 與圖表合併後的 cfg ( brush 有沒有開、圖例能不能篩 ),
+      # 早一步問到的是圖表的預設值, 不是這個 panel 真正的設定
+      if @node => @paint-hint @node
       # subset 是同一份 binding 解析的子集; 沒有 compare 的 panel 就是 null
       chart.set-raw {raw, binding, subset: (subset or null)}
       # filter 的真實狀態在 board, 而 binding 每次都重建 - 重建後要把選取灌回圖裡,
@@ -148,6 +162,65 @@ module.exports =
       if !(field = (@field-map or {})[dim]) => return
       v = d.data[key]
       if v? => board.toggle-filter def.id, field, v, dim
+
+
+  # 操作提示: 這張圖能怎麼篩.
+  #
+  # 刻意不讓宿主在副標題寫「可點選 / 可框選」- 那是把介面的行為寫進資料, 換一種圖
+  # 或改一個設定, 那句話就默默變成錯的說明, 而且沒有人會發現. 這裡從 def 與圖表
+  # 自己的設定推出來, 設定改了提示就跟著改.
+  #
+  # 推導的依據只有三件 dash 真的知道的事:
+  #
+  #  - cfg.brush.enabled            有框選
+  #  - cfg.legend.crossfilter       圖例可以篩
+  #  - group-dim 有對應的資料欄位    點得到圖上的項目
+  #
+  # 刻意保守: 會框選的圖通常也點得動 ( 例如 bar ), 但 line 不是 - 它的資料點按下去
+  # 不會發 filter. 從外面分不出這兩種, 所以寧可少說一句, 不要給一個按了沒反應的提示.
+  # 要說得準, 得由圖表自己宣告它支援哪些操作 ( 已經跟 @makechart 那邊提了 ).
+  hints: ->
+    {def} = @
+    if def.crossfilter == false => return []
+    cfg = (@chart or {}).cfg or def.cfg or {}
+    fm = @field-map or {}
+    # 欄位的中文名: 先看這張圖自己的, 再退到整份 def 的. 兩層都沒有就用原始欄位名 -
+    # 那是資料的名字, 不是給使用者看的名字, 但至少不會是空的
+    all = ((@board or {}).def or {}).labels or {}
+    lb = (f) -> (def.labels or {})[f] or all[f] or f
+    dims = if (@chart or {}).filter-dims => @chart.filter-dims! else []
+    g = @group-dim
+    gf = if g => fm[g] else null
+    brushy = !!(cfg.brush or {}).enabled
+    out = []
+    if gf and brushy => out.push "橫向框選可以篩「#{lb gf}」"
+    # 自己不發這一維的 filter 時, 點選是 board 代打的 ( 見 bind-events ),
+    # 所以一定成立; 自己發的話只有「不是用框選的」才確定點得動
+    else if gf and (g not in dims or !brushy) => out.push "點圖上的項目可以篩「#{lb gf}」"
+    lg = cfg.legend or {}
+    if lg.crossfilter and lg.enabled != false
+      # 圖例篩的通常是另一個維度 ( line 的 series ); 沒有別的維度就是跟項目同一個
+      other = [d for d in dims when d != g and fm[d]]
+      f = if other.length => fm[other.0] else gf
+      if f => out.push "點圖例可以篩「#{lb f}」"
+    out
+
+  # 提示掛在標題列右側, 跟「篩選中」同一個位置 - 篩選中的時候它讓位,
+  # 因為那時候使用者要的是「怎麼取消」, 不是「可以怎麼篩」
+  paint-hint: (node) ->
+    if !(h = node.querySelector '[ld=hint]') => return
+    hs = @hints!
+    h.style.display = if hs.length => '' else \none
+    if !hs.length => return
+    # title 是沒有 hover 樣式時的退路 ( 例如觸控裝置 ), 也給讀螢幕的人
+    h.setAttribute \title, hs.join '\n'
+    h.setAttribute \aria-label, hs.join '; '
+    if !(p = node.querySelector '[ld=hintpop]') => return
+    p.innerHTML = ''
+    for t in hs
+      d = document.createElement \div
+      d.textContent = t
+      p.appendChild d
 
   render: -> @view.render!
 

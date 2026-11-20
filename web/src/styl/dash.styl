@@ -79,6 +79,15 @@ body.dash-dragging
   *
     cursor: inherit !important
 
+// 按住 shift 拖分隔線時的吸附參考線. 畫在 body 上 ( 不是格子裡 ):
+// 它要跨過整個版面, 而格子是 overflow: hidden 的
+.dash-snapline
+  position: fixed
+  z-index: 9999
+  pointer-events: none
+  background: var(--dash-accent)
+  opacity: .75
+
 // 還沒放圖表的格子. 看得見才有辦法在上面放東西
 .dash-cell.dash-empty
   border: 1px dashed var(--dash-border)
@@ -105,11 +114,14 @@ body.dash-dragging
   border-radius: var(--dash-radius)
   box-shadow: 0 1px 3px rgba(0,0,0,.08)
 
+  // 固定高度而不是讓內容決定: 副標題與「篩選中」的行高跟標題不一樣,
+  // 不固定的話有沒有它們就差一兩個 px, 同一列卡片的圖表上緣會錯開
   > .dash-head
     flex: 0 0 auto
     display: flex
     align-items: center
     gap: .4em
+    height: 1.5em
     font-size: .9em
 
   > .dash-body
@@ -117,18 +129,74 @@ body.dash-dragging
     min-height: 0
     position: relative
 
+// 收縮順序: 先截副標題, 截到沒了才輪到標題 ( shrink 權重差 100 倍 ).
+// 右側的狀態與提示不讓 ( flex: 0 0 auto )
 .dash-title
+  flex: 0 1 auto
+  min-width: 0
   font-weight: bold
   white-space: nowrap
   overflow: hidden
   text-overflow: ellipsis
 
+// 副標題跟在標題後面, 空間不夠時先截斷它 ( 標題與右側的狀態不讓 ).
+// 整列是單行而且高度固定, 所以有沒有副標題、有沒有「篩選中」,
+// 每張卡片的圖表上緣都對齊
 .dash-sub
+  flex: 0 100 auto
+  min-width: 0
   color: var(--dash-fg-dim)
   font-size: .85em
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
 
 .dash-spacer
   flex: 1 1 auto
+
+// 操作提示. 內容由 panel block 依圖表的設定推出來 ( 見 block 的 index.ls ),
+// 不是宿主在副標題手寫的 - 換一種圖或改一個設定, 提示就跟著改.
+// 篩選中時它讓位給「篩選中 ✕」: 那時候使用者要的是怎麼取消, 不是可以怎麼篩
+.dash-hint
+  position: relative
+  flex: 0 0 auto
+  width: 1.25em
+  height: 1.25em
+  border-radius: 50%
+  border: 1px solid var(--dash-border)
+  color: var(--dash-fg-dim)
+  font-size: .8em
+  line-height: 1.15em
+  text-align: center
+  cursor: help
+
+  &:before
+    content: '?'
+
+  &:hover > .dash-hint-pop
+    display: block
+
+// 彈出來的那一塊刻意往卡片內部開: 格子是 overflow: hidden 的, 往外開會被裁掉
+.dash-hint-pop
+  display: none
+  position: absolute
+  top: 140%
+  right: 0
+  z-index: 20
+  padding: .45em .65em
+  font-size: 1em
+  line-height: 1.8
+  font-weight: normal
+  text-align: left
+  white-space: nowrap
+  color: var(--dash-fg)
+  background: var(--dash-panel-bg)
+  border: 1px solid var(--dash-border)
+  border-radius: var(--dash-radius)
+  box-shadow: 0 .4em 1.4em rgba(0,0,0,.18)
+
+.dash-panel.filtering > .dash-head .dash-hint
+  display: none
 
 // 這張圖正在對外發 filter 時的狀態
 .dash-tag

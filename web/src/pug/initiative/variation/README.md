@@ -26,7 +26,8 @@
 `data` / `layout` / `panels`，每個 panel 一樣是 `area` / `chart` / `data` / `cfg`。
 
 連 panel block 的程式都是同一份：`block/panel/0.0.1/index.ls` 七份**逐字相同**
-（只有 pug 裡的外觀與那一個 class 名不同）。KPI 那四格則有三種做法：
+（差別全在 pug 裡的外觀；程式用 `ld` 屬性而不是 class 名找節點，所以連那一個 class 名
+也不再是例外）。KPI 那四格則有三種做法：
 `vanilla` 用 `@makechart/number`，四個設計用 desk 寫的 kpi block，
 `report` 拿掉了進度條與數字補間，`terminal` 把進度條換成字元畫的 `████░░░░`。
 

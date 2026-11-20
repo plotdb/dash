@@ -947,6 +947,7 @@
     h = document.createElement('div');
     h.className = 'dash-handle';
     h.style.flex = "0 0 " + (l.gap || 'var(--dash-gap)');
+    h.dataset.dir = dir;
     if (l.resizable) {
       h.classList.add('dash-handle-on');
       h.addEventListener('mousedown', function(e){
@@ -955,7 +956,7 @@
     }
     return h;
   }, ref$._drag = function(e, h, dir){
-    var ref$, a, b, horiz, size, low, a0, b0, p0, move, up, this$ = this;
+    var ref$, a, b, horiz, size, low, mid, a0, b0, p0, h0, snaps, move, up, this$ = this;
     e.preventDefault();
     ref$ = [h.previousElementSibling, h.nextElementSibling], a = ref$[0], b = ref$[1];
     if (!a || !b) {
@@ -968,27 +969,102 @@
     low = function(n){
       return parseFloat(getComputedStyle(n)[horiz ? 'minWidth' : 'minHeight']) || 0;
     };
+    mid = function(n){
+      var r;
+      return (r = n.getBoundingClientRect()) && (horiz
+        ? r.left + r.right
+        : r.top + r.bottom) / 2;
+    };
     ref$ = [size(a), size(b)], a0 = ref$[0], b0 = ref$[1];
     p0 = horiz
       ? e.clientX
       : e.clientY;
+    h0 = mid(h);
+    snaps = this._snaps(h, dir);
     document.body.classList.add('dash-dragging');
     move = function(ev){
-      var d;
+      var d, ref$, snap;
       d = (horiz
         ? ev.clientX
         : ev.clientY) - p0;
+      ref$ = ev.shiftKey
+        ? this$._snap(d, snaps, h0)
+        : [d, null], d = ref$[0], snap = ref$[1];
       d = Math.max(low(a) - a0, Math.min(d, b0 - low(b)));
+      this$._guide(snap != null && Math.abs(h0 + d - snap) < 0.5 ? snap : null, dir);
       return this$._pair(a, a0 + d, b, b0 - d);
     };
     up = function(){
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
       document.body.classList.remove('dash-dragging');
+      this$._guide(null);
       return this$.fire('resize', this$.def.layout);
     };
     document.addEventListener('mousemove', move);
     return document.addEventListener('mouseup', up);
+  }, ref$._snaps = function(h, dir){
+    var horiz, ret, i$, ref$, len$, n, r, p, s, len, k;
+    horiz = dir === 'row';
+    ret = [];
+    for (i$ = 0, len$ = (ref$ = Array.from(this.root.querySelectorAll('.dash-handle'))).length; i$ < len$; ++i$) {
+      n = ref$[i$];
+      if (n === h || n.dataset.dir !== dir) {
+        continue;
+      }
+      r = n.getBoundingClientRect();
+      ret.push((horiz
+        ? r.left + r.right
+        : r.top + r.bottom) / 2);
+    }
+    if (p = h.parentNode) {
+      r = p.getBoundingClientRect();
+      ref$ = horiz
+        ? [r.left, r.width]
+        : [r.top, r.height], s = ref$[0], len = ref$[1];
+      for (i$ = 0, len$ = (ref$ = [1 / 3, 1 / 2, 2 / 3]).length; i$ < len$; ++i$) {
+        k = ref$[i$];
+        ret.push(s + len * k);
+      }
+    }
+    return ret;
+  }, ref$._snap = function(d, snaps, h0, within){
+    var best, i$, len$, t, gap;
+    within == null && (within = 8);
+    best = null;
+    for (i$ = 0, len$ = snaps.length; i$ < len$; ++i$) {
+      t = snaps[i$];
+      gap = Math.abs(h0 + d - t);
+      if (gap <= within && (!best || gap < best[0])) {
+        best = [gap, t];
+      }
+    }
+    if (best) {
+      return [best[1] - h0, best[1]];
+    } else {
+      return [d, null];
+    }
+  }, ref$._guide = function(pos, dir){
+    var r, ref$;
+    if (pos == null) {
+      if (this._gl && this._gl.parentNode) {
+        this._gl.parentNode.removeChild(this._gl);
+      }
+      return;
+    }
+    if (!this._gl) {
+      this._gl = document.createElement('div');
+      this._gl.className = 'dash-snapline';
+    }
+    if (!this._gl.parentNode) {
+      document.body.appendChild(this._gl);
+    }
+    r = this.root.getBoundingClientRect();
+    if (dir === 'row') {
+      return ref$ = this._gl.style, ref$.left = pos + "px", ref$.top = r.top + "px", ref$.width = '1px', ref$.height = r.height + "px", ref$;
+    } else {
+      return ref$ = this._gl.style, ref$.top = pos + "px", ref$.left = r.left + "px", ref$.height = '1px', ref$.width = r.width + "px", ref$;
+    }
   }, ref$._pair = function(a, av, b, bv){
     var flexy, fix, g, t;
     flexy = function(n){
@@ -1430,6 +1506,7 @@
       this._mq.mq.removeEventListener('change', this._mq.cb);
       this._mq = null;
     }
+    this._guide(null);
     this.panels.map(function(p){
       if (p.itf && p.itf.destroy) {
         return p.itf.destroy();

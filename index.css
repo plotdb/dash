@@ -65,6 +65,13 @@ body.dash-dragging {
 body.dash-dragging * {
   cursor: inherit !important;
 }
+.dash-snapline {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--dash-accent);
+  opacity: 0.75;
+}
 .dash-cell.dash-empty {
   border: 1px dashed var(--dash-border);
   border-radius: var(--dash-radius);
@@ -93,6 +100,7 @@ body.dash-dragging * {
   display: flex;
   align-items: center;
   gap: 0.4em;
+  height: 1.5em;
   font-size: 0.9em;
 }
 .dash-panel > .dash-body {
@@ -101,17 +109,64 @@ body.dash-dragging * {
   position: relative;
 }
 .dash-title {
+  flex: 0 1 auto;
+  min-width: 0;
   font-weight: bold;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .dash-sub {
+  flex: 0 100 auto;
+  min-width: 0;
   color: var(--dash-fg-dim);
   font-size: 0.85em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .dash-spacer {
   flex: 1 1 auto;
+}
+.dash-hint {
+  position: relative;
+  flex: 0 0 auto;
+  width: 1.25em;
+  height: 1.25em;
+  border-radius: 50%;
+  border: 1px solid var(--dash-border);
+  color: var(--dash-fg-dim);
+  font-size: 0.8em;
+  line-height: 1.15em;
+  text-align: center;
+  cursor: help;
+}
+.dash-hint:before {
+  content: '?';
+}
+.dash-hint:hover > .dash-hint-pop {
+  display: block;
+}
+.dash-hint-pop {
+  display: none;
+  position: absolute;
+  top: 140%;
+  right: 0;
+  z-index: 20;
+  padding: 0.45em 0.65em;
+  font-size: 1em;
+  line-height: 1.8;
+  font-weight: normal;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--dash-fg);
+  background: var(--dash-panel-bg);
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius);
+  box-shadow: 0 0.4em 1.4em rgba(0,0,0,0.18);
+}
+.dash-panel.filtering > .dash-head .dash-hint {
+  display: none;
 }
 .dash-tag {
   display: none;

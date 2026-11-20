@@ -1,10 +1,11 @@
 div
-  .dk-panel
+  .dk-panel(ld="panel")
     .dk-head
-      div(style="min-width:0")
-        .dk-title(ld="title")
-        .dk-sub(ld="sub")
+      .dk-title(ld="title")
+      .dk-sub(ld="sub")
       .dk-spacer
+      .dk-hint(ld="hint")
+        .dk-hint-pop(ld="hintpop")
       .dk-tag(ld="tag")
         i.dk-tag-dot
         span 篩選中
@@ -37,15 +38,22 @@ div
       &:hover
         border-color: var(--dk-line-hi)
 
+    // 單行: 標題列的高度固定, 所以有沒有副標題、有沒有「篩選中」,
+    // 每張卡片的圖表上緣都對齊
     .dk-head
       flex: 0 0 auto
       display: flex
-      align-items: flex-start
+      align-items: center
       gap: 8px
+      // 固定高度而不是最小高度: 副標題與「篩選中」的行高跟標題不一樣,
+      // 用 min- 的話有沒有它們就差一兩個 px, 同一列卡片的圖表上緣還是會錯開
+      height: 23px
       padding-bottom: 6px
 
     .dk-title
       font-size: 13.5px
+      flex: 0 1 auto
+      min-width: 0
       font-weight: 600
       letter-spacing: .02em
       color: var(--dk-fg)
@@ -53,8 +61,10 @@ div
       overflow: hidden
       text-overflow: ellipsis
 
+    // 副標題跟在標題後面, 空間不夠時先截斷它 ( 標題與右側的狀態不讓 )
     .dk-sub
-      margin-top: 2px
+      flex: 0 100 auto
+      min-width: 0
       font-size: 11px
       line-height: 1.5
       color: var(--dk-fg-dim)
@@ -64,6 +74,49 @@ div
 
     .dk-spacer
       flex: 1 1 auto
+
+    // 操作提示. 內容由 panel block 依圖表的設定推出來 ( 見 index.ls 的 hints ),
+    // 不是宿主在副標題手寫的 - 換一種圖或改一個設定, 提示就跟著改.
+    // 篩選中時它讓位給「篩選中 ✕」: 那時候使用者要的是怎麼取消, 不是可以怎麼篩
+    .dk-hint
+      position: relative
+      flex: 0 0 auto
+      width: 15px
+      height: 15px
+      border-radius: 50%
+      border: 1px solid var(--dk-line)
+      color: var(--dk-fg-dim)
+      font-size: 10px
+      line-height: 13px
+      text-align: center
+      cursor: help
+      &:before
+        content: '?'
+      &:hover > .dk-hint-pop
+        display: block
+
+    // 彈出來的那一塊刻意往卡片內部開: 格子是 overflow: hidden 的,
+    // 往外開會被裁掉
+    .dk-hint-pop
+      display: none
+      position: absolute
+      top: 140%
+      right: 0
+      z-index: 20
+      padding: .45em .65em
+      font-size: 11px
+      line-height: 1.8
+      font-weight: normal
+      letter-spacing: 0
+      text-transform: none
+      text-align: left
+      white-space: nowrap
+      color: var(--dk-fg)
+      background: var(--dk-panel-a)
+      border: 1px solid var(--dk-line)
+      border-radius: 8px
+      box-shadow: 0 .4em 1.4em rgba(0,0,0,.22)
+
 
     .dk-body
       flex: 1 1 auto
@@ -98,6 +151,9 @@ div
     .dk-tag-x
       font-style: normal
       opacity: .55
+    .dk-panel.filtering > .dk-head .dk-hint
+      display: none
+
     .dk-panel.filtering
       border-color: var(--dk-line-hi)
       box-shadow: var(--dk-shadow), inset 0 0 0 1px var(--dk-soft)

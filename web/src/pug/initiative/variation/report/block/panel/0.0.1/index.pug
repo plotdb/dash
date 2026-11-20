@@ -1,11 +1,13 @@
 div
-  .rp-panel
+  .rp-panel(ld="panel")
     .rp-rule
     .rp-head
       .rp-title(ld="title")
+      .rp-sub(ld="sub")
       .rp-spacer
+      .rp-hint(ld="hint")
+        .rp-hint-pop(ld="hintpop")
       .rp-tag(ld="tag") 篩選中 ✕
-    .rp-sub(ld="sub")
     .rp-body(ld="body")
   style(type="text/css"): :stylus
     :scope
@@ -37,15 +39,22 @@ div
       background: var(--rp-line)
       transition: background .18s, height .18s
 
+    // 單行: 標題列的高度固定, 所以有沒有副標題、有沒有「篩選中」,
+    // 每張卡片的圖表上緣都對齊
     .rp-head
       flex: 0 0 auto
       display: flex
       align-items: baseline
       gap: 10px
+      // 固定高度而不是最小高度: 副標題與「篩選中」的行高跟標題不一樣,
+      // 用 min- 的話有沒有它們就差一兩個 px, 同一列卡片的圖表上緣還是會錯開
+      height: 24px
       padding-top: 9px
 
     .rp-title
       font-size: 15.5px
+      flex: 0 1 auto
+      min-width: 0
       font-weight: 600
       letter-spacing: .02em
       white-space: nowrap
@@ -55,10 +64,54 @@ div
     .rp-spacer
       flex: 1 1 auto
 
-    // 說明文字單獨一行, 用斜體 - 報告的圖說就長這樣
-    .rp-sub
+    // 操作提示. 內容由 panel block 依圖表的設定推出來 ( 見 index.ls 的 hints ),
+    // 不是宿主在副標題手寫的 - 換一種圖或改一個設定, 提示就跟著改.
+    // 篩選中時它讓位給「篩選中 ✕」: 那時候使用者要的是怎麼取消, 不是可以怎麼篩
+    .rp-hint
+      position: relative
       flex: 0 0 auto
-      margin-top: 2px
+      width: 15px
+      height: 15px
+      border-radius: 50%
+      border: 1px solid var(--rp-line)
+      color: var(--rp-ink-dim)
+      font-size: 10px
+      line-height: 13px
+      text-align: center
+      cursor: help
+      &:before
+        content: '?'
+      &:hover > .rp-hint-pop
+        display: block
+
+    // 彈出來的那一塊刻意往卡片內部開: 格子是 overflow: hidden 的,
+    // 往外開會被裁掉
+    .rp-hint-pop
+      display: none
+      position: absolute
+      top: 140%
+      right: 0
+      z-index: 20
+      padding: .45em .65em
+      font-size: 11px
+      line-height: 1.8
+      font-weight: normal
+      letter-spacing: 0
+      text-transform: none
+      text-align: left
+      white-space: nowrap
+      color: var(--rp-text)
+      background: var(--rp-paper)
+      border: 1px solid var(--rp-line)
+      border-radius: 2px
+      box-shadow: 0 .4em 1.4em rgba(0,0,0,.22)
+
+
+    // 說明文字單獨一行, 用斜體 - 報告的圖說就長這樣
+    // 副標題跟在標題後面, 空間不夠時先截斷它 ( 標題與右側的狀態不讓 )
+    .rp-sub
+      flex: 0 100 auto
+      min-width: 0
       font-size: 11.5px
       font-style: italic
       line-height: 1.5
@@ -85,6 +138,9 @@ div
       white-space: nowrap
       &:hover
         opacity: .7
+
+    .rp-panel.filtering > .rp-head .rp-hint
+      display: none
 
     .rp-panel.filtering
       > .rp-rule

@@ -33,6 +33,10 @@ mgr = new block.manager do
 def =
   data: {type: \json, url: "/assets/data/sales.json"}
 
+  # 欄位的中文名. 篩選列用它, 操作提示也用它 - 不給的話提示裡會出現原始欄位名
+  # ( month / region ), 那是資料的名字, 不是給使用者看的名字
+  labels: {month: "月份", region: "地區", category: "書系", channel: "通路", amount: "單筆銷售額"}
+
   # 主題帶了一組建議的版面 ( 欄數、列高、間距 ), layout: true 才套.
   # 這裡故意不寫 def.layout - 換主題就連版面一起換, 看得出差別
   theme: {name: \vanilla, mode: \auto, layout: true}
@@ -90,7 +94,7 @@ def =
     # hue: 這張圖畫的是「書系」這個維度. 書系在這個主題下是什麼顏色, 主題決定.
     # role: ref 是給「有參考線的那一張」用的 - desk 會給它一個線的顏色,
     # vanilla 沒有這一條就什麼都不做
-    * id: \trend, title: "月銷售趨勢", subtitle: "依書系 · legend 篩書系, 橫向框選篩月份區間"
+    * id: \trend, title: "月銷售趨勢", subtitle: "依書系, 每月的銷售額"
       hue: \cat, role: \ref, area: {col: [1, 8], row: [3, 1]}
       chart: {name: "@makechart/line"}
       data:
@@ -106,7 +110,7 @@ def =
         brush: {enabled: true}
         legend: {crossfilter: true, subset: {mode: \dim}}
 
-    * id: \channel, title: "通路占比", subtitle: "可點選"
+    * id: \channel, title: "通路占比", subtitle: "各通路占全體的比例"
       hue: \chn, area: {col: [9, 4], row: [3, 1]}
       chart: {name: "@makechart/pie"}
       data:
@@ -118,7 +122,7 @@ def =
         common: {subset: {mode: \partial}}
         legend: {crossfilter: true, subset: {mode: \dim}}
 
-    * id: \region, title: "各地區銷售額", subtitle: "可框選"
+    * id: \region, title: "各地區銷售額", subtitle: "六個有銷售的縣市"
       hue: \geo, area: {col: [1, 5], row: [4, 1]}
       chart: {name: "@makechart/bar"}
       data:
@@ -128,7 +132,7 @@ def =
         compare: true
       cfg: {legend: {enabled: false}, common: {subset: {mode: \partial}}}
 
-    * id: \category, title: "書系排行", subtitle: "可點選"
+    * id: \category, title: "書系排行", subtitle: "四個書系占全體的比例"
       hue: \cat-ramp, area: {col: [6, 3], row: [4, 1]}
       chart: {name: "@makechart/percent-list"}
       data:
@@ -138,7 +142,7 @@ def =
         compare: true
       cfg: {common: {subset: {mode: \partial}}}
 
-    * id: \map, title: "地區分布", subtitle: "可點選 · 深淺是銷售額, 灰色是沒有資料"
+    * id: \map, title: "地區分布", subtitle: "深淺是銷售額, 灰色是沒有資料"
       hue: \geo-ramp, area: {col: [9, 4], row: [4, 1]}
       chart: {name: "@makechart/twmapadv", data: {level: \town}}
       data:
