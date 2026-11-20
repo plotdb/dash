@@ -153,6 +153,9 @@ bd = new dash.board do
 
 dmode.theme bd, theme-of
 
+# 這是示範頁, 把 board 掛出去方便在 console 直接試 ( bd.updatePanel(...) 之類 )
+window.bd = bd
+
 node = (n) -> document.querySelector "[ld=#n]"
 cur = \主控台
 
