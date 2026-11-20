@@ -415,14 +415,41 @@
   dash.themes = themes = [
     {
       name: 'vanilla',
-      title: "素版",
+      title: {
+        'zh-TW': "素版",
+        en: "Plain"
+      },
       path: 'theme/vanilla.json'
     }, {
       name: 'desk',
-      title: "分析台",
+      title: {
+        'zh-TW': "分析台",
+        en: "Desk"
+      },
       path: 'theme/desk.json'
     }
   ];
+  dash.text = function(v, locale, fallback){
+    var i$, ref$, len$, k, t;
+    locale == null && (locale = 'zh-TW');
+    fallback == null && (fallback = 'zh-TW');
+    if (!v || typeof v !== 'object') {
+      return v != null ? v + "" : '';
+    }
+    for (i$ = 0, len$ = (ref$ = [locale, fallback]).length; i$ < len$; ++i$) {
+      k = ref$[i$];
+      if (v[k]) {
+        return v[k];
+      }
+    }
+    for (k in v) {
+      t = v[k];
+      if (t) {
+        return t;
+      }
+    }
+    return '';
+  };
   dash.deep = deep = function(a, b){
     var clone, ret, k, v;
     a == null && (a = {});
@@ -605,11 +632,23 @@
       results$.push(cb.apply(this, v));
     }
     return results$;
+  }, ref$._queue = function(fn){
+    var next;
+    next = (this._q || Promise.resolve()).then(fn);
+    this._q = next['catch'](function(){
+      return null;
+    });
+    return next;
   }, ref$.init = function(){
+    var this$ = this;
+    return this._queue(function(){
+      return this$._init();
+    });
+  }, ref$._init = function(){
     var this$ = this;
     return Promise.resolve().then(function(){
       if (this$.def.theme) {
-        return this$.setTheme(this$.def.theme);
+        return this$._setTheme(this$.def.theme);
       }
     }).then(function(){
       return dash.driver(this$.def.data).load();
@@ -626,7 +665,7 @@
     });
   }, ref$._mount = function(p){
     var b, k, ref$, this$ = this;
-    b = this._blockOf(p);
+    b = this._blockOf(p, this.theme);
     k = JSON.stringify(b);
     this._bc || (this._bc = {});
     return ((ref$ = this._bc)[k] || (ref$[k] = this.mgr.get(b))).then(function(bc){
@@ -1198,6 +1237,11 @@
     });
   }, ref$.setTheme = function(t){
     var this$ = this;
+    return this._queue(function(){
+      return this$._setTheme(t);
+    });
+  }, ref$._setTheme = function(t){
+    var this$ = this;
     return dash.theme(t, {
       base: this.themeBase
     }).then(function(th){
@@ -1242,7 +1286,6 @@
     return this.setTheme((ref$ = import$({}, this.def.theme || {}), ref$.mode = m, ref$));
   }, ref$._blockOf = function(p, th){
     var bs;
-    th == null && (th = this.theme);
     bs = (th || {}).blocks || {};
     return p.panel || (p.role ? bs[p.role] : void 8) || bs.panel || this.panelBlock;
   }, ref$._blockKey = function(p, th){
@@ -1369,14 +1412,17 @@
     this.render();
     return this;
   }, ref$.reload = function(def){
-    this.destroy();
-    this.def = def;
-    this.filters = {};
-    this.panels = (def.panels || []).map(function(d, i){
-      var ref$;
-      return ref$ = import$({}, d), ref$.id = d.id || "panel-" + i, ref$;
+    var this$ = this;
+    return this._queue(function(){
+      this$.destroy();
+      this$.def = def;
+      this$.filters = {};
+      this$.panels = (def.panels || []).map(function(d, i){
+        var ref$;
+        return ref$ = import$({}, d), ref$.id = d.id || "panel-" + i, ref$;
+      });
+      return this$._init();
     });
-    return this.init();
   }, ref$);
   dash.spec = [
     {

@@ -282,9 +282,21 @@ dash.fields = (rows = [], opt = {}) ->
 # 小語言, 而主題要能被另一個 UI 產生, 它得是純資料.
 
 dash.themes = themes = [
-  {name: \vanilla, title: "素版",   path: 'theme/vanilla.json'}
-  {name: \desk,    title: "分析台", path: 'theme/desk.json'}
+  {name: \vanilla, title: {'zh-TW': "素版",   en: "Plain"}, path: 'theme/vanilla.json'}
+  {name: \desk,    title: {'zh-TW': "分析台", en: "Desk"},  path: 'theme/desk.json'}
 ]
+
+# 主題裡給人看的字 ( title / desc / schema 的 label 與 desc ) 可以是字串, 也可以是
+# 一個以語系為 key 的物件. 兩種都收, 因為自己寫一份主題的人不該為了一句說明先學
+# 一套 i18n 格式.
+#
+# 找不到那個語系就退回預設的那個, 再找不到就拿第一個有值的 - 少一句翻譯時畫面上
+# 看到的是另一個語言, 不是空白
+dash.text = (v, locale = 'zh-TW', fallback = 'zh-TW') ->
+  if !v or typeof(v) != \object => return (if v? => "#v" else '')
+  for k in [locale, fallback] => if v[k] => return v[k]
+  for k, t of v => if t => return t
+  ''
 
 # 深拷貝式合併: 兩邊都複製一份, 免得多張圖共用同一個巢狀物件
 # ( 圖表會把 config 併進自己的設定, 共用的話一張圖改到另一張 )
@@ -397,12 +409,25 @@ board.prototype = Object.create(Object.prototype) <<<
   on: (n, cb) -> (if Array.isArray(n) => n else [n]).map (n) ~> @evt-handler.[][n].push cb
   fire: (n, ...v) -> for cb in (@evt-handler[n] or []) => cb.apply @, v
 
-  init: ->
+  # init 與 set-theme 要排隊.
+  #
+  # init 還在掛 panel 的時候換主題, 兩邊會對同一格各掛一個 block 上去; 連按兩次
+  # 換主題也一樣. 排成一條隊伍最省事 - 這幾件事本來就不該同時發生
+  _queue: (fn) ->
+    next = (@_q or Promise.resolve!).then fn
+    # 一個失敗不該讓後面的都不能跑
+    @_q = next.catch -> null
+    next
+
+  init: -> @_queue ~> @_init!
+
+  _init: ->
     Promise.resolve!
       # 主題要在 layout 之前: 它可能補上 def.layout 沒寫的鍵, 也可能換掉
       # panel block. 這時候還沒有 @leaf, set-theme 看得出來, 只把 cfg 與
       # CSS 變數準備好就回來
-      .then ~> if @def.theme => @set-theme @def.theme
+      # 直接叫 _set-theme: 這裡已經在隊伍裡了, 再排一次會等自己
+      .then ~> if @def.theme => @_set-theme @def.theme
       .then ~> dash.driver(@def.data).load!
       .then (rows) ~>
         @rows = rows or []
@@ -417,7 +442,7 @@ board.prototype = Object.create(Object.prototype) <<<
   # 外觀與呈現方式由 block 決定 ( 例如 KPI 用不掛圖表的卡片 ). 沒指定就用 board
   # 的預設; 同一個 block 只取一次 ( cache 掛在 board 上, 之後 add-panel 也用得到 ).
   _mount: (p) ->
-    b = @_block-of p
+    b = @_block-of p, @theme
     k = JSON.stringify b
     @_bc or= {}
     (@_bc[k] or= @mgr.get b).then (bc) ~>
@@ -834,7 +859,9 @@ board.prototype = Object.create(Object.prototype) <<<
   # 正在看的篩選彈掉. 所以它只做四件事 - 寫 CSS 變數、重算每張圖的 cfg、
   # 需要時換掉 panel block、重畫.
 
-  set-theme: (t) ->
+  set-theme: (t) -> @_queue ~> @_set-theme t
+
+  _set-theme: (t) ->
     dash.theme t, {base: @theme-base} .then (th) ~>
       old = @theme
       @theme = th
@@ -861,7 +888,11 @@ board.prototype = Object.create(Object.prototype) <<<
   # 中間那一段退回主題的預設很要緊: 不是每個主題都有每一種角色的 block
   # ( 例如 vanilla 沒有自己的 kpi block ), 退回 board 的預設會變成一張畫不出來
   # 的空卡片 - 退回主題的 panel block, 它至少會把 def 裡那張圖畫出來
-  _block-of: (p, th = @theme) ->
+  # th 一定要明寫 ( 連 @theme 也是 ): 不能寫成預設參數 `(p, th = @theme)`.
+  # LiveScript 的預設參數是 `th == null` 才套, 而 null 也成立 - 於是「換主題之前
+  # 用的是哪個 block」( th 為 null ) 會被當成「現在這個主題的」, 兩邊一比永遠相同,
+  # 第一次換主題就不會重掛 block. 症狀是 CSS 變數與圖表顏色都換了, 卡片卻還是舊的
+  _block-of: (p, th) ->
     bs = (th or {}).blocks or {}
     p.panel or (if p.role => bs[p.role]) or bs.panel or @panel-block
 
@@ -971,12 +1002,12 @@ board.prototype = Object.create(Object.prototype) <<<
     @
 
   # 換一份 def 重來. 給編輯器用: 改完 def 直接看結果.
-  reload: (def) ->
+  reload: (def) -> @_queue ~>
     @destroy!
     @def = def
     @filters = {}
     @panels = (def.panels or []).map (d, i) -> {} <<< d <<< {id: d.id or "panel-#i"}
-    @init!
+    @_init!
 
 
 # -------------------------------------------------------------------- spec

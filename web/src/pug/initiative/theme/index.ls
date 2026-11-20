@@ -190,17 +190,22 @@ mk = (tag, cls, txt) ->
   if txt? => n.textContent = txt
   n
 
+# 給人看的字可能是字串, 也可能是一個以語系為 key 的物件 - dash.text 兩種都收.
+# 這一頁跟著瀏覽器的語言走; 宿主有自己的語言切換就把 locale 傳進去
+locale = (navigator.language or 'zh-TW')
+tx = (v) -> dash.text v, locale
+
 row = (f) ->
   cur = bd.theme.tokens[f.key]
   wrap = mk \div, \tk
-  wrap.appendChild mk \label, \tk-key, (f.label or f.key)
+  wrap.appendChild mk \label, \tk-key, (tx(f.label) or f.key)
   if Array.isArray cur
     box = mk \div, \tk-colors
     cur.map (c, i) -> box.appendChild swatch f, cur, i
     wrap.appendChild box
   else
     wrap.appendChild one f, cur
-  if f.desc => wrap.appendChild mk \div, \tk-desc, f.desc
+  if f.desc => wrap.appendChild mk \div, \tk-desc, tx(f.desc)
   wrap
 
 # 色票是一組顏色, 改其中一個就是整組一起送回去

@@ -1,20 +1,50 @@
 {
   "name": "desk",
-  "title": "分析台",
-  "desc": "坐在螢幕前面、正在找原因的人。密集、滿版不捲動；介面狀態只用亮度不用色相，色相全部留給資料。",
-
-  "blocks": {
-    "panel":     {"name": "@plotdb/dash", "path": "block/panel/desk/index.html"},
-    "kpi":       {"name": "@plotdb/dash", "path": "block/kpi/desk/index.html"},
-    "filterbar": {"name": "@plotdb/dash", "path": "block/filterbar/desk/index.html"}
+  "title": {
+    "zh-TW": "分析台",
+    "en": "Desk"
   },
-
+  "desc": {
+    "zh-TW": "坐在螢幕前面、正在找原因的人。密集、滿版不捲動；介面狀態只用亮度不用色相，色相全部留給資料。",
+    "en": "For someone at a screen, looking for a cause. Dense, full-bleed, no scrolling; interface state uses lightness only, every hue is left to the data."
+  },
+  "blocks": {
+    "panel": {
+      "name": "@plotdb/dash",
+      "path": "block/panel/desk/index.html"
+    },
+    "kpi": {
+      "name": "@plotdb/dash",
+      "path": "block/kpi/desk/index.html"
+    },
+    "filterbar": {
+      "name": "@plotdb/dash",
+      "path": "block/filterbar/desk/index.html"
+    }
+  },
   "layout": {
-    "col": ["1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr", "1fr"],
-    "row": ["3.1em", "6.4em", "1.15fr", "1fr"],
+    "col": [
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr",
+      "1fr"
+    ],
+    "row": [
+      "3.1em",
+      "6.4em",
+      "1.15fr",
+      "1fr"
+    ],
     "gap": "14px"
   },
-
   "tokens": {
     "common": {
       "radius": "12px",
@@ -44,7 +74,6 @@
       "win-shadow": "-24px 0 70px rgba(0,0,0,.6)",
       "code": "#8fd3c6",
       "code-bg": "#0d141b",
-
       "ink": "#8b98a8",
       "txt": "#c3ced4",
       "grid": "rgba(255,255,255,.13)",
@@ -58,11 +87,31 @@
         "strokeWidth": 1,
         "handleFill": "rgba(255,255,255,.22)"
       },
-      "cat": ["#7f9cf5", "#5ddba4", "#f0a3b4", "#c08ef0"],
-      "cat-ramp": ["#7f9cf5", "#c08ef0"],
-      "chn": ["#ffd08a", "#f0a04b", "#b4702a"],
-      "geo": ["#4fc3b0"],
-      "geo-ramp": ["#24383f", "#336261", "#428c84", "#50b6a6", "#5fe0c8"],
+      "cat": [
+        "#7f9cf5",
+        "#5ddba4",
+        "#f0a3b4",
+        "#c08ef0"
+      ],
+      "cat-ramp": [
+        "#7f9cf5",
+        "#c08ef0"
+      ],
+      "chn": [
+        "#ffd08a",
+        "#f0a04b",
+        "#b4702a"
+      ],
+      "geo": [
+        "#4fc3b0"
+      ],
+      "geo-ramp": [
+        "#24383f",
+        "#336261",
+        "#428c84",
+        "#50b6a6",
+        "#5fe0c8"
+      ],
       "empty": "#1f2a30",
       "acc-1": "#7f9cf5",
       "acc-2": "#5ddba4",
@@ -92,7 +141,6 @@
       "win-shadow": "-24px 0 70px rgba(20,30,45,.25)",
       "code": "#0f7a6e",
       "code-bg": "#f4f6f9",
-
       "ink": "#6c7a8c",
       "txt": "#3b4757",
       "grid": "rgba(20,30,45,.14)",
@@ -106,11 +154,31 @@
         "strokeWidth": 1,
         "handleFill": "rgba(20,30,45,.26)"
       },
-      "cat": ["#3f5fd6", "#0f9d79", "#d0608a", "#8a4fd1"],
-      "cat-ramp": ["#3f5fd6", "#8a4fd1"],
-      "chn": ["#e0a53f", "#c0742a", "#8a4f17"],
-      "geo": ["#0f8f86"],
-      "geo-ramp": ["#d6e5e9", "#a4cbcc", "#71b1af", "#3e9792", "#0c7d75"],
+      "cat": [
+        "#3f5fd6",
+        "#0f9d79",
+        "#d0608a",
+        "#8a4fd1"
+      ],
+      "cat-ramp": [
+        "#3f5fd6",
+        "#8a4fd1"
+      ],
+      "chn": [
+        "#e0a53f",
+        "#c0742a",
+        "#8a4f17"
+      ],
+      "geo": [
+        "#0f8f86"
+      ],
+      "geo-ramp": [
+        "#d6e5e9",
+        "#a4cbcc",
+        "#71b1af",
+        "#3e9792",
+        "#0c7d75"
+      ],
       "empty": "#e3e8ea",
       "acc-1": "#3f5fd6",
       "acc-2": "#0f9d79",
@@ -118,7 +186,6 @@
       "acc-4": "#0f8f86"
     }
   },
-
   "vars": {
     "--dk-bg": "$bg",
     "--dk-glow-a": "$glow-a",
@@ -149,67 +216,301 @@
     "--dk-acc-4": "$acc-4",
     "--dash-gap": "$gap"
   },
-
   "cfg": {
     "color": "$txt",
     "margin": 2,
-    "font": {"family": {"name": "$font"}},
+    "font": {
+      "family": {
+        "name": "$font"
+      }
+    },
     "xaxis": {
-      "caption": {"show": false},
-      "label": {"format": ".2~s", "color": "$ink", "font": {"size": ".78em"}},
-      "tick": {"color": "$grid", "inner": 4},
-      "baseline": {"color": "$grid"}
+      "caption": {
+        "show": false
+      },
+      "label": {
+        "format": ".2~s",
+        "color": "$ink",
+        "font": {
+          "size": ".78em"
+        }
+      },
+      "tick": {
+        "color": "$grid",
+        "inner": 4
+      },
+      "baseline": {
+        "color": "$grid"
+      }
     },
     "yaxis": {
-      "caption": {"show": false},
-      "label": {"format": ".2~s", "color": "$ink", "font": {"size": ".78em"}},
-      "tick": {"color": "$grid", "inner": 0},
-      "baseline": {"show": false},
-      "grid": {"show": true}
+      "caption": {
+        "show": false
+      },
+      "label": {
+        "format": ".2~s",
+        "color": "$ink",
+        "font": {
+          "size": ".78em"
+        }
+      },
+      "tick": {
+        "color": "$grid",
+        "inner": 0
+      },
+      "baseline": {
+        "show": false
+      },
+      "grid": {
+        "show": true
+      }
     },
-    "common": {"subset": {"background": "$face"}, "brush": "$brush"}
-  },
-
-  "hue": {
-    "cat":      {"palette": {"colors": "$cat"}},
-    "cat-ramp": {"palette": {"colors": "$cat-ramp"}},
-    "chn":      {"palette": {"colors": "$chn"}},
-    "geo":      {"palette": {"colors": "$geo"}},
-    "geo-ramp": {"palette": {"colors": "$geo-ramp"}}
-  },
-
-  "chart": {
-    "@makechart/taiwan-map": {"border": {"color": "$outline", "width": 1}},
-    "@makechart/twmapadv": {
-      "border": {"color": "$outline", "width": 0.6},
-      "heat": {"sequential": {"colors": "$geo-ramp"}, "empty": "$empty"},
-      "label": {"color": "$ink", "halo": "$face"},
-      "village": {"mode": "none"}
+    "common": {
+      "subset": {
+        "background": "$face"
+      },
+      "brush": "$brush"
     }
   },
-
-  "role": {
-    "ref": {"common": {"annotation": {"color": "$ref"}}}
+  "hue": {
+    "cat": {
+      "palette": {
+        "colors": "$cat"
+      }
+    },
+    "cat-ramp": {
+      "palette": {
+        "colors": "$cat-ramp"
+      }
+    },
+    "chn": {
+      "palette": {
+        "colors": "$chn"
+      }
+    },
+    "geo": {
+      "palette": {
+        "colors": "$geo"
+      }
+    },
+    "geo-ramp": {
+      "palette": {
+        "colors": "$geo-ramp"
+      }
+    }
   },
-
+  "chart": {
+    "@makechart/taiwan-map": {
+      "border": {
+        "color": "$outline",
+        "width": 1
+      }
+    },
+    "@makechart/twmapadv": {
+      "border": {
+        "color": "$outline",
+        "width": 0.6
+      },
+      "heat": {
+        "sequential": {
+          "colors": "$geo-ramp"
+        },
+        "empty": "$empty"
+      },
+      "label": {
+        "color": "$ink",
+        "halo": "$face"
+      },
+      "village": {
+        "mode": "none"
+      }
+    },
+    "@makechart/number": {
+      "numberSizeRate": 2.4
+    }
+  },
+  "role": {
+    "ref": {
+      "common": {
+        "annotation": {
+          "color": "$ref"
+        }
+      }
+    }
+  },
   "schema": [
-    {"key": "acc-1",    "type": "color",  "label": "強調色 1", "desc": "KPI 的四道色條，def 裡寫 var(--dk-acc-N) 而不是色碼"},
-    {"key": "acc-2",    "type": "color",  "label": "強調色 2"},
-    {"key": "acc-3",    "type": "color",  "label": "強調色 3"},
-    {"key": "acc-4",    "type": "color",  "label": "強調色 4"},
-    {"key": "cat",      "type": "colors", "label": "類別色票",   "desc": "並列的類別（書系）用這一組，四個色相"},
-    {"key": "cat-ramp", "type": "colors", "label": "類別漸層",   "desc": "依占比上色的圖用；同一個色族，但不假裝每一條都對得上"},
-    {"key": "chn",      "type": "colors", "label": "次維度色票", "desc": "另一個維度（通路），不跟類別搶色相"},
-    {"key": "geo",      "type": "colors", "label": "地區單色"},
-    {"key": "geo-ramp", "type": "colors", "label": "地圖色階",   "desc": "由淺到深。低端不能太接近卡片底色，不然整座島會消失"},
-    {"key": "empty",    "type": "color",  "label": "沒有資料",   "desc": "刻意跟資料色分開：沒有資料跟「數值最低」是兩件事"},
-    {"key": "bg",       "type": "color",  "label": "頁面底色"},
-    {"key": "panel-a",  "type": "color",  "label": "卡片底色"},
-    {"key": "line",     "type": "color",  "label": "卡片邊線"},
-    {"key": "fg",       "type": "color",  "label": "文字"},
-    {"key": "fg-dim",   "type": "color",  "label": "次要文字"},
-    {"key": "radius",   "type": "length", "label": "圓角"},
-    {"key": "gap",      "type": "length", "label": "格子間距"},
-    {"key": "font",     "type": "font",   "label": "字型",       "desc": "xlfont 的字型名。不在 xlfont 的 meta 裡的話拿到的是瀏覽器預設字型，不會報錯"}
-  ]
+    {
+      "key": "acc-1",
+      "type": "color",
+      "label": {
+        "zh-TW": "強調色 1",
+        "en": "Accent 1"
+      },
+      "desc": {
+        "zh-TW": "KPI 的四道色條，def 裡寫 var(--dk-acc-N) 而不是色碼",
+        "en": "The four KPI bars; def refers to them as var(--dk-acc-N) rather than a colour literal"
+      }
+    },
+    {
+      "key": "acc-2",
+      "type": "color",
+      "label": {
+        "zh-TW": "強調色 2",
+        "en": "Accent 2"
+      }
+    },
+    {
+      "key": "acc-3",
+      "type": "color",
+      "label": {
+        "zh-TW": "強調色 3",
+        "en": "Accent 3"
+      }
+    },
+    {
+      "key": "acc-4",
+      "type": "color",
+      "label": {
+        "zh-TW": "強調色 4",
+        "en": "Accent 4"
+      }
+    },
+    {
+      "key": "cat",
+      "type": "colors",
+      "label": {
+        "zh-TW": "類別色票",
+        "en": "Category palette"
+      },
+      "desc": {
+        "zh-TW": "並列的類別（書系）用這一組，四個色相",
+        "en": "For side-by-side categories. Mid-tone colours usually survive both backgrounds"
+      }
+    },
+    {
+      "key": "cat-ramp",
+      "type": "colors",
+      "label": {
+        "zh-TW": "類別漸層",
+        "en": "Category ramp"
+      },
+      "desc": {
+        "zh-TW": "依占比上色的圖用；同一個色族，但不假裝每一條都對得上",
+        "en": "For charts coloured by share; same colour family, but it does not pretend each item lines up"
+      }
+    },
+    {
+      "key": "chn",
+      "type": "colors",
+      "label": {
+        "zh-TW": "次維度色票",
+        "en": "Secondary palette"
+      },
+      "desc": {
+        "zh-TW": "另一個維度（通路），不跟類別搶色相",
+        "en": "A second dimension; it does not compete with the category hues"
+      }
+    },
+    {
+      "key": "geo",
+      "type": "colors",
+      "label": {
+        "zh-TW": "地區單色",
+        "en": "Map ramp"
+      }
+    },
+    {
+      "key": "geo-ramp",
+      "type": "colors",
+      "label": {
+        "zh-TW": "地圖色階",
+        "en": "Map ramp"
+      },
+      "desc": {
+        "zh-TW": "由淺到深。低端不能太接近卡片底色，不然整座島會消失",
+        "en": "Light to dark. The low end must not sit too close to the card background, or the island disappears"
+      }
+    },
+    {
+      "key": "empty",
+      "type": "color",
+      "label": {
+        "zh-TW": "沒有資料",
+        "en": "No data"
+      },
+      "desc": {
+        "zh-TW": "刻意跟資料色分開：沒有資料跟「數值最低」是兩件事",
+        "en": "Deliberately separate from the data colours: no data and lowest value are two different things"
+      }
+    },
+    {
+      "key": "bg",
+      "type": "color",
+      "label": {
+        "zh-TW": "頁面底色",
+        "en": "Page background"
+      }
+    },
+    {
+      "key": "panel-a",
+      "type": "color",
+      "label": {
+        "zh-TW": "卡片底色",
+        "en": "Card background"
+      }
+    },
+    {
+      "key": "line",
+      "type": "color",
+      "label": {
+        "zh-TW": "卡片邊線",
+        "en": "Card border"
+      }
+    },
+    {
+      "key": "fg",
+      "type": "color",
+      "label": {
+        "zh-TW": "文字",
+        "en": "Text"
+      }
+    },
+    {
+      "key": "fg-dim",
+      "type": "color",
+      "label": {
+        "zh-TW": "次要文字",
+        "en": "Secondary text"
+      }
+    },
+    {
+      "key": "radius",
+      "type": "length",
+      "label": {
+        "zh-TW": "圓角",
+        "en": "Corner radius"
+      }
+    },
+    {
+      "key": "gap",
+      "type": "length",
+      "label": {
+        "zh-TW": "格子間距",
+        "en": "Cell gap"
+      }
+    },
+    {
+      "key": "font",
+      "type": "font",
+      "label": {
+        "zh-TW": "字型",
+        "en": "Font"
+      },
+      "desc": {
+        "zh-TW": "xlfont 的字型名。不在 xlfont 的 meta 裡的話拿到的是瀏覽器預設字型，不會報錯",
+        "en": "An xlfont family name. A name not in xlfont's meta silently falls back to the browser font"
+      }
+    }
+  ],
+  "_chart_number": "desk 的 panel block 標題列比較高, @makechart/number 預設的 numberSizeRate ( 3 ) 會讓數字上下被切掉。2.4 在 6.5em 的格子裡剛好。"
 }
