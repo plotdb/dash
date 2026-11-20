@@ -159,6 +159,35 @@ grid item 與 flex item 的 `min-*` 預設都是 `auto`，意思是「不能小�
  - **右邊那塊** 一直印著目前的 `layout.root`，拖完分隔線會看到 `size` 跟著變
 
 
+## 地圖用的是 `@makechart/twmapadv`
+
+這一頁的「地區分布」換成了新的地圖套件，`variation/` 那七版仍然是 `@makechart/taiwan-map`。
+換的理由是舊的那支有兩件事做不到，而這兩件都是在調這一組示範頁時踩到的：
+
+ - **色階只能分級。** `taiwan-map` 把 `palette.colors` 當成分級用，給兩個顏色就只有兩級 ——
+   六個有銷售的縣市裡只有前兩名上色，第三名拿到的顏色跟完全沒有資料的縣市一樣。
+   `twmapadv` 的 `heat.steps` 預設 0（連續），六個縣市就有六個深淺；要分級再設 `steps`
+ - **沒有資料 = 最低的那一級。** `taiwan-map` 沒有「無資料」的顏色；`twmapadv` 有 `heat.empty`
+
+這一頁的主題層因此給地圖的是 `heat: {sequential, empty}` 而不是 `palette`。
+`empty` 刻意用中性灰、跟資料的藍色系分開 —— 沒有資料跟「數值最低」是兩件事，
+同一個色系的話使用者會把沒資料的縣市讀成「賣得最差」。
+
+**只有縣市層級的資料就夠。** `chart.data.level = \town` 是全國圖：上層是縣市、下層是鄉鎮，
+只綁上層那一維（`town`）就會畫成縣市的分布圖，鄉鎮界線仍然畫出來當底。有鄉鎮資料時再綁
+`village` 就會下鑽。
+
+`chart.data` 是**給 chart block 的參數**，不是資料 —— 跟 `panel.data`（資料對應）同名但
+不同位置。panel block 會把它併進 `bc.create` 的 data 裡，所以任何需要「先知道一件事才畫得出來」
+的圖表都走這條（`twmapadv` 要 `level` 決定載哪一份地圖）。
+
+binding 要明寫：這張圖有六個維度（`town` / `village` / `value` / `size` / `cat` / `parts`），
+自動推導會把數值同時綁到 `value`、`size` 與 `parts`。
+
+**已知問題（`twmapadv` 0.0.3，已回報）**：點過的那一塊之後就不再跟著設定更新 ——
+切換 light / dark 時，最後被點過的縣市會留在前一個模式的顏色。沒點過任何縣市時切換模式是正常的。
+
+
 ## 還沒做的
 
  - **切割與合併的 UI**（把一格再切成兩格、把兩格併回去）。這是編輯器的事，

@@ -40,7 +40,10 @@ module.exports =
     {def, board} = @
     if !local.chart =>
       local.chart = @chart-class!
-        .then (bc) -> bc.create {data: {delay-render: false}}
+        # def.chart.data 是傳給 chart block 的參數 ( 不是資料 ) - 有些圖表要先知道
+        # 一件事才畫得出來, 例如 @makechart/twmapadv 要 level 決定載哪一份地圖.
+        # 跟 def.data ( 資料對應 ) 是兩回事, 名字像但位置不同
+        .then (bc) -> bc.create {data: {delay-render: false} <<< ((def.chart or {}).data or {})}
         .then (bi) ~>
           @_bi = bi
           bi.attach {root: node} .then -> bi.interface!

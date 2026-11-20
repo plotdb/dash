@@ -23,6 +23,7 @@
     "@makechart/percent-list": "^0.0.3",
     "@makechart/pie": "^0.0.3",
     "@makechart/taiwan-map": "^0.0.3",
+    "@makechart/twmapadv": "^0.0.3",
     "@plotdb/block": "^5.7.3",
     "@plotdb/chart": "^3.15.0",
     "@plotdb/csscope": "^5.0.4",
@@ -64,7 +65,7 @@
     "ldview": "^1.7.2",
     "livescript": "^1.6.0",
     "papaparse": "^5.3.1",
-    "pdmaptw": "^2.4.0",
+    "pdmaptw": "^2.7.0",
     "proxise": "^1.0.1",
     "pug": "^3.0.4",
     "stylus": "^0.55.0",
@@ -130,7 +131,8 @@
       "@makechart/pie",
       "@makechart/number",
       "@makechart/percent-list",
-      "@makechart/taiwan-map"
+      "@makechart/taiwan-map",
+      "@makechart/twmapadv"
     ]
   },
   "dependencies": {

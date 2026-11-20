@@ -29,14 +29,24 @@ palette = colors: <[#0b7fab #6ab7d4 #f2a154 #b6c454 #9b8bbd #dd6e6e]>
 # geo 與 border 的大括號要寫出來. 寫成 `geo: colors: <[...]>, border: {...}` 的話,
 # 隱式物件會一路吃到行尾, border 會變成 geo 的一個 key - 於是地圖的邊線設定跑進
 # palette 底下, 圖表拿不到它, 畫面上就是「台灣沒有輪廓」
-light = {fg: \#55585c, line: \#d8dadd, face: \#fff, geo: {colors: <[#d0e5ee #9fccdd #6eb2cc #3c98bc #0b7fab]>}, border: {color: \#a5a7ae, width: 1}}
-dark  = {fg: \#9aa0a8, line: \#343a41, face: \#1d2024, geo: {colors: <[#2c353d #345565 #3c768d #4596b5 #4db6dd]>}, border: {color: \#565c64, width: 1}}
+light = {fg: \#55585c, line: \#d8dadd, face: \#fff, geo: {colors: <[#d0e5ee #9fccdd #6eb2cc #3c98bc #0b7fab]>}, border: {color: \#a5a7ae, width: 1}, empty: \#e8e8e8}
+dark  = {fg: \#9aa0a8, line: \#343a41, face: \#1d2024, geo: {colors: <[#2c353d #345565 #3c768d #4596b5 #4db6dd]>}, border: {color: \#565c64, width: 1}, empty: \#2a2a2d}
 
 theme-of = (mode, p) ->
   c = if mode == \dark => dark else light
   ax = {caption: {show: false}, label: {format: '.2~s', color: c.fg}, tick: {color: c.line}, baseline: {color: c.line}}
   th = {color: c.fg, xaxis: ax, yaxis: ax, common: subset: {background: c.face}}
-  if p.id == \map => th <<< {palette: c.geo, border: c.border}
+  # 地圖用的是 @makechart/twmapadv ( 見 def ). 它的顏色不在 palette 底下,
+  # 而是 heat: 色階兩端 ( sequential )、以及「沒有資料」的顏色 ( empty ).
+  #
+  # empty 刻意用中性灰, 跟資料的藍色系分開: 沒有資料跟「數值最低」是兩件事,
+  # 同一個色系的話, 使用者會把沒資料的縣市讀成「賣得最差」
+  if p.id == \map => th <<< {
+    heat: {sequential: c.geo, empty: c.empty}
+    border: {color: c.border.color, width: 0.6}
+    # 小格子裡縣市名會互相疊到, 所以縮小; 不關掉是因為它是這張圖認路的依據
+    label: {font: {size: \.6em}, color: c.fg, halo: c.face}
+  }
   th
 
 fb-block = {ns: \local, name: \filterbar, version: \0.0.1}
@@ -139,12 +149,23 @@ def =
         legend: {crossfilter: true, position: \bottom}
         common: {subset: {mode: \partial}}
 
-    * id: \map, title: "地區分布", subtitle: "可點選"
-      chart: {name: "@makechart/taiwan-map"}
+    # 地圖換成 @makechart/twmapadv.
+    #
+    #  - chart.data.level 是給 chart block 的參數 ( 不是資料 ): town = 全國,
+    #    上層是縣市、下層是鄉鎮. 這一頁只有縣市資料, 所以只綁上層那一維
+    #  - binding 要明寫: 這張圖有六個維度 ( town / village / value / size /
+    #    cat / parts ), 自動推導會把數值綁到 value 也綁到 size 與 parts
+    #  - 色階是連續的 ( heat.steps 預設 0 ), 所以六個縣市有六個深淺;
+    #    沒有資料的十六個縣市走 heat.empty, 跟「最低的那一級」分得開
+    * id: \map, title: "地區分布", subtitle: "可點選 · 深淺是銷售額, 灰色是沒有資料"
+      chart: {name: "@makechart/twmapadv", data: {level: \town}}
       data:
         groupby: \region
         measures: [{name: "銷售額", field: \amount, op: \sum, unit: "元"}]
-      cfg: {legend: {enabled: false}}
+      binding:
+        town: {key: \key}
+        value: {key: "銷售額", name: "銷售額", unit: "元"}
+      cfg: {legend: {enabled: true}}
   ]
 
 # ---------------------------------------------------------------- runtime

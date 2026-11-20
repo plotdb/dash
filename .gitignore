@@ -6,3 +6,6 @@ web/static/assets/data/sales.csv
 web/static/assets/lib/
 web/static/
 /context/shared
+# tool/gen-sales-town.js 的產物 ( 鄉鎮層級的示範資料 ). 一行指令就能重產,
+# 而且目前沒有示範頁在用 - 要做下鑽 ( 縣市 -> 鄉鎮 ) 的示範時再收進版控
+web/src/raw/assets/data/sales-town.json
