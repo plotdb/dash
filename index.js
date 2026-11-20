@@ -722,7 +722,7 @@
     var h, this$ = this;
     h = document.createElement('div');
     h.className = 'dash-handle';
-    h.style.flex = "0 0 " + (l.gap || '.8em');
+    h.style.flex = "0 0 " + (l.gap || 'var(--dash-gap)');
     if (l.resizable) {
       h.classList.add('dash-handle-on');
       h.addEventListener('mousedown', function(e){

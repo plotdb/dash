@@ -484,7 +484,9 @@ board.prototype = Object.create(Object.prototype) <<<
   _handle: (l, dir) ->
     h = document.createElement \div
     h.className = \dash-handle
-    h.style.flex = "0 0 #{l.gap or \.8em}"
+    # 沒寫 layout.gap 就跟著 CSS 的 --dash-gap 走, 跟 grid 版面同一個來源 -
+    # 不然只改變數的專案會發現 grid 換得動、split 換不動
+    h.style.flex = "0 0 #{l.gap or 'var(--dash-gap)'}"
     if l.resizable =>
       h.classList.add \dash-handle-on
       h.addEventListener \mousedown, (e) ~> @_drag e, h, dir

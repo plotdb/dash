@@ -42,6 +42,10 @@
 // 而且分隔線本來就該在兩格中間, 不是疊在間距上面
 .dash.dash-split
   display: flex
+  // 間距由分隔線自己佔掉, 所以要把 .dash 的 gap 關掉 - 不關的話根容器會是
+  // 「gap + 分隔線 + gap」, 三倍寬. 巢狀的 .dash-split 沒有這個問題 ( 它不是
+  // .dash, 吃不到那一條 ), 所以只有最外面那一層會跟版面裡面對不齊
+  gap: 0
 .dash-split
   display: flex
   min-width: 0

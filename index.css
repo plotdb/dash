@@ -29,6 +29,7 @@
 }
 .dash.dash-split {
   display: flex;
+  gap: 0;
 }
 .dash-split {
   display: flex;
