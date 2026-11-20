@@ -472,10 +472,7 @@
     }).then(function(){
       return Promise.all(this$.panels.map(function(p){
         var node;
-        node = document.createElement('div');
-        node.classList.add('dash-cell');
-        import$(node.style, this$._area(p));
-        this$.root.appendChild(node);
+        node = this$._cell(p);
         return p._bc.create({
           data: {
             def: p,
@@ -500,7 +497,12 @@
     var l, ref$;
     l = this.def.layout || {};
     this.root.classList.add('dash');
-    return ref$ = this.root.style, ref$.gridTemplateColumns = (l.col || ['1fr']).join(' '), ref$.gridTemplateRows = (l.row || ['1fr']).join(' '), ref$.gap = l.gap || '.8em', ref$;
+    this.leaf || (this.leaf = {});
+    if (l.type === 'split') {
+      return this._split(l);
+    }
+    this.root.classList.remove('dash-split');
+    return ref$ = this.root.style, ref$.display = '', ref$.flexDirection = '', ref$.gridTemplateColumns = (l.col || ['1fr']).join(' '), ref$.gridTemplateRows = (l.row || ['1fr']).join(' '), ref$.gap = l.gap || '.8em', ref$;
   }, ref$._area = function(p){
     var a, ret;
     a = p.area || {};
@@ -512,6 +514,168 @@
       ret.gridRow = a.row[0] + " / span " + (a.row[1] || 1);
     }
     return ret;
+  }, ref$._cell = function(p){
+    var node;
+    if (this.leaf[p.id]) {
+      return this.leaf[p.id];
+    }
+    node = document.createElement('div');
+    node.classList.add('dash-cell');
+    import$(node.style, this._area(p));
+    this.root.appendChild(node);
+    return this.leaf[p.id] = node;
+  }, ref$._split = function(l){
+    var root, old, k, n, ref$, results$ = [];
+    root = l.root || {};
+    old = this.leaf;
+    this.leaf = {};
+    for (k in old) {
+      n = old[k];
+      if (n.parentNode) {
+        n.parentNode.removeChild(n);
+      }
+    }
+    this.root.classList.add('dash-split');
+    this.root.innerHTML = '';
+    ref$ = this.root.style;
+    ref$.display = '';
+    ref$.flexDirection = '';
+    ref$.gridTemplateColumns = '';
+    ref$.gridTemplateRows = '';
+    ref$.gap = '';
+    this._fill(this.root, root, l, old);
+    for (k in old) {
+      n = old[k];
+      if (!this.leaf[k]) {
+        results$.push(this.leaf[k] = n);
+      }
+    }
+    return results$;
+  }, ref$._fill = function(host, node, l, old){
+    var dir, this$ = this;
+    dir = node.dir === 'row' ? 'row' : 'col';
+    host.dataset.dir = dir;
+    host.style.flexDirection = dir === 'row' ? 'row' : 'column';
+    return (node.children || []).map(function(c, i){
+      if (i) {
+        host.appendChild(this$._handle(l, dir));
+      }
+      return host.appendChild(this$._pane(c, l, old, dir));
+    });
+  }, ref$._pane = function(c, l, old, dir){
+    var kids, node, box, cell;
+    kids = c.children || [];
+    node = kids.length
+      ? (box = document.createElement('div'), box.className = 'dash-split', box)
+      : (cell = (c.panel != null && old[c.panel]) || document.createElement('div'), cell.className = c.panel != null ? 'dash-cell' : 'dash-cell dash-empty', c.panel != null && (this.leaf[c.panel] = cell), cell);
+    node._spec = c;
+    this._size(node, c, dir);
+    if (kids.length) {
+      this._fill(node, c, l, old);
+    }
+    return node;
+  }, ref$._size = function(node, c, dir){
+    var s;
+    s = c.size;
+    node.style.flex = typeof s === 'number'
+      ? s + " 1 0"
+      : s ? "0 0 " + s : '1 1 0';
+    node.style.minWidth = node.style.minHeight = '0';
+    if (c.min) {
+      return node.style[dir === 'row' ? 'minWidth' : 'minHeight'] = c.min;
+    }
+  }, ref$._handle = function(l, dir){
+    var h, this$ = this;
+    h = document.createElement('div');
+    h.className = 'dash-handle';
+    h.style.flex = "0 0 " + (l.gap || '.8em');
+    if (l.resizable) {
+      h.classList.add('dash-handle-on');
+      h.addEventListener('mousedown', function(e){
+        return this$._drag(e, h, dir);
+      });
+    }
+    return h;
+  }, ref$._drag = function(e, h, dir){
+    var ref$, a, b, horiz, size, low, a0, b0, p0, move, up, this$ = this;
+    e.preventDefault();
+    ref$ = [h.previousElementSibling, h.nextElementSibling], a = ref$[0], b = ref$[1];
+    if (!a || !b) {
+      return;
+    }
+    horiz = dir === 'row';
+    size = function(n){
+      return n.getBoundingClientRect()[horiz ? 'width' : 'height'];
+    };
+    low = function(n){
+      return parseFloat(getComputedStyle(n)[horiz ? 'minWidth' : 'minHeight']) || 0;
+    };
+    ref$ = [size(a), size(b)], a0 = ref$[0], b0 = ref$[1];
+    p0 = horiz
+      ? e.clientX
+      : e.clientY;
+    document.body.classList.add('dash-dragging');
+    move = function(ev){
+      var d;
+      d = (horiz
+        ? ev.clientX
+        : ev.clientY) - p0;
+      d = Math.max(low(a) - a0, Math.min(d, b0 - low(b)));
+      return this$._pair(a, a0 + d, b, b0 - d);
+    };
+    up = function(){
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      document.body.classList.remove('dash-dragging');
+      return this$.fire('resize', this$.def.layout);
+    };
+    document.addEventListener('mousemove', move);
+    return document.addEventListener('mouseup', up);
+  }, ref$._pair = function(a, av, b, bv){
+    var flexy, fix, g, t;
+    flexy = function(n){
+      return typeof n._spec.size !== 'string';
+    };
+    fix = function(n, v){
+      n._spec.size = Math.round(v) + "px";
+      return n.style.flex = "0 0 " + n._spec.size;
+    };
+    if (!flexy(a) || !flexy(b)) {
+      if (!flexy(a)) {
+        fix(a, av);
+      }
+      if (!flexy(b)) {
+        fix(b, bv);
+      }
+      return;
+    }
+    g = (+a._spec.size || 1) + (+b._spec.size || 1);
+    t = av + bv;
+    if (!t) {
+      return;
+    }
+    return [[a, av], [b, bv]].map(function(arg$){
+      var n, v;
+      n = arg$[0], v = arg$[1];
+      n._spec.size = g * v / t;
+      return n.style.flex = n._spec.size + " 1 0";
+    });
+  }, ref$.relayout = function(layout){
+    var i$, ref$, len$, p, n;
+    if (layout) {
+      this.def.layout = layout;
+    }
+    this.layout();
+    if ((this.def.layout || {}).type !== 'split') {
+      for (i$ = 0, len$ = (ref$ = this.panels).length; i$ < len$; ++i$) {
+        p = ref$[i$];
+        if (n = this.leaf[p.id]) {
+          import$(n.style, this._area(p));
+        }
+      }
+    }
+    this.fire('relayout', this.def.layout);
+    return this;
   }, ref$._key = function(id, dim){
     dim == null && (dim = 'name');
     return id + ":" + dim;
@@ -681,7 +845,8 @@
       }
     });
     this.root.innerHTML = '';
-    return this.panels = [];
+    this.panels = [];
+    return this.leaf = {};
   }, ref$.setRows = function(rows){
     this.rows = rows || [];
     this.fire('rows', this.rows);
@@ -726,20 +891,33 @@
       key: 'layout',
       title: "版面",
       path: ['layout'],
-      desc: "目前只有 grid 一種. 每個 panel 用 area 指定自己在格線上的位置.",
+      desc: "兩種: grid ( 預設 ) 是一張格線, 每個 panel 用 area 指定自己的位置; split 是一棵可以巢狀切分的樹, 分隔線可以拖. 兩者的差別只在「格子從哪裡來」, panel 的生命週期與 crossfilter 完全一樣.",
+      sample: "# grid: 一張格線\nlayout:\n  col: <[1fr 1fr 1fr 1fr]>\n  row: <[6.5em 1fr 1fr]>\n  gap: .8em\n\n# split: 一棵樹. 有 children 的是容器 ( 一刀切下去 ), 其餘是格子\nlayout:\n  type: split\n  gap: .8em\n  resizable: true            # 分隔線可以拖. 拖完發 resize 事件把新的 layout 交回來\n  root:\n    dir: col                # col = 由上往下排, row = 由左往右排 ( 就是 flex-direction )\n    children: [\n      * size: \x02.6em, panel: header      # 字串 = 固定大小, 任何 CSS 長度\n      * size: 1, dir: \row                # 數字 = flex-grow 的比例\n        children: [\n          * size: 2, min: \x018em, panel: \trend\n          * size: 1                       # 沒有 panel = 空格子\n        ]\n    ]",
       fields: [
         {
+          key: 'type',
+          type: "grid | split",
+          desc: "版面種類, 預設 grid"
+        }, {
           key: 'col',
           type: "[css track]",
-          desc: "grid-template-columns, 例如 <[1fr 1fr 1fr 1fr]>"
+          desc: "grid: grid-template-columns, 例如 <[1fr 1fr 1fr 1fr]>"
         }, {
           key: 'row',
           type: "[css track]",
-          desc: "grid-template-rows, 例如 <[6.5em 1fr 1fr]>"
+          desc: "grid: grid-template-rows, 例如 <[6.5em 1fr 1fr]>"
         }, {
           key: 'gap',
           type: "css length",
-          desc: "格子間距, 預設 .8em"
+          desc: "格子間距, 預設 .8em. split 的分隔線就是這個寬度"
+        }, {
+          key: 'root',
+          type: "split node",
+          desc: "split: 樹根. 節點是 {dir, children} ( 容器 ) 或 {panel} ( 格子 ); size 是數字就是 flex-grow 的比例, 是字串就是固定大小; min 是切分方向上的最小尺寸; 沒有 panel 的葉子是空格子. 這一棵樹是 def 的一部分, 所以拖完分隔線改的是樹上的 size - 存回去就是新版面"
+        }, {
+          key: 'resizable',
+          type: "true",
+          desc: "split: 分隔線可以拖. 拖完 board 發 resize 事件, 帶著改過的 layout"
         }
       ]
     }, {
@@ -763,7 +941,7 @@
         }, {
           key: 'area',
           type: "{col: [起點, 跨幅], row: [起點, 跨幅]}",
-          desc: "在 layout 格線上的位置"
+          desc: "在 layout 格線上的位置. split 版面不看這個 ( 位置由樹決定 )"
         }, {
           key: 'chart',
           type: "{name, version} | {code}",

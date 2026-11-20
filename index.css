@@ -27,6 +27,47 @@
 .dash.dash-overflow {
   overflow: visible;
 }
+.dash.dash-split {
+  display: flex;
+}
+.dash-split {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+.dash-handle {
+  flex: 0 0 auto;
+  position: relative;
+}
+.dash-handle-on:before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  bottom: -3px;
+  left: -3px;
+  border-radius: 2px;
+}
+.dash-handle-on:hover:before {
+  background: var(--dash-accent);
+  opacity: 0.3;
+}
+[data-dir=row] > .dash-handle-on {
+  cursor: col-resize;
+}
+[data-dir=col] > .dash-handle-on {
+  cursor: row-resize;
+}
+body.dash-dragging {
+  user-select: none;
+}
+body.dash-dragging * {
+  cursor: inherit !important;
+}
+.dash-cell.dash-empty {
+  border: 1px dashed var(--dash-border);
+  border-radius: var(--dash-radius);
+}
 .dash-cell {
   min-width: 0;
   min-height: 0;

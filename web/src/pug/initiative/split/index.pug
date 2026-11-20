@@ -1,0 +1,151 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    meta(name="viewport",content="width=device-width,initial-scale=1")
+    title split 版面 / @plotdb/dash
+    //- 模式要在畫面出現之前就寫到 <html> 上, 否則會先閃一下另一個模式的顏色
+    script.
+      try{var q=new URLSearchParams(location.search).get('mode');var m=(q==='light'||q==='dark')?q:(localStorage.getItem('dash-variation-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));document.documentElement.dataset.mode=m}catch(e){}
+    +css([{url: "/css/dash.css"}])
+    style(type="text/css"): :stylus
+      // 這一頁跟 variation/vanilla 用同一組 block, 所以顏色也走同一套 custom property
+      :root[data-mode=dark]
+        --dash-bg: #15171a
+        --dash-panel-bg: #1d2024
+        --dash-border: #2e3238
+        --dash-fg: #d8dbdf
+        --dash-fg-dim: #8b9099
+        --dash-accent: #4db6dd
+        --dash-on-accent: #15171a
+      :root, :root[data-mode=light]
+        --dash-on-accent: #fff
+
+      html, body
+        height: 100%
+      body
+        margin: 0
+        display: flex
+        flex-direction: column
+        font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif
+        color: var(--dash-fg)
+        background: var(--dash-bg)
+
+      .sp-head
+        flex: 0 0 auto
+        display: flex
+        align-items: baseline
+        gap: .8em
+        padding: .7em 1em .5em
+      .sp-title
+        font-size: 1.05em
+        font-weight: bold
+      .sp-sub
+        color: var(--dash-fg-dim)
+        font-size: .85em
+      .sp-spacer
+        flex: 1 1 auto
+
+      .sp-bar
+        flex: 0 0 auto
+        display: flex
+        align-items: center
+        gap: .4em
+        padding: 0 1em .6em
+      .sp-label
+        color: var(--dash-fg-dim)
+        font-size: .8em
+        margin-right: .2em
+      [ld=switch]
+        display: flex
+        gap: .4em
+
+      .btn
+        padding: .25em .7em
+        border-radius: var(--dash-radius)
+        border: 1px solid var(--dash-border)
+        background: var(--dash-panel-bg)
+        color: var(--dash-fg)
+        font-size: .85em
+        cursor: pointer
+        user-select: none
+        &:hover
+          border-color: var(--dash-accent)
+        &.primary
+          background: var(--dash-accent)
+          border-color: var(--dash-accent)
+          color: var(--dash-on-accent)
+
+      .sp-main
+        flex: 1 1 auto
+        min-height: 0
+        display: flex
+        gap: .8em
+        padding: 0 1em 1em
+
+      .sp-board
+        flex: 1 1 auto
+        min-width: 0
+      .sp-side
+        flex: 0 0 20em
+        display: flex
+        flex-direction: column
+        gap: .4em
+        min-height: 0
+      .sp-side-t
+        font-size: .8em
+        color: var(--dash-fg-dim)
+      .sp-out
+        flex: 1 1 auto
+        min-height: 0
+        overflow: auto
+        margin: 0
+        padding: .6em
+        border-radius: var(--dash-radius)
+        border: 1px solid var(--dash-border)
+        background: var(--dash-panel-bg)
+        font-size: .72em
+        line-height: 1.5
+        white-space: pre
+      .sp-msg
+        flex: 0 0 auto
+        min-height: 1.4em
+        font-size: .8em
+        color: var(--dash-accent)
+
+      @media (max-width: 900px)
+        .sp-main
+          flex-direction: column
+        .sp-side
+          flex: 0 0 12em
+  body
+    .sp-head
+      .sp-title split 版面
+      .sp-sub 同一份 def，只換掉 layout —— 一棵可以巢狀切分的樹，分隔線可以拖
+      .sp-spacer
+      .btn(ld="mode")
+    .sp-bar
+      .sp-label 版面
+      div(ld="switch")
+      .sp-label(style="margin-left:.6em") 分隔線
+      .btn.primary(ld="pin") 分隔線: 可拖
+    .sp-main
+      .sp-board(ld="board")
+      .sp-side
+        .sp-side-t layout.root（拖完分隔線這裡會跟著變）
+        pre.sp-out(ld="out")
+        .sp-msg(ld="msg")
+    +script([
+      {name: "proxise"},
+      {name: "@loadingio/debounce.js"},
+      {name: "@loadingio/ldquery"},
+      {name: "@plotdb/semver"},
+      {name: "@plotdb/csscope"},
+      {name: "@plotdb/rescope"},
+      {name: "@plotdb/block"},
+      {name: "ldview"},
+      {name: "papaparse", path: "papaparse.min.js"},
+      {url: "/js/dash.js"}
+    ])
+    script(type="module"): include:lsc ../variation/mode.ls
+    script(type="module"): include:lsc index.ls

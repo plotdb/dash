@@ -337,7 +337,7 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
 ## 這一版沒做的
 
  - 沒有 detail / 放大視窗，也沒有 dashboard 之間的切換 ( taicca 版的 `add-dashboard` / `toggle` )
- - 版面只有 grid 一種。`def.layout.type` 是之後要加 flow / free 版面的分支點
+ - 版面有 grid 與 split 兩種（split 見 `initiative/split/`），沒有 flow / free
  - `common.subset` 現在由核心併進每張圖的設定，所以設定面板一律看得到這一組，
    但一張圖支不支援 subset 是它自己的事 —— 沒實作的圖照樣把開關秀給使用者，切了沒反應。
    缺一個「這張圖不支援 / 不提供這一組」的宣告機制

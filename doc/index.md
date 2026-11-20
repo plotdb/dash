@@ -9,6 +9,15 @@ dashboard utility, based on `@plotdb/block`.
    - ability to extend and use own panel definition
 
 
+## 版面
+
+兩種，由 `def.layout.type` 分支：
+
+ - `grid`（預設）—— 一張格線，每個 panel 用 `area` 指定自己的位置
+ - `split` —— 一棵可以巢狀切分的樹，分隔線可以拖；`board.relayout(layout)` 只換版面
+   不重建 panel。見 `web/src/pug/initiative/split/README.md`
+
+
 ## build
 
     ./build        # 或 npm run build

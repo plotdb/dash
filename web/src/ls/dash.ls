@@ -298,21 +298,31 @@ board.prototype = Object.create(Object.prototype) <<<
           (cache[k] or= @mgr.get b).then (bc) -> p._bc = bc
       .then ~>
         Promise.all @panels.map (p) ~>
-          node = document.createElement \div
-          node.classList.add \dash-cell
-          node.style <<< @_area p
-          @root.appendChild node
+          node = @_cell p
           p._bc.create {data: {def: p, board: @}}
             .then (bi) -> bi.attach {root: node} .then -> bi.interface!
             .then (itf) -> p.itf = itf
       .then ~> @fire \init
       .then ~> @
 
-  # 版面: 目前只有 grid. 之後要加 flow / free 版面時, def.layout.type 是分支點.
+  # 版面有兩種, 由 def.layout.type 分支:
+  #
+  #  - grid ( 預設 )  一張格線, 每個 panel 用 area 指定自己的位置
+  #  - split          一棵可以巢狀切分的樹. 每個節點不是「再切一刀」就是一個格子,
+  #                   分隔線可以拖
+  #
+  # 兩者的差別只在「格子從哪裡來」: grid 是 board 現做一個 .dash-cell 並寫上
+  # grid-column / grid-row; split 是先把樹長成巢狀 flex, 葉子就是格子.
+  # panel 的生命週期、crossfilter、主題全部不受影響 - 它們拿到的都只是一個節點.
   layout: ->
     l = @def.layout or {}
     @root.classList.add \dash
+    @leaf or= {}
+    if l.type == \split => return @_split l
+    @root.classList.remove \dash-split
     @root.style <<<
+      display: ''
+      flexDirection: ''
       gridTemplateColumns: (l.col or <[1fr]>).join(' ')
       gridTemplateRows: (l.row or <[1fr]>).join(' ')
       gap: l.gap or \.8em
@@ -323,6 +333,143 @@ board.prototype = Object.create(Object.prototype) <<<
     if a.col => ret.gridColumn = "#{a.col.0} / span #{a.col.1 or 1}"
     if a.row => ret.gridRow = "#{a.row.0} / span #{a.row.1 or 1}"
     ret
+
+  # 格子從哪裡來: split 的樹已經長好葉子了, grid 是現做一個寫上 area.
+  # 兩種都記在 @leaf 裡 - 換版面時要把既有的格子搬過去, 不是重建
+  _cell: (p) ->
+    if @leaf[p.id] => return @leaf[p.id]
+    node = document.createElement \div
+    node.classList.add \dash-cell
+    node.style <<< @_area p
+    @root.appendChild node
+    @leaf[p.id] = node
+
+  # ------------------------------------------------------------ split
+  #
+  # layout.root 是一棵樹. 有 children 的是容器 ( 一刀切下去 ), 其餘是格子:
+  #
+  #   {dir: \col, children: [
+  #     {size: \2.6em, panel: \header}
+  #     {size: 1, dir: \row, children: [{size: 2, panel: \trend}, {size: 1}]}
+  #   ]}
+  #
+  # dir 直接對應 flex-direction ( col = 由上往下排 ), size 是數字就是 flex-grow
+  # 的比例, 是字串就是固定大小 ( 任何 CSS 長度 ). 沒有 panel 的葉子是空格子,
+  # 編輯器可以在上面放「新增圖表」.
+  #
+  # 這棵樹是 def 的一部分, 所以拖完分隔線改的是樹上的 size - 存回去就是新版面.
+  _split: (l) ->
+    root = l.root or {}
+    old = @leaf
+    @leaf = {}
+    # 先把既有的格子摘下來: 換版面不該重建 panel, 圖表跟著節點搬家就好
+    for k, n of old => if n.parentNode => n.parentNode.removeChild n
+    @root.classList.add \dash-split
+    @root.innerHTML = ''
+    @root.style <<< {display: '', flexDirection: '', gridTemplateColumns: '', gridTemplateRows: '', gap: ''}
+    @_fill @root, root, l, old
+    # 樹上沒指到的 panel: 格子留著 ( 之後 relayout 回來還在 ), 只是不在畫面上
+    for k, n of old => if !@leaf[k] => @leaf[k] = n
+
+  _fill: (host, node, l, old) ->
+    dir = if node.dir == \row => \row else \col
+    host.dataset.dir = dir
+    host.style.flexDirection = if dir == \row => \row else \column
+    (node.children or []).map (c, i) ~>
+      if i => host.appendChild @_handle l, dir
+      host.appendChild @_pane c, l, old, dir
+
+  _pane: (c, l, old, dir) ->
+    kids = c.children or []
+    node = if kids.length =>
+      box = document.createElement \div
+      box.className = \dash-split
+      box
+    else
+      cell = (c.panel? and old[c.panel]) or document.createElement \div
+      cell.className = if c.panel? => \dash-cell else 'dash-cell dash-empty'
+      if c.panel? => @leaf[c.panel] = cell
+      cell
+    # 樹的節點掛在元素上, 拖分隔線時要改的就是它 ( 改完 def.layout 就是新版面 )
+    node._spec = c
+    @_size node, c, dir
+    if kids.length => @_fill node, c, l, old
+    node
+
+  _size: (node, c, dir) ->
+    s = c.size
+    node.style.flex = if typeof(s) == \number => "#s 1 0" else if s => "0 0 #s" else '1 1 0'
+    # min 只壓在切分的那個方向上. 預設 0 是必要的 - flex item 的 min-* 預設是 auto,
+    # 內容 ( svg ) 會把格子撐開而不是被格子限制, 跟 grid 那邊是同一個坑
+    node.style.minWidth = node.style.minHeight = \0
+    if c.min => node.style[if dir == \row => \minWidth else \minHeight] = c.min
+
+  # 分隔線. 不能拖的時候它就只是格子之間的間距 - 這樣有沒有開拖拉, 間距都一樣寬
+  _handle: (l, dir) ->
+    h = document.createElement \div
+    h.className = \dash-handle
+    h.style.flex = "0 0 #{l.gap or \.8em}"
+    if l.resizable =>
+      h.classList.add \dash-handle-on
+      h.addEventListener \mousedown, (e) ~> @_drag e, h, dir
+    h
+
+  _drag: (e, h, dir) ->
+    e.preventDefault!
+    [a, b] = [h.previousElementSibling, h.nextElementSibling]
+    if !a or !b => return
+    horiz = dir == \row
+    size = (n) -> n.getBoundingClientRect![if horiz => \width else \height]
+    low = (n) -> (parse-float(getComputedStyle(n)[if horiz => \minWidth else \minHeight]) or 0)
+    [a0, b0] = [size(a), size(b)]
+    p0 = if horiz => e.clientX else e.clientY
+    document.body.classList.add \dash-dragging
+    move = (ev) ~>
+      d = (if horiz => ev.clientX else ev.clientY) - p0
+      # 夾在兩邊的 min 之間. 不夾的話拖過頭會把對面那一格壓成 0, 壓成 0 之後
+      # 分隔線就貼著邊, 再也拉不回來
+      d = Math.max (low(a) - a0), (Math.min d, (b0 - low(b)))
+      @_pair a, a0 + d, b, b0 - d
+    up = ~>
+      document.removeEventListener \mousemove, move
+      document.removeEventListener \mouseup, up
+      document.body.classList.remove \dash-dragging
+      @fire \resize, @def.layout
+    document.addEventListener \mousemove, move
+    document.addEventListener \mouseup, up
+
+  # 拖完之後兩邊各自該變成什麼.
+  #
+  # 固定大小的那一邊改的是它的像素值; 兩邊都是彈性的就按新的像素比例重分配
+  # flex-grow, 並且保持兩者的總和 - 不保持的話, 這一刀的比例會連帶影響到
+  # 隔壁沒被拖到的格子
+  _pair: (a, av, b, bv) ->
+    flexy = (n) -> typeof(n._spec.size) != \string
+    fix = (n, v) ->
+      n._spec.size = "#{Math.round v}px"
+      n.style.flex = "0 0 #{n._spec.size}"
+    if !flexy(a) or !flexy(b) =>
+      if !flexy a => fix a, av
+      if !flexy b => fix b, bv
+      return
+    g = (((+a._spec.size) or 1) + ((+b._spec.size) or 1))
+    t = av + bv
+    if !t => return
+    [[a, av], [b, bv]].map ([n, v]) ->
+      n._spec.size = g * v / t
+      n.style.flex = "#{n._spec.size} 1 0"
+
+  # 只換版面, 不重建 panel.
+  #
+  # 格子會被搬到新的位置, 圖表跟著節點走 - @plotdb/chart 自己有 ResizeObserver,
+  # 所以尺寸變了它會自己重畫, 這裡不必 render.
+  relayout: (layout) ->
+    if layout => @def.layout = layout
+    @layout!
+    if (@def.layout or {}).type != \split =>
+      for p in @panels => if (n = @leaf[p.id]) => n.style <<< @_area p
+    @fire \relayout, @def.layout
+    @
 
   # -------------------------------------------------------- crossfilter
   #
@@ -447,6 +594,7 @@ board.prototype = Object.create(Object.prototype) <<<
     @panels.map (p) -> if p.itf and p.itf.destroy => p.itf.destroy!
     @root.innerHTML = ''
     @panels = []
+    @leaf = {}
 
   # 換一批資料, def 與篩選都不動. 給宿主用: 資料源重跑 ( 換時間範圍、flow 重算 )
   # 之後要讓畫面跟上, 但不該重建版面.
@@ -492,11 +640,37 @@ dash.spec = [
   * key: \layout
     title: "版面"
     path: <[layout]>
-    desc: "目前只有 grid 一種. 每個 panel 用 area 指定自己在格線上的位置."
+    desc: "兩種: grid ( 預設 ) 是一張格線, 每個 panel 用 area 指定自己的位置; split 是一棵可以巢狀切分的樹, 分隔線可以拖. 兩者的差別只在「格子從哪裡來」, panel 的生命週期與 crossfilter 完全一樣."
+    sample: """
+    # grid: 一張格線
+    layout:
+      col: <[1fr 1fr 1fr 1fr]>
+      row: <[6.5em 1fr 1fr]>
+      gap: \.8em
+
+    # split: 一棵樹. 有 children 的是容器 ( 一刀切下去 ), 其餘是格子
+    layout:
+      type: \split
+      gap: \.8em
+      resizable: true            # 分隔線可以拖. 拖完發 resize 事件把新的 layout 交回來
+      root:
+        dir: \col                # col = 由上往下排, row = 由左往右排 ( 就是 flex-direction )
+        children: [
+          * size: \2.6em, panel: \header      # 字串 = 固定大小, 任何 CSS 長度
+          * size: 1, dir: \row                # 數字 = flex-grow 的比例
+            children: [
+              * size: 2, min: \18em, panel: \trend
+              * size: 1                       # 沒有 panel = 空格子
+            ]
+        ]
+    """
     fields: [
-      * key: \col, type: "[css track]", desc: "grid-template-columns, 例如 <[1fr 1fr 1fr 1fr]>"
-      * key: \row, type: "[css track]", desc: "grid-template-rows, 例如 <[6.5em 1fr 1fr]>"
-      * key: \gap, type: "css length", desc: "格子間距, 預設 .8em"
+      * key: \type, type: "grid | split", desc: "版面種類, 預設 grid"
+      * key: \col, type: "[css track]", desc: "grid: grid-template-columns, 例如 <[1fr 1fr 1fr 1fr]>"
+      * key: \row, type: "[css track]", desc: "grid: grid-template-rows, 例如 <[6.5em 1fr 1fr]>"
+      * key: \gap, type: "css length", desc: "格子間距, 預設 .8em. split 的分隔線就是這個寬度"
+      * key: \root, type: "split node", desc: "split: 樹根. 節點是 {dir, children} ( 容器 ) 或 {panel} ( 格子 ); size 是數字就是 flex-grow 的比例, 是字串就是固定大小; min 是切分方向上的最小尺寸; 沒有 panel 的葉子是空格子. 這一棵樹是 def 的一部分, 所以拖完分隔線改的是樹上的 size - 存回去就是新版面"
+      * key: \resizable, type: "true", desc: "split: 分隔線可以拖. 拖完 board 發 resize 事件, 帶著改過的 layout"
     ]
 
   * key: \panel
@@ -507,7 +681,7 @@ dash.spec = [
       * key: \id, type: "string", desc: "panel 識別. 沒給就用 panel-<序號>. crossfilter 以此為 key"
       * key: \title, type: "string", desc: "標題列文字"
       * key: \subtitle, type: "string", desc: "標題右側的小字, 例如操作提示"
-      * key: \area, type: "{col: [起點, 跨幅], row: [起點, 跨幅]}", desc: "在 layout 格線上的位置"
+      * key: \area, type: "{col: [起點, 跨幅], row: [起點, 跨幅]}", desc: "在 layout 格線上的位置. split 版面不看這個 ( 位置由樹決定 )"
       * key: \chart, type: "{name, version} | {code}", desc: "要用哪個 @plotdb/chart block. {name, version} 是 registry 上已發佈的; {code} 是內嵌定義, 給不在 registry 上的自訂圖表用 ( code 裡的 dependency 仍由 manager 的 registry 解析 )"
       * key: \data, type: "query def", desc: "資料對應. 見「資料對應」那組"
       * key: \binding, type: "chart binding", desc: "不給就自動推導. 見「資料綁定」那組"
