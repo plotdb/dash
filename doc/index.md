@@ -19,9 +19,10 @@ dashboard utility, based on `@plotdb/block`.
     index.min.js            `package.json` 的 `main` / `browser`
     index.css               `dash.styl` 的輸出（版面與卡片的基本 CSS）
     index.min.css           `package.json` 的 `style`
-    block/panel/index.html  預設的 panel block
+    block/panel/index.html      預設的 panel block
+    block/filterbar/index.html  全域篩選列
 
-後面三個由 `tool/pack.js` 產生，來源都在示範頁底下 —— 它們本來就是示範頁在用的那一份，
+後面四個由 `tool/pack.js` 產生，來源都在示範頁底下 —— 它們本來就是示範頁在用的那一份，
 不是另外抄一份給套件。panel block 的來源是 `variation/vanilla/block/panel/0.0.1/`：
 七個設計的那七份逐字相同（只差一個 class 名），vanilla 是共同的起點，所以它就是預設的
 那一份；複製一份當「套件版」只會變成兩份會各自長歪的東西。`tool/pack.js` 的 pug filter
@@ -31,6 +32,7 @@ dashboard utility, based on `@plotdb/block`.
 宿主的 registry 這樣指：
 
     {name: "@plotdb/dash", path: "block/panel/index.html"}
+    {name: "@plotdb/dash", path: "block/filterbar/index.html"}
 
 為什麼在根目錄：
 fedep 預設複製 ( 或 link ) 的就是套件的根目錄，`dist/` 是 `--use-dist` 的 legacy 模式。

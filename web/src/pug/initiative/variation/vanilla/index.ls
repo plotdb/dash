@@ -72,26 +72,42 @@ def =
   # 2. 版面
   layout:
     col: <[1fr 1fr 1fr 1fr]>
-    row: <[6.5em 1fr 1fr]>
+    # 第一條是篩選列. 絕對高度而不是 fr - 它的內容高度是固定的,
+    # 給 fr 會讓它跟著圖表一起長高
+    row: <[2.6em 6.5em 1fr 1fr]>
     gap: \.8em
 
   # 3. 每張圖: 位置 / 圖種 / 資料對應 / 樣式 / crossfilter
   panels: [
-    * id: \gross, title: "總銷售額", area: {col: [1, 1], row: [1, 1]}
+    # 全域篩選列. 它不畫資料, 所以既沒有 chart 也沒有 data - 它要的是
+    # 「這份 rows 有哪些欄位」, 由 dash.fields 回答.
+    # 發出去的 filter 帶 scope: \global, 所以每一張圖都會被它篩到, 而且
+    # compare 的分母也跟著走 ( 這一版沒有 compare, 但 desk 那些有 )
+    * id: \header, panel: {ns: \local, name: \filterbar, version: \0.0.1}
+      area: {col: [1, 4], row: [1, 1]}
+      only: <[month region category channel amount]>
+      labels:
+        month: "月份"
+        region: "地區"
+        category: "書系"
+        channel: "通路"
+        amount: "單筆銷售額"
+
+    * id: \gross, title: "總銷售額", area: {col: [1, 1], row: [2, 1]}
       chart: {name: "@makechart/number"}
       data:
         const: {unit: "萬元"}
         measures: [{name: "銷售額", field: \amount, op: \sum, div: 10000, round: true}]
       binding: {value: {key: "銷售額"}, unit: {key: \unit}}
 
-    * id: \qty, title: "總銷售冊數", area: {col: [2, 1], row: [1, 1]}
+    * id: \qty, title: "總銷售冊數", area: {col: [2, 1], row: [2, 1]}
       chart: {name: "@makechart/number"}
       data:
         const: {unit: "冊"}
         measures: [{name: "冊數", field: \qty, op: \sum}]
       binding: {value: {key: "冊數"}, unit: {key: \unit}}
 
-    * id: \price, title: "平均單價", area: {col: [3, 1], row: [1, 1]}
+    * id: \price, title: "平均單價", area: {col: [3, 1], row: [2, 1]}
       chart: {name: "@makechart/number"}
       data:
         const: {unit: "元 / 冊"}
@@ -100,7 +116,7 @@ def =
         measures: [{name: "單價", field: \amount, op: \ratio, by: \qty, round: true}]
       binding: {value: {key: "單價"}, unit: {key: \unit}}
 
-    * id: \coverage, title: "涵蓋地區", area: {col: [4, 1], row: [1, 1]}
+    * id: \coverage, title: "涵蓋地區", area: {col: [4, 1], row: [2, 1]}
       chart: {name: "@makechart/number"}
       data:
         const: {unit: "縣市"}
@@ -108,7 +124,7 @@ def =
       binding: {value: {key: "地區數"}, unit: {key: \unit}}
 
     # series 把 category 展開成多條線; binding 由圖表的 dimension 自動推導
-    * id: \trend, title: "月銷售趨勢", subtitle: "依書系 · legend 篩書系, 橫向框選篩月份區間", area: {col: [1, 2], row: [2, 1]}
+    * id: \trend, title: "月銷售趨勢", subtitle: "依書系 · legend 篩書系, 橫向框選篩月份區間", area: {col: [1, 2], row: [3, 1]}
       chart: {name: "@makechart/line"}
       data:
         groupby: \month
@@ -133,7 +149,7 @@ def =
         legend: {crossfilter: true, subset: {mode: \dim}}
 
     # bar 的 brush 會發 filter 事件, board 收到後轉成 region 的篩選
-    * id: \region, title: "各地區銷售額", subtitle: "可框選", area: {col: [3, 2], row: [2, 1]}
+    * id: \region, title: "各地區銷售額", subtitle: "可框選", area: {col: [3, 2], row: [3, 1]}
       chart: {name: "@makechart/bar"}
       data:
         groupby: \region
@@ -147,7 +163,7 @@ def =
         xaxis: axis
         yaxis: axis
 
-    * id: \channel, title: "通路占比", subtitle: "可點選", area: {col: [1, 1], row: [3, 1]}
+    * id: \channel, title: "通路占比", subtitle: "可點選", area: {col: [1, 1], row: [4, 1]}
       chart: {name: "@makechart/pie"}
       data:
         groupby: \channel
@@ -160,7 +176,7 @@ def =
         # legend 與 wedge 共用同一份選取, 關掉的項目留著位置只是灰掉
         legend: {crossfilter: true, subset: {mode: \dim}}
 
-    * id: \category, title: "書系排行", subtitle: "可點選", area: {col: [2, 2], row: [3, 1]}
+    * id: \category, title: "書系排行", subtitle: "可點選", area: {col: [2, 2], row: [4, 1]}
       chart: {name: "@makechart/percent-list"}
       data:
         groupby: \category
@@ -171,7 +187,7 @@ def =
         palette: palette
         common: {subset: {mode: \partial}}   # 每一條沿寬度切出被選中的那段
 
-    * id: \map, title: "地區分布", subtitle: "可點選", area: {col: [4, 1], row: [3, 1]}
+    * id: \map, title: "地區分布", subtitle: "可點選", area: {col: [4, 1], row: [4, 1]}
       chart: {name: "@makechart/taiwan-map"}
       data:
         groupby: \region

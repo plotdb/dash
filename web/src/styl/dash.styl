@@ -26,6 +26,17 @@
   overflow: hidden
   gap: var(--dash-gap)
 
+// 有彈出層的儀表板 ( 下拉篩選、選單 ): 彈出層一定會超出自己那一格, 上面那條
+// overflow: hidden 會把它裁掉一半.
+//
+// 不改預設值是因為那條 hidden 是真的有用的 - .dash-panel 自己不裁切, 所以圖表
+// 畫出格子外時, 擋住的就是它. 需要的人打開就好, 而且「需要」是整張板子的性質,
+// 不是某一格的 - 所以 class 掛在 .dash 上.
+//
+// 需要它的 block 自己加就行 ( filterbar 的 init 就是這樣做的 ), 宿主不必記得.
+.dash.dash-overflow
+  overflow: visible
+
 // grid item 預設 min-height 是 auto, 內容 ( svg ) 會把格子撐開而不是被格子限制,
 // 所以一定要壓成 0, 否則圖表放大後版面會被推爆.
 .dash-cell

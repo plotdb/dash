@@ -389,6 +389,10 @@ board.prototype = Object.create(Object.prototype) <<<
   #           相異值可能上千個, 列舉不完, 而且新資料一進來清單就失效
   _match: (f, r) ->
     v = r[f.field]
+    # exclude 是「除了這幾項以外」. 跟值列表差一個 not, 但它要解的是另一種問題:
+    # 相異值幾十個的時候, 「不要這一兩個大宗」用值列表得點選其他四十項,
+    # 而且下個月多一個項目, 那份清單就錯了 - 漏掉的那一項會默默被排除
+    if f.type == \exclude => return !~f.values.indexOf(v)
     if f.type == \range =>
       [lo, hi] = f.values
       # closed: left = [lo, hi), right = (lo, hi], both / 沒給 = [lo, hi] ( 原本的行為 ).
@@ -403,8 +407,14 @@ board.prototype = Object.create(Object.prototype) <<<
     if !fs.length => return @rows
     @rows.filter (r) ~> fs.every (f) ~> @_match f, r
 
-  # 給 panel 用: 已套用其他 panel filter 的 rows
-  rows-for: (panel) -> @_apply [v for k, v of @filters when v.owner != panel.id]
+  # 給 panel 用: 已套用其他 panel filter 的 rows.
+  #
+  # 自己發出的 exclude 是例外, 要套用在自己身上. 「不套用自己」是為了選取:
+  # 選了 A 之後, 自己這張圖還是要看得到 B C D, 否則就沒得再選了. 但排除 A 若不套用
+  # 自己, A 會留在自己圖上原封不動 - 使用者會以為沒生效. 兩者都是「讓這張圖還能
+  # 繼續操作」, 只是對 exclude 來說, 繼續操作的前提剛好相反
+  rows-for: (panel) ->
+    @_apply [v for k, v of @filters when v.owner != panel.id or v.type == \exclude]
 
   # 套用全部 filter, 包含 panel 自己發出的那些
   rows-all: -> @_apply [v for k, v of @filters]
@@ -561,11 +571,14 @@ dash.spec = [
     crossfilter: {name: "region"}                  # pie / bar / map
     crossfilter: {order: "month", value: "category"}   # 多 series 的 line
 
-    # filter 有兩種型別, 由發出的圖決定, def 不必寫:
-    #   index  值列表 ( 點選、類別軸的框選 )
-    #   range  區間 [lo, hi] ( 連續軸的框選, 例如 line 的 brush ).
-    #          可以帶 closed: left = [lo, hi), right = (lo, hi], 沒給就兩端都含.
-    #          直方圖的組是半開區間, 兩端都含的話相鄰的組會在邊界重複算到
+    # filter 有三種型別. index 與 range 由發出的圖決定, def 不必寫:
+    #   index    值列表 ( 點選、類別軸的框選 )
+    #   range    區間 [lo, hi] ( 連續軸的框選, 例如 line 的 brush ).
+    #            可以帶 closed: left = [lo, hi), right = (lo, hi], 沒給就兩端都含.
+    #            直方圖的組是半開區間, 兩端都含的話相鄰的組會在邊界重複算到
+    #   exclude  除了這幾項以外. 目前只有篩選面板會發, 圖表沒有發這種的介面 -
+    #            「點一下排除這項」要先有地方表達那個意圖. 自己發出的 exclude
+    #            會套用在自己身上 ( 見 rows-for )
 
     # 被篩掉的資料怎麼表現 ( 需要 data.compare 才有子集可比 )
     cfg: common: subset:

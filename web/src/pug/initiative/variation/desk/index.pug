@@ -206,11 +206,6 @@ html(lang="zh-TW")
       .dk-board
         flex: 1 1 auto
         min-height: 0
-        // dash.css 的 .dash 是 overflow: hidden ( 不讓 svg 撐破格線 ), 但篩選列的
-        // 下拉面板一定會超出那一格 - 所以這一頁把它打開. 卡片自己有 overflow:
-        // hidden, 圖表還是被各自的卡片關著, 不會跑到版面外面.
-        // 有彈出層的儀表板都要做這件事, 不然面板會被裁掉一半
-        overflow: visible
       .dash > .dash-cell
         animation: dk-in .55s cubic-bezier(.22,.85,.3,1) both
         &:nth-child(1)

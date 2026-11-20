@@ -1,5 +1,5 @@
 div
-  .dk-fb
+  .dk-fb(ld="fb",data-pfx="dk")
     .dk-fb-title 全域篩選
     .dk-fb-items(ld="items")
     .dk-spacer
@@ -104,6 +104,32 @@ div
       box-shadow: 0 18px 40px -16px rgba(0,0,0,.75)
     .dk-fb-item.open .dk-fb-pop
       display: block
+
+    // 只要 / 排除. 兩種模式的勾選是相反的意思, 所以不能只用一顆按鈕切換,
+    // 要讓使用者看得出現在在哪一邊
+    .dk-fb-tabs
+      display: flex
+      gap: 3px
+      padding: 2px
+      margin-bottom: 7px
+      border-radius: 6px
+      background: var(--dk-soft)
+
+    .dk-fb-tab
+      flex: 1 1 0
+      padding: 3px 0
+      border-radius: 4px
+      border: none
+      background: transparent
+      color: var(--dk-fg-dim)
+      font: inherit
+      font-size: 10.5px
+      cursor: pointer
+      &:hover
+        color: var(--dk-fg)
+      &.on
+        background: var(--dk-panel-a)
+        color: var(--dk-fg-strong)
 
     .dk-fb-head
       display: flex

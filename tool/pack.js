@@ -1,7 +1,8 @@
 // 把示範頁底下的兩樣東西編成套件要發出去的檔案:
 //
-//   web/src/styl/dash.styl                                -> index.css / index.min.css
-//   .../variation/vanilla/block/panel/0.0.1/index.pug     -> block/panel/index.html
+//   web/src/styl/dash.styl                                  -> index.css / index.min.css
+//   .../variation/vanilla/block/panel/0.0.1/index.pug       -> block/panel/index.html
+//   .../variation/vanilla/block/filterbar/0.0.1/index.pug   -> block/filterbar/index.html
 //
 // 為什麼來源在示範頁底下: 這兩樣本來就是示範頁在用的那一份, 不是另外抄一份給套件.
 // vanilla 的 panel block 是七個設計的共同起點 ( 其餘六份逐字相同, 只差一個 class 名 ),
@@ -45,12 +46,17 @@ const css = styl(fs.readFileSync(p('web/src/styl/dash.styl'), 'utf8'));
 fs.writeFileSync(p('index.css'), css);
 fs.writeFileSync(p('index.min.css'), uglifycss.processString(css));
 
-// ---- block/panel/index.html
-const src = p('web/src/pug/initiative/variation/vanilla/block/panel/0.0.1/index.pug');
-const html = pug.renderFile(src, {filters, pretty: false});
-fs.mkdirSync(p('block/panel'), {recursive: true});
-fs.writeFileSync(p('block/panel/index.html'), html);
+// ---- block/*/index.html
+//
+// 取 vanilla 的那幾份: 它們的顏色只用 dash.css 的 --dash-* ( 其他設計各有自己的
+// 一組變數 ), 所以宿主載了 index.css 就會長對, 不必再給一組變數.
+const blocks = ['panel', 'filterbar'];
+for (const b of blocks) {
+  const src = p('web/src/pug/initiative/variation/vanilla/block', b, '0.0.1/index.pug');
+  fs.mkdirSync(p('block', b), {recursive: true});
+  fs.writeFileSync(p('block', b, 'index.html'), pug.renderFile(src, {filters, pretty: false}));
+}
 
-for (const f of ['index.css', 'index.min.css', 'block/panel/index.html']) {
+for (const f of ['index.css', 'index.min.css', ...blocks.map(b => `block/${b}/index.html`)]) {
   console.log(String(f).padEnd(24) + String(fs.statSync(p(f)).size).padStart(7) + ' bytes');
 }

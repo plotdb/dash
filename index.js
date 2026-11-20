@@ -602,6 +602,9 @@
   }, ref$._match = function(f, r){
     var v, ref$, lo, hi, c, loOk, hiOk;
     v = r[f.field];
+    if (f.type === 'exclude') {
+      return !~f.values.indexOf(v);
+    }
     if (f.type === 'range') {
       ref$ = f.values, lo = ref$[0], hi = ref$[1];
       c = f.closed || 'both';
@@ -635,7 +638,7 @@
       var ref$, results$ = [];
       for (k in ref$ = this.filters) {
         v = ref$[k];
-        if (v.owner !== panel.id) {
+        if (v.owner !== panel.id || v.type === 'exclude') {
           results$.push(v);
         }
       }
@@ -837,7 +840,7 @@
       key: 'crossfilter',
       title: "連動篩選",
       desc: "一個 panel 可以同時篩好幾個欄位: 圖表發 filter 時是以 binding 維度為 key, 不同維度對應不同欄位 - 綁到分組欄位的那一維對應 groupby ( 例如 pie 的 name、line 的 order ), 綁到 measures 的那一維對應 series ( 例如多 series line 的 value ). 預設自動推導, 通常不必宣告. 算某個 panel 的資料時不套用它自己發出的 filter ( 有幾維就排除幾維 ), 否則被選中的那張圖會只剩下自己選的那一項. 篩選後要怎麼呈現則是圖的事, 由 cfg.common.subset.mode 決定.",
-      sample: "crossfilter: false               # 這張圖不對外發 filter\ncrossfilter: {field: \"region\"}   # 舊寫法: 指定資料點那一維的欄位\n\n# 逐維度指定. 沒寫到的維度仍照預設推導\ncrossfilter: {name: \"region\"}                  # pie / bar / map\ncrossfilter: {order: \"month\", value: \"category\"}   # 多 series 的 line\n\n# filter 有兩種型別, 由發出的圖決定, def 不必寫:\n#   index  值列表 ( 點選、類別軸的框選 )\n#   range  區間 [lo, hi] ( 連續軸的框選, 例如 line 的 brush ).\n#          可以帶 closed: left = [lo, hi), right = (lo, hi], 沒給就兩端都含.\n#          直方圖的組是半開區間, 兩端都含的話相鄰的組會在邊界重複算到\n\n# 被篩掉的資料怎麼表現 ( 需要 data.compare 才有子集可比 )\ncfg: common: subset:\n  mode: \"dim\"                    # 整個色塊降透明 ( 預設 )\n  mode: \"partial\"                # 同一個色塊裡切出被選中的那段\n  mode: \"shrink\"                 # 直接拿子集當值畫, 泡泡變小 / 消失\n\n# legend 的勾選也是一種篩選, 同一套字彙但預設不同 ( 向下相容 )\ncfg: legend:\n  subset: {mode: \"shrink\"}       # 關掉就整個不見 ( 預設 ); dim = 留著位置只降透明\n  crossfilter: true              # legend 的勾選同時對外發 filter.\n                                 # pie 的 legend 與 wedge 是同一維, 共用同一份狀態;\n                                 # line 的 legend 是 value 維, 篩的是 series 欄位.\n                                 # 項目是手挑欄位而非資料值時就不該打開",
+      sample: "crossfilter: false               # 這張圖不對外發 filter\ncrossfilter: {field: \"region\"}   # 舊寫法: 指定資料點那一維的欄位\n\n# 逐維度指定. 沒寫到的維度仍照預設推導\ncrossfilter: {name: \"region\"}                  # pie / bar / map\ncrossfilter: {order: \"month\", value: \"category\"}   # 多 series 的 line\n\n# filter 有三種型別. index 與 range 由發出的圖決定, def 不必寫:\n#   index    值列表 ( 點選、類別軸的框選 )\n#   range    區間 [lo, hi] ( 連續軸的框選, 例如 line 的 brush ).\n#            可以帶 closed: left = [lo, hi), right = (lo, hi], 沒給就兩端都含.\n#            直方圖的組是半開區間, 兩端都含的話相鄰的組會在邊界重複算到\n#   exclude  除了這幾項以外. 目前只有篩選面板會發, 圖表沒有發這種的介面 -\n#            「點一下排除這項」要先有地方表達那個意圖. 自己發出的 exclude\n#            會套用在自己身上 ( 見 rows-for )\n\n# 被篩掉的資料怎麼表現 ( 需要 data.compare 才有子集可比 )\ncfg: common: subset:\n  mode: \"dim\"                    # 整個色塊降透明 ( 預設 )\n  mode: \"partial\"                # 同一個色塊裡切出被選中的那段\n  mode: \"shrink\"                 # 直接拿子集當值畫, 泡泡變小 / 消失\n\n# legend 的勾選也是一種篩選, 同一套字彙但預設不同 ( 向下相容 )\ncfg: legend:\n  subset: {mode: \"shrink\"}       # 關掉就整個不見 ( 預設 ); dim = 留著位置只降透明\n  crossfilter: true              # legend 的勾選同時對外發 filter.\n                                 # pie 的 legend 與 wedge 是同一維, 共用同一份狀態;\n                                 # line 的 legend 是 value 維, 篩的是 series 欄位.\n                                 # 項目是手挑欄位而非資料值時就不該打開",
       fields: [{
         key: 'field',
         type: "string",

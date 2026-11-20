@@ -338,10 +338,6 @@ line 開了 legend crossfilter 之後，legend 篩 category，資料點的 selec
 
  - 沒有 detail / 放大視窗，也沒有 dashboard 之間的切換 ( taicca 版的 `add-dashboard` / `toggle` )
  - 版面只有 grid 一種。`def.layout.type` 是之後要加 flow / free 版面的分支點
- - filter 還沒有排除 ( exclude )：「除了這幾項以外」。taicca 版的「出品人比例」用的是這個 ——
-   選項幾十個時，要表達「不要這一兩個大宗」用值列表得點選其他四十項，而且下個月多一個
-   出品人清單就錯了。跟值列表差一個 not，但 crossfilter 的「不套用自己」對它的意義不一樣：
-   排掉 A 若不套用自己，A 還留在自己圖上，看起來像沒生效
  - `common.subset` 現在由核心併進每張圖的設定，所以設定面板一律看得到這一組，
    但一張圖支不支援 subset 是它自己的事 —— 沒實作的圖照樣把開關秀給使用者，切了沒反應。
    缺一個「這張圖不支援 / 不提供這一組」的宣告機制
@@ -447,20 +443,45 @@ registry 上（makechart 的自訂 code 是這種），需要這一條。code �
 
 日期用零補的字串（`2024/01`）直接比字串就是對的順序，所以 range filter 不必轉型。
 
+### 排除：「除了這幾項以外」
+
+第三種 filter 型別，`type: \exclude`。跟值列表差一個 not，但它解的是另一種問題：
+相異值幾十個的時候，要表達「不要這一兩個大宗」用值列表得點選其他四十項，而且下個月
+多一個項目，那份清單就錯了 —— 漏掉的那一項會默默被排除。
+
+有一條語意跟另外兩種相反：**自己發出的 exclude 要套用在自己身上**。
+
+「不套用自己」是為了選取：選了 A 之後，自己這張圖還是要看得到 B C D，否則就沒得再選了。
+但排除 A 若不套用自己，A 會留在自己圖上原封不動，使用者會以為沒生效。兩者都是為了
+「讓這張圖還能繼續操作」，只是對 exclude 來說，繼續操作的前提剛好相反。
+
+目前只有篩選面板會發這種 filter，圖表沒有發它的介面 —— 「點一下排除這項」要先有地方
+表達那個意圖（shift 點選已經是增刪了）。
+
 ### 篩選列做成 panel block
 
-`desk` 那一版加了一條 `block/filterbar/0.0.1`，放在 grid 的第一列。做成 panel block
-而不是 board 外面的另一層，排版與主題就跟其他格子一致 —— 它拿到的也是一樣的
-`{def, board}`，只是不畫資料。
+`block/filterbar/0.0.1` 放在 grid 的第一列。做成 panel block 而不是 board 外面的
+另一層，排版與主題就跟其他格子一致 —— 它拿到的也是一樣的 `{def, board}`，只是不畫資料。
+
+這一份跟 `desk` 的那一份**程式逐字相同**：class 的字首從 pug 的 `data-pfx` 讀進來，
+所以換外觀只要換 pug 與 stylus —— 跟 panel block 是同一個做法。vanilla 這一份的顏色
+只用 `dash.css` 的 `--dash-*`，所以它也是**套件發出去的那一份**
+（`block/filterbar/index.html`）：宿主載了 `index.css` 就會長對，不必再給一組變數。
 
 兩件做下去才知道的事：
 
- - **格線要給它絕對高度**（`row: <[3.1em 6.4em 1.15fr 1fr]>`）。給 `fr` 的話它會跟圖表
+ - **格線要給它絕對高度**（`row: <[2.6em 6.5em 1fr 1fr]>`）。給 `fr` 的話它會跟圖表
    一起長高，而它的內容高度是固定的
  - **`.dash` 是 `overflow: hidden`**（不讓 svg 撐破格線），所以下拉面板會被裁掉一半。
-   有彈出層的儀表板得由頁面把它打開（`.dk-board { overflow: visible }`）；卡片自己有
-   `overflow: hidden`，圖表還是被各自的卡片關著。另一條路是把面板掛到 `document.body`，
-   但 block 的 CSS 是靠祖先的 `scope` 屬性收斂的（`@plotdb/csscope`），搬出去樣式就掉了
+   `dash.css` 多了一個 `.dash.dash-overflow`，而**需要它的 block 自己加**
+   （filterbar 的 `init` 就是這樣做的），宿主不必記得這件事。預設值沒有改，因為那條
+   `hidden` 是真的有用的 —— `.dash-panel` 自己不裁切，圖表畫出格子外時擋住的就是它。
+
+   另外兩條路都考慮過：把面板掛到 `document.body` 會掉樣式（`@plotdb/csscope` 的選擇器
+   是靠祖先的 `scope` 屬性收斂的，搬出去就沒有祖先帶那個屬性了）；改用 `position: fixed`
+   可以逃出裁切，但它只在「沒有任何祖先帶 transform」時成立 —— 有 transform 的祖先會
+   變成 fixed 的包含塊，於是又被裁回去。進場動畫、`will-change`、縮放效果都會讓它悄悄
+   失效，而失效的樣子是面板被切掉一半，不是報錯。一個 class 不依賴這些
 
 
 ## 要決定的事

@@ -1,0 +1,206 @@
+div
+  .dash-fb(ld="fb",data-pfx="dash")
+    .dash-fb-title 篩選
+    .dash-fb-items(ld="items")
+    .dash-spacer
+    button.dash-fb-clear(ld="clear") 未篩選
+  style(type="text/css"): :stylus
+    // 這一份是套件發出去的預設篩選列 ( tool/pack.js 取的就是它 ), 所以顏色只用
+    // dash.css 的 --dash-* - 宿主載了 index.css 就會長對, 不必再給一組變數.
+    // 深色模式也是同一條路: 換掉那幾個變數就換皮
+    :scope
+      flex: 1 1 auto
+      min-width: 0
+      min-height: 0
+      display: flex
+
+    .dash-fb
+      position: relative
+      flex: 1 1 auto
+      min-width: 0
+      display: flex
+      align-items: center
+      gap: .6em
+      padding: 0 .6em
+      color: var(--dash-fg)
+      background: var(--dash-panel-bg)
+      border: 1px solid var(--dash-border)
+      border-radius: var(--dash-radius)
+      // 展開的面板要掛到格子外面, 所以這一層不能裁切
+      overflow: visible
+      &.filtering
+        border-color: var(--dash-accent)
+
+    .dash-fb-title
+      flex: 0 0 auto
+      font-size: .8em
+      color: var(--dash-fg-dim)
+
+    .dash-fb-items
+      display: flex
+      align-items: center
+      gap: .3em
+      min-width: 0
+
+    .dash-spacer
+      flex: 1 1 auto
+
+    .dash-fb-item
+      position: relative
+      flex: 0 0 auto
+
+    .dash-fb-btn
+      display: flex
+      align-items: baseline
+      gap: .4em
+      padding: .25em .5em
+      border-radius: var(--dash-radius)
+      border: 1px solid var(--dash-border)
+      background: var(--dash-panel-bg)
+      color: var(--dash-fg)
+      font: inherit
+      font-size: .85em
+      cursor: pointer
+      white-space: nowrap
+    .dash-fb-item.on .dash-fb-btn
+      border-color: var(--dash-accent)
+      color: var(--dash-accent)
+
+    .dash-fb-key
+      color: var(--dash-fg-dim)
+    .dash-fb-item.on .dash-fb-key
+      color: inherit
+    .dash-fb-val
+      font-variant-numeric: tabular-nums
+
+    .dash-fb-pop
+      display: none
+      position: absolute
+      top: calc(100% + .3em)
+      left: 0
+      z-index: 40
+      min-width: 11em
+      padding: .5em
+      border-radius: var(--dash-radius)
+      background: var(--dash-panel-bg)
+      border: 1px solid var(--dash-border)
+      box-shadow: 0 .4em 1.4em rgba(0,0,0,.18)
+    .dash-fb-item.open .dash-fb-pop
+      display: block
+
+    // 只要 / 排除. 兩種模式的勾選是相反的意思, 所以不能只用一顆按鈕切換,
+    // 要讓使用者看得出現在在哪一邊
+    .dash-fb-tabs
+      display: flex
+      gap: .15em
+      padding: .15em
+      margin-bottom: .45em
+      border-radius: var(--dash-radius)
+      background: var(--dash-bg)
+
+    .dash-fb-tab
+      flex: 1 1 0
+      padding: .2em 0
+      border-radius: var(--dash-radius)
+      border: none
+      background: transparent
+      color: var(--dash-fg-dim)
+      font: inherit
+      font-size: .78em
+      cursor: pointer
+      &.on
+        background: var(--dash-panel-bg)
+        color: var(--dash-fg)
+        box-shadow: 0 1px 2px rgba(0,0,0,.12)
+
+    .dash-fb-head
+      display: flex
+      gap: .3em
+      padding-bottom: .45em
+      margin-bottom: .4em
+      border-bottom: 1px solid var(--dash-border)
+
+    .dash-fb-mini
+      flex: 1 1 auto
+      padding: .2em 0
+      border-radius: var(--dash-radius)
+      border: 1px solid var(--dash-border)
+      background: transparent
+      color: var(--dash-fg-dim)
+      font: inherit
+      font-size: .78em
+      cursor: pointer
+      &:hover
+        color: var(--dash-fg)
+
+    .dash-fb-list
+      display: flex
+      flex-direction: column
+      gap: 1px
+      max-height: 16em
+      overflow-y: auto
+
+    .dash-fb-row
+      display: flex
+      align-items: center
+      gap: .4em
+      padding: .2em .3em
+      border-radius: var(--dash-radius)
+      font-size: .85em
+      cursor: pointer
+      &:hover
+        background: var(--dash-bg)
+
+    .dash-fb-box
+      flex: 0 0 auto
+      margin: 0
+      accent-color: var(--dash-accent)
+
+    .dash-fb-range
+      display: flex
+      align-items: center
+      gap: .3em
+
+    .dash-fb-num, .dash-fb-sel
+      flex: 1 1 0
+      min-width: 0
+      width: 5em
+      padding: .2em .3em
+      border-radius: var(--dash-radius)
+      border: 1px solid var(--dash-border)
+      background: var(--dash-panel-bg)
+      color: var(--dash-fg)
+      font: inherit
+      font-size: .85em
+      font-variant-numeric: tabular-nums
+
+    .dash-fb-dash
+      flex: 0 0 auto
+      color: var(--dash-fg-dim)
+
+    .dash-fb-hint
+      margin-top: .45em
+      font-size: .78em
+      color: var(--dash-fg-dim)
+      font-variant-numeric: tabular-nums
+
+    .dash-fb-clear
+      flex: 0 0 auto
+      padding: .2em .5em
+      border-radius: var(--dash-radius)
+      border: 1px dashed var(--dash-border)
+      background: transparent
+      color: var(--dash-fg-dim)
+      font: inherit
+      font-size: .8em
+      cursor: default
+      pointer-events: none
+    .dash-fb.filtering .dash-fb-clear
+      border-style: solid
+      color: var(--dash-fg)
+      cursor: pointer
+      pointer-events: auto
+      &:hover
+        border-color: var(--dash-accent)
+        color: var(--dash-accent)
+  script: include:lsc index.ls
