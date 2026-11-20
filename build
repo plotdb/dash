@@ -6,8 +6,14 @@
 #
 # 輸出在 repo 根目錄 ( 不是 dist/ ):
 #
-#   index.js       lsc 的輸出, 可讀, 給 debug 用
-#   index.min.js   uglify 過的, package.json 的 main / browser 指這個
+#   index.js                lsc 的輸出, 可讀, 給 debug 用
+#   index.min.js            uglify 過的, package.json 的 main / browser 指這個
+#   index.css               dash.styl 的輸出 ( 版面與卡片的基本 CSS )
+#   index.min.css           package.json 的 style 指這個
+#   block/panel/index.html  預設的 panel block
+#
+# 後面三個由 tool/pack.js 產生, 來源都在示範頁底下 - 它們本來就是示範頁在用的
+# 那一份, 不是另外抄一份給套件.
 #
 # 為什麼在根目錄: fedep 預設就是把套件的根目錄複製 ( 或 link ) 到
 # web/static/assets/lib/<name>/<version>/, dist/ 是 --use-dist 的 legacy 模式.
@@ -27,4 +33,5 @@ npx lsc -cp "$src" > index.js
 echo "/*! @plotdb/dash $ver | MIT */" > index.min.js
 npx uglifyjs index.js -c -m >> index.min.js
 
-printf '%-14s %8s bytes\n' index.js "$(wc -c < index.js | tr -d ' ')" index.min.js "$(wc -c < index.min.js | tr -d ' ')"
+printf '%-24s %7s bytes\n' index.js "$(wc -c < index.js | tr -d ' ')" index.min.js "$(wc -c < index.min.js | tr -d ' ')"
+node tool/pack.js
