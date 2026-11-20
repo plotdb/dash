@@ -5,7 +5,7 @@
 
 <-(-> it.apply {}) _
 
-# block 名稱 -> URL. chart 走 /assets/chart, dash 自己的 panel 走 /initiative/variation/prototype/block.
+# block 名稱 -> URL. chart 走 /assets/chart, dash 自己的 panel 走 /initiative/variation/vanilla/block.
 # 沿用 makechart 的統一規則 ( server/module/makechart/registry ):
 # block 與 lib 都走 /assets/lib/<name>/<version|main>/, 差別只在預設檔名.
 # 本專案自己的 block 用 ns: local, 放在頁面旁邊.
@@ -13,7 +13,7 @@ mgr = new block.manager do
   registry: ({url, ns, name, version, path, type}) ->
     if url => return url    # block 依賴也可能直接給 URL
     if type == \block =>
-      if ns == \local => return "/initiative/variation/prototype/block/#name/#{version or '0.0.1'}/#{path or 'index.html'}"
+      if ns == \local => return "/initiative/variation/vanilla/block/#name/#{version or '0.0.1'}/#{path or 'index.html'}"
       return "/assets/lib/#name/#{version or 'main'}/#{path or 'index.html'}"
     if /^d3/.exec(name) => return "/assets/lib/#name/main/#path"
     "/assets/lib/#name/#{version or 'main'}/#{path or (if type == \css => 'index.min.css' else 'index.min.js')}"

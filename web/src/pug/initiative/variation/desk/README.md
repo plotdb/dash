@@ -1,23 +1,23 @@
 # desk「分析台」
 
-`variation` 這一組有七個設計，共用同一份 def；`prototype` 是最素的原型，這是換了外觀的第一個。
+`variation` 這一組有七個設計，共用同一份 def；`vanilla` 是最素的原型，這是換了外觀的第一個。
 給一個坐在螢幕前面、正在找原因的人：密集、滿版不捲動，每一格都可以點、可以框選。
 
 看畫面：`npx server -r web -p 64500` 後開
 `http://localhost:64500/initiative/variation/desk/`
-( 入口頁在 `/initiative/variation/`，最素的原型在 `/initiative/variation/prototype/` )。
+( 入口頁在 `/initiative/variation/`，最素的原型在 `/initiative/variation/vanilla/` )。
 
-底下講的「跟 prototype 的差別」是這一整組共同的前提 —— 另外五個設計換掉的也是同樣這三件事，
+底下講的「跟 vanilla 的差別」是這一整組共同的前提 —— 另外五個設計換掉的也是同樣這三件事，
 只是換成別的值。其餘五個設計的 README 只講各自跟這一版的差異。
-( `prototype` 原本是 `initiative/1st`，後來搬進來當這一組的起點。 )
+( `vanilla` 原本是 `initiative/1st`，後來搬進來當這一組的起點。 )
 
 
-## 跟 prototype 的差別
+## 跟 vanilla 的差別
 
 比對兩份 `index.ls` 會看到 def 的結構一模一樣 —— `data` / `layout` / `panels`，
 每個 panel 一樣是 `area` / `chart` / `data` / `cfg`。換掉的只有三件事：
 
-**1. KPI 那四格換了 block。** prototype 用 `@makechart/number` 畫，能把數字自動放大，
+**1. KPI 那四格換了 block。** vanilla 用 `@makechart/number` 畫，能把數字自動放大，
 但一格只講得出一個數字。這一版改用自己寫的 `block/kpi/0.0.1`：它跟隔壁的 panel block
 收到一樣的 `{def, board}`，一樣每次 render 跟 board 要資料，只是畫法不同 ——
 多了單位、左緣色條、以及「這個數字是全體的多少」。
@@ -32,7 +32,7 @@
 平均值型的指標 ( 平均單價 ) 用 `note: \delta`，因為「平均單價佔全體 65%」沒有意義，
 要看的是比全體高還是低。
 
-**2. 圖表卡片換了外觀。** `block/panel/0.0.1` 的程式邏輯跟 prototype 的那一份完全相同
+**2. 圖表卡片換了外觀。** `block/panel/0.0.1` 的程式邏輯跟 vanilla 的那一份完全相同
 ( crossfilter 的接線、binding 的自動推導、選取狀態灌回圖裡 )，差別只在 pug 與 stylus。
 
 **3. 一層主題。** 深色底，介面狀態只用亮度不用色相。
@@ -41,7 +41,7 @@
 
     * id: \gross, panel: {ns: \local, name: \kpi, version: \0.0.1}, ...
 
-沒指定就用 board 的預設，所以 prototype 不受影響。
+沒指定就用 board 的預設，所以 vanilla 不受影響。
 
 
 ## 顏色是分派的，不是挑的
@@ -89,7 +89,7 @@
 真實資料只好拿**內插出來的**顏色 —— 4 色 palette 配 4 個書系，結果四條線全是中間色。
 `palette` 設了等於沒設，而且不會報錯。
 
-兩張圖各補一行就好。prototype 也跟著受惠。
+兩張圖各補一行就好。vanilla 也跟著受惠。
 
 
 ## 版面
@@ -153,5 +153,5 @@ KPI 的色條寫的是 `accent: 'var(--dk-acc-1)'` —— 一個 custom property
 ## 這一版沒做的
 
  - 沒有 responsive。版面是固定的 12 欄 grid，窄螢幕會擠
- - `prototype` 列出的那些仍然沒做 ( detail 視窗、全域時間控制項、exclude 型 filter、
+ - `vanilla` 列出的那些仍然沒做 ( detail 視窗、全域時間控制項、exclude 型 filter、
    loading 與錯誤處理 )

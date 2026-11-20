@@ -189,7 +189,7 @@ html(lang="zh-TW")
         display: block
         border-radius: 2px
 
-      // prototype: 四欄、素卡片. 這是其他六版的共同起點
+      // vanilla: 四欄、素卡片. 這是其他六版的共同起點
       .g-shot.s0
         gap: 6px
         grid-template-rows: .7fr 1fr 1fr
@@ -330,7 +330,7 @@ html(lang="zh-TW")
         | 它們長得不像, 是因為一開始問的問題不一樣。七版都有 light / dark —— 第一次打開時跟著系統走。
 
       .g-grid
-        a.g-card(href="/initiative/variation/prototype/")
+        a.g-card(href="/initiative/variation/vanilla/")
           .g-shot.s0
             i(style="grid-column:span 3")
             i(style="grid-column:span 3")
@@ -343,8 +343,8 @@ html(lang="zh-TW")
             i(style="grid-column:span 3")
           .g-meta
             .g-name
-              .g-id prototype
-              .g-title 原型
+              .g-id vanilla
+              .g-title 素版
             .g-desc 最素的那一份, 也是最早的那一份。它要回答的不是「好不好看」, 而是「一個儀表板由哪些東西組成」。
             ul.g-points
               li 樣式全部來自 <code>dash.css</code>, 頁面只補了一個視窗
@@ -472,7 +472,7 @@ html(lang="zh-TW")
             .g-go 打開 →
 
       .g-note
-        | <code>prototype</code> 本來是 <code>/initiative/1st/</code>, 現在搬進來當這一組的第一張。
+        | <code>vanilla</code> 本來是 <code>/initiative/1st/</code>, 現在搬進來當這一組的第一張。
         | 它問的是「一個儀表板由哪些東西組成」, 刻意用最素的樣式;
         | 後面六個問的是接下來那一題: 組成固定下來之後, 長相能換到什麼程度。
         | 七版共用的 light / dark 機制寫在 <code>variation/mode.ls</code>,

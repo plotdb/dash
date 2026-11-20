@@ -1,6 +1,6 @@
 # @plotdb/dash 第二版
 #
-# 跟 prototype ( 原本的 initiative/1st ) 比, 框架、資料、crossfilter 的語意一模一樣.
+# 跟 vanilla ( 原本的 initiative/1st ) 比, 框架、資料、crossfilter 的語意一模一樣.
 # 換掉的只有兩件事:
 #
 #  - panel block: 圖表卡片換了一套外觀, KPI 那四格換成不掛圖表的 kpi block

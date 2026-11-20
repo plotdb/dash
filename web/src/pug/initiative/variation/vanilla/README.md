@@ -1,16 +1,16 @@
-# prototype「原型」— 第一版概念示範
+# vanilla「素版」— 第一版概念示範
 
 這是把 `case/taicca/vis2` 的 dashboard 拆成可重用模組的第一個可運行版本。
 目的是先把「一個儀表板由哪些東西組成」講清楚，用實作把介面固定下來，
 之後再討論哪裡要改。
 
-**這一份原本在 `web/src/pug/initiative/1st/`**，後來搬進 `variation/prototype/`，
+**這一份原本在 `web/src/pug/initiative/1st/`**，後來搬進 `variation/vanilla/`，
 變成這一組七個設計的第一張 —— 它是其他六版的共同起點：
 其餘六個換掉的東西，都是從這一版換起的。
 搬家只動了兩件事：block 的 registry 路徑，以及補上 light / dark。
 
 看畫面：`npx server -r web -p 64500` 後開
-`http://localhost:64500/initiative/variation/prototype/`
+`http://localhost:64500/initiative/variation/vanilla/`
 ( 入口頁在 `/initiative/variation/` )。
 
 
@@ -18,8 +18,8 @@
 
  - `web/src/ls/dash.ls` — 框架本體，輸出 `window.dash`，內含 driver / query / board
  - `web/src/styl/dash.styl` — 基本 CSS，提供 `.dash`、`.dash-cell`、`.dash-panel` 等組裝用 class
- - `web/src/pug/initiative/variation/prototype/block/panel/0.0.1/` — 通用 panel block ( 標題列 + 一張圖 )
- - `web/src/pug/initiative/variation/prototype/index.ls` — 示範用的 dashboard def 與啟動碼
+ - `web/src/pug/initiative/variation/vanilla/block/panel/0.0.1/` — 通用 panel block ( 標題列 + 一張圖 )
+ - `web/src/pug/initiative/variation/vanilla/index.ls` — 示範用的 dashboard def 與啟動碼
  - `web/src/raw/assets/data/sales.json` — 示範資料 ( 合成，864 筆獨立書店銷售紀錄 )
 
 

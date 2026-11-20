@@ -1,6 +1,6 @@
 # variation — 七種長相, 同一份 def
 
-`prototype`（原本的 `initiative/1st`）要回答的是「一個儀表板由哪些東西組成」，
+`vanilla`（原本的 `initiative/1st`）要回答的是「一個儀表板由哪些東西組成」，
 所以刻意用最素的樣式。其餘六個回答接下來那一題：
 **那些東西固定下來之後，長相能換到什麼程度**。
 
@@ -8,7 +8,7 @@
 
 | | 給誰看 | 長相 |
 |---|---|---|
-| [`prototype`](prototype/) 原型 | 要知道這東西由什麼組成的人 | 最素的那一份, 樣式全部來自 `dash.css` |
+| [`vanilla`](vanilla/) 素版 | 要知道這東西由什麼組成的人 | 最素的那一份, 樣式全部來自 `dash.css` |
 | [`desk`](desk/) 分析台 | 坐在螢幕前面、正在找原因的人 | 密集、滿版不捲動 |
 | [`report`](report/) 報告 | 要把結論讀完的人 | 紙、襯線、無卡片、整頁往下捲 |
 | [`wall`](wall/) 牆面 | 十公尺外走過去的人 | 色塊拼貼、3px 的縫、巨大的數字 |
@@ -27,7 +27,7 @@
 
 連 panel block 的程式都是同一份：`block/panel/0.0.1/index.ls` 七份**逐字相同**
 （只有 pug 裡的外觀與那一個 class 名不同）。KPI 那四格則有三種做法：
-`prototype` 用 `@makechart/number`，四個設計用 desk 寫的 kpi block，
+`vanilla` 用 `@makechart/number`，四個設計用 desk 寫的 kpi block，
 `report` 拿掉了進度條與數字補間，`terminal` 把進度條換成字元畫的 `████░░░░`。
 
 後面六版換掉的就三件事：
@@ -43,7 +43,7 @@
 
 ## 看得出差別的那幾行
 
-| | prototype | desk | report | wall | pocket | terminal | rail |
+| | vanilla | desk | report | wall | pocket | terminal | rail |
 |---|---|---|---|---|---|---|---|
 | `layout.col` | 4 欄 | 12 欄 | 12 欄 | 12 欄 | **2 欄** | 12 欄 | 12 欄 |
 | `layout.row` | `1fr 1fr` | `1.15fr 1fr` | 全是 em | `1.55fr 1.25fr` | 全是 em | `1.25fr 1fr` | 全是 em |
@@ -77,7 +77,7 @@
 `accent: 'var(--n2-acc-1)'` —— 一個 custom property，所以 KPI block 連
 「現在是哪個模式」都不必知道。
 
-`prototype` 是對照組：它幾乎沒有自己的樣式，所以 CSS 那邊只是把 `dash.css`
+`vanilla` 是對照組：它幾乎沒有自己的樣式，所以 CSS 那邊只是把 `dash.css`
 的 `--dash-*` 換一組值 —— 那份 stylus 的註解本來就寫著「讓套用的專案只改變數就能換皮」，
 這一版等於是在驗收那句話。
 
@@ -85,11 +85,11 @@
 
  - `common.subset.background`（未選的那一段往哪個顏色退）
  - 地圖漸層的低端（沒有資料的縣市拿的就是低端色）
- - 色塊上的字（wall 的 KPI 磚、prototype 的 chip、所有藥丸）
+ - 色塊上的字（wall 的 KPI 磚、vanilla 的 chip、所有藥丸）
  - 色階的方向（terminal 的四階在深色底上「亮 = 強」，在紙上「深 = 強」）
 
 前兩個在七份 README 裡都出現過，是跨主題時最容易漏的兩個。
-反過來說，**中間調的顏色兩個底色通常都活得下去** —— prototype 那六個色就原封不動。
+反過來說，**中間調的顏色兩個底色通常都活得下去** —— vanilla 那六個色就原封不動。
 
 每一版各自的理由寫在自己的 `README.md`。desk 的那一份另外記了
 **三個深色底踩到的核心問題**與**順手修掉的配色 bug**，那些是這一整組的副產品。
