@@ -3,7 +3,8 @@
 ## v0.0.2
 
  - add `README.md`, `CHANGELOG.md` and package metadata ( author, repository )
- - add `npm run release`: build first, then publish to npm and GitHub release
+ - add `npm run release`: verify versions, `npm ci`, build, then publish to npm
+   and GitHub release
  - doc: state which two files a host should load, and that `web/static/` is a dev
    server artifact which is neither versioned nor published
 

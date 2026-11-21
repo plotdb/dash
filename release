@@ -4,21 +4,28 @@
 #
 #   ./release        或   npm run release
 #
-# 做三件事, 順序有意義:
+# 做四件事, 順序有意義:
 #
-#   1. ./build      重編 dist/ - 發佈的是 dist/ 的內容, 不先編就會發出一份舊的.
+#   1. npm ci       乾淨裝一次. package.json 與 package-lock.json 對不起來就會
+#                   停在這裡 - 發出去的 package.json 若帶著一個 lock 裡沒有的
+#                   相依, 裝的人會拿到跟我們不一樣的版本
+#   2. ./build      重編 dist/ - 發佈的是 dist/ 的內容, 不先編就會發出一份舊的.
 #                   這不是假設性的問題: 發佈檔與 repo 的產物分屬兩個地方, 中間
 #                   少一步就只能等裝起來才發現
-#   2. fedep publish      發到 npm
-#   3. fedep publish -g   推 release branch + 開 GitHub release, 並打
+#   3. fedep publish      發到 npm
+#   4. fedep publish -g   推 release branch + 開 GitHub release, 並打
 #                         dist/vX.Y.Z ( 產物 ) 與 src/vX.Y.Z ( 原始碼 ) 兩個 tag
+#
+# 版號要另外自己比對一次: npm ci 只檢查相依, **不檢查 root 的 version**.
+# 0.0.2 就中過 - package.json 升了, lock 還停在 0.0.1, npm ci 照樣過.
 #
 # 兩個 publish 都會先在 .fedep/publish/ 把 dist/ 的內容攤平到根目錄, 並改寫
 # main / style / browser 的路徑 - 所以裝起來的套件是 index.min.js、block/、theme/
 # 都在根目錄, 跟 @plotdb/layout、@plotdb/konfig 一樣.
 #
 # 發佈前要自己確認的:
-#   - package.json 的 version 已經升了 ( npm 不讓同一個版號發兩次 )
+#   - package.json 的 version 已經升了 ( npm 不讓同一個版號發兩次 ), 而且
+#     package-lock.json 也跟著升了 ( npm install 一次就會 )
 #   - CHANGELOG.md 有對應的 ## vX.Y.Z section - GitHub release 的 notes 從這裡取,
 #     沒有的話會退回 --generate-notes
 #   - 工作樹是乾淨的, 且已經 push ( src/vX.Y.Z 會打在當前的 commit 上 )
@@ -34,6 +41,26 @@ if ! npm whoami > /dev/null 2>&1; then
   npm login
 fi
 
+echo "== 版號比對 =="
+node -e '
+  const fs = require("fs");
+  const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+  const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+  // lockfile v2 兩個地方都記, 都要對
+  const vs = [lock.version, (lock.packages && lock.packages[""] || {}).version];
+  for (const v of vs) if (v !== undefined && v !== pkg.version) {
+    console.error(`package.json 是 ${pkg.version}, package-lock.json 是 ${v}.`);
+    console.error("跑一次 npm install 讓 lock 跟上, commit 之後再發.");
+    process.exit(1);
+  }
+  console.log(`版號一致: ${pkg.version}`);
+'
+
+echo
+echo "== npm ci ( 順便確認 lock 跟 package.json 對得起來 ) =="
+npm ci
+
+echo
 echo "== build =="
 ./build
 
