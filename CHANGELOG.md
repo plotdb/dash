@@ -2,6 +2,12 @@
 
 ## master
 
+ - theme: rewrite `vanilla`'s `desc`. `desc` / `fit` are read by whoever is picking a
+   theme in a host's theme menu, not by a developer, so they say what a theme looks
+   like and what it suits — file names and CSS variables belong in the README. if one
+   has to be mentioned, it now says plainly that it only matters when embedding
+   `@plotdb/dash` yourself
+
  - upgrade charts: `@plotdb/chart` ^3.17.1, `bar` ^0.0.16, `line` ^0.0.11,
    `pie` ^0.0.6, `number` ^0.0.5, `taiwan-map` ^0.0.5, `twmapadv` ^0.0.7.
    all of these only add `desc` on config items and `mod.tabinfo` — no default

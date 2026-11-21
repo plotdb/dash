@@ -5,8 +5,8 @@
     "en": "Plain"
   },
   "desc": {
-    "zh-TW": "最素的那一份。顏色全部走 dash.css 的 --dash-* ，載了 index.css 就會長對。",
-    "en": "The plainest one. Every colour comes from dash.css's --dash-* , so loading index.css is enough."
+    "zh-TW": "最素的那一份：介面不帶自己的色票，維持中性的灰階，把顏色讓給資料與既有的網站。想要一塊不搶戲、跟周圍長得一樣的底就選它。（自己接 @plotdb/dash 時，這套顏色可以用 dash.css 的 --dash-* 調；在儀表板裡選主題不必管這些。）",
+    "en": "The plainest one: the interface brings no palette of its own and stays a neutral grey, leaving colour to the data and to the surrounding site. Pick it when you want a background that stays out of the way and matches what is already there. (If you embed @plotdb/dash yourself, these colours are tunable through dash.css's --dash-* ; picking a theme inside a dashboard needs none of that.)"
   },
   "blocks": {
     "panel": {
