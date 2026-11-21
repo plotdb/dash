@@ -185,6 +185,15 @@ apply = (patch) ->
 paint = ->
   wrap = node \tokens
   wrap.innerHTML = ''
+  # 主題的自述: 它想長成什麼樣 ( desc ), 以及它配什麼版面 ( fit ).
+  # fit 是建議而不是設定 - 版面是使用者排的, 換個主題不該把人家排好的格子推掉.
+  # 所以這裡只是把話說給人聽, 套不套由宿主決定
+  if (d = bd.theme.desc) => wrap.appendChild mk \div, \tk-about, tx(d)
+  if (ft = bd.theme.fit)
+    box = mk \div, \tk-fit
+    box.appendChild mk \div, \tk-fit-key, "配什麼版面"
+    box.appendChild mk \div, \tk-fit-txt, tx(ft)
+    wrap.appendChild box
   for f in (bd.theme.schema or [])
     wrap.appendChild row f
 
@@ -250,7 +259,7 @@ mk-switch = (name) -> ->
   custom := {}
   apply {name: name, tokens: {}}
 
-for name in <[vanilla desk report wall terminal]>
+for name in <[vanilla desk report wall terminal pocket rail]>
   b = node "t-#name"
   if b => b.addEventListener \click, mk-switch(name)
 

@@ -1,0 +1,205 @@
+{
+  "name": "pocket",
+  "title": {"zh-TW": "口袋", "en": "Pocket"},
+  "desc": {
+    "zh-TW": "給一支手機。卡片不畫框，只靠底色跟背景分開；點擊目標一律 32px 以上，字級比桌機大一到兩級。深色模式的卡片比背景亮 —— 手機在暗處是房間裡唯一的光源，大面積的亮色只能給卡片。",
+    "en": "For a phone. Cards have no border, only a fill that separates them from the page; tap targets are at least 32px and type runs a size or two larger than on a desktop. In dark mode the card is lighter than the page — a phone in a dark room is the only light source, so the large bright area has to be the card, not the background."
+  },
+  "fit": {
+    "zh-TW": "配一欄到底的版面：2 欄格線、每一格跨滿、行高用絕對值讓整頁往下捲。直式手機一行塞不下四個數字，所以「一欄」實際上要兩欄才排得出 2x2 的 KPI。",
+    "en": "Pairs with a single-column layout: a 2-column grid, every cell spanning both, absolute row heights so the page scrolls. A portrait phone cannot fit four numbers on one line, so a \"single column\" really needs two to lay the KPIs out 2x2."
+  },
+  "blocks": {
+    "panel": {"name": "@plotdb/dash", "path": "block/panel/pocket/index.html"},
+    "kpi": {"name": "@plotdb/dash", "path": "block/kpi/pocket/index.html"},
+    "filterbar": {"name": "@plotdb/dash", "path": "block/filterbar/index.html"}
+  },
+  "layout": {
+    "col": ["1fr", "1fr"],
+    "row": ["5.4em", "5.4em", "15em", "13.5em", "19em", "14.5em", "15em"],
+    "gap": "10px"
+  },
+  "tokens": {
+    "common": {
+      "sans": "-apple-system, \"SF Pro Text\", \"PingFang TC\", \"Noto Sans TC\", system-ui, sans-serif",
+      "gap": "10px",
+      "radius": "16px"
+    },
+    "light": {
+      "bg": "#eef0f4",
+      "card": "#ffffff",
+      "fg": "#1b2029",
+      "fg-strong": "#0c1017",
+      "fg-dim": "#6c7484",
+      "soft": "rgba(20,25,35,.08)",
+      "line": "rgba(20,25,35,.10)",
+      "accent": "#3b4bd8",
+      "on-accent": "#ffffff",
+      "up": "#0b8a63",
+      "down": "#c43a60",
+      "acc-1": "#3b4bd8",
+      "acc-2": "#0e9f6e",
+      "acc-3": "#c2721c",
+      "acc-4": "#0f8f86",
+      "ink": "#8a92a2",
+      "txt": "#4a5260",
+      "grid": "rgba(20,25,35,.10)",
+      "face": "#ffffff",
+      "outline": "rgba(20,25,35,.38)",
+      "ref": "#c2721c",
+      "empty": "#e6e8ec",
+      "brush": {
+        "fill": "#3b4bd8",
+        "fillOpacity": 0.08,
+        "stroke": "rgba(59,75,216,.45)",
+        "strokeWidth": 1,
+        "handleFill": "rgba(59,75,216,.32)"
+      },
+      "cat": ["#3b4bd8", "#0e9f6e", "#d4557c", "#8b43cf"],
+      "cat-ramp": ["#3b4bd8", "#8b43cf"],
+      "chn": ["#f0b968", "#c2721c", "#86490f"],
+      "geo": ["#0f8f86"],
+      "geo-ramp": ["#d8e5e8", "#a6d0d0", "#74bab7", "#41a49e", "#0f8f86"]
+    },
+    "dark": {
+      "bg": "#0b0d12",
+      "card": "#171a21",
+      "fg": "#e6e9ef",
+      "fg-strong": "#f6f8fb",
+      "fg-dim": "#8c94a3",
+      "soft": "rgba(255,255,255,.09)",
+      "line": "rgba(255,255,255,.10)",
+      "accent": "#8ea2ff",
+      "on-accent": "#0b0d12",
+      "up": "#42d9a0",
+      "down": "#ff87a6",
+      "acc-1": "#8ea2ff",
+      "acc-2": "#42d9a0",
+      "acc-3": "#ffc078",
+      "acc-4": "#4fd1c5",
+      "ink": "#7f8796",
+      "txt": "#b9c0cc",
+      "grid": "rgba(255,255,255,.11)",
+      "face": "#171a21",
+      "outline": "rgba(255,255,255,.27)",
+      "ref": "#ffc078",
+      "empty": "#1f232b",
+      "brush": {
+        "fill": "#ffffff",
+        "fillOpacity": 0.07,
+        "stroke": "rgba(142,162,255,.5)",
+        "strokeWidth": 1,
+        "handleFill": "rgba(142,162,255,.35)"
+      },
+      "cat": ["#8ea2ff", "#42d9a0", "#ff87a6", "#c58bff"],
+      "cat-ramp": ["#8ea2ff", "#c58bff"],
+      "chn": ["#ffc078", "#e8914a", "#a85c22"],
+      "geo": ["#4fd1c5"],
+      "geo-ramp": ["#263037", "#30585a", "#3a807e", "#45a9a2", "#4fd1c5"]
+    }
+  },
+  "vars": {
+    "--pk-sans": "$sans",
+    "--pk-bg": "$bg",
+    "--pk-card": "$card",
+    "--pk-fg": "$fg",
+    "--pk-fg-strong": "$fg-strong",
+    "--pk-fg-dim": "$fg-dim",
+    "--pk-soft": "$soft",
+    "--pk-line": "$line",
+    "--pk-accent": "$accent",
+    "--pk-on-accent": "$on-accent",
+    "--pk-up": "$up",
+    "--pk-down": "$down",
+    "--pk-acc-1": "$acc-1",
+    "--pk-acc-2": "$acc-2",
+    "--pk-acc-3": "$acc-3",
+    "--pk-acc-4": "$acc-4",
+    "--dash-gap": "$gap",
+    "--dash-radius": "$radius",
+    "--dash-bg": "$bg",
+    "--dash-panel-bg": "$card",
+    "--dash-border": "$line",
+    "--dash-fg": "$fg",
+    "--dash-fg-dim": "$fg-dim",
+    "--dash-accent": "$accent",
+    "--dash-on-accent": "$on-accent",
+    "--dash-face": "$soft"
+  },
+  "root": {"background": "$bg", "color": "$fg", "font-family": "$sans"},
+  "cfg": {
+    "color": "$txt",
+    "margin": 2,
+    "xaxis": {
+      "caption": {"show": false},
+      "label": {"format": ".2~s", "color": "$ink", "font": {"size": ".84em"}},
+      "tick": {"color": "$grid", "inner": 3},
+      "baseline": {"color": "$grid"}
+    },
+    "yaxis": {
+      "caption": {"show": false},
+      "label": {"format": ".2~s", "color": "$ink", "font": {"size": ".84em"}},
+      "tick": {"color": "$grid", "inner": 0},
+      "baseline": {"show": false},
+      "grid": {"show": true, "color": "$grid"}
+    },
+    "common": {
+      "subset": {"background": "$face"},
+      "brush": "$brush"
+    }
+  },
+  "hue": {
+    "cat": {"palette": {"colors": "$cat"}},
+    "cat-ramp": {"palette": {"colors": "$cat-ramp"}},
+    "chn": {"palette": {"colors": "$chn"}},
+    "geo": {"palette": {"colors": "$geo"}},
+    "geo-ramp": {"palette": {"colors": "$geo-ramp"}}
+  },
+  "chart": {
+    "@makechart/taiwan-map": {"border": {"color": "$outline", "width": 1}},
+    "@makechart/twmapadv": {
+      "border": {"color": "$outline", "width": 0.6},
+      "heat": {"sequential": {"colors": "$geo-ramp"}, "empty": "$empty"},
+      "label": {"color": "$ink", "halo": "$card"}
+    }
+  },
+  "role": {"ref": {"common": {"annotation": {"color": "$ref"}}}},
+  "schema": [
+    {"key": "accent", "type": "color",
+     "label": {"zh-TW": "主色", "en": "Accent"},
+     "desc": {"zh-TW": "「篩選中」的藥丸、底部那排主要動作", "en": "The filtering pill and the primary actions at the bottom"}},
+    {"key": "bg", "type": "color",
+     "label": {"zh-TW": "頁面底色", "en": "Page"},
+     "desc": {"zh-TW": "卡片之外的那一片。深色模式時它要比卡片暗", "en": "Everything outside the cards. In dark mode it must be darker than the card"}},
+    {"key": "card", "type": "color",
+     "label": {"zh-TW": "卡片底色", "en": "Card"},
+     "desc": {"zh-TW": "卡片不畫框，只靠這個跟頁面底色分開", "en": "Cards have no border; this is what separates them from the page"}},
+    {"key": "fg", "type": "color",
+     "label": {"zh-TW": "文字", "en": "Text"},
+     "desc": {"zh-TW": "標題與一般文字", "en": "Titles and body text"}},
+    {"key": "fg-dim", "type": "color",
+     "label": {"zh-TW": "次要文字", "en": "Muted text"},
+     "desc": {"zh-TW": "副標題、說明", "en": "Subtitles and captions"}},
+    {"key": "radius", "type": "length",
+     "label": {"zh-TW": "圓角", "en": "Radius"},
+     "desc": {"zh-TW": "卡片的圓角。手機的卡片圓角給得比桌機大", "en": "The card corner radius, rounder than on a desktop"}},
+    {"key": "gap", "type": "length",
+     "label": {"zh-TW": "格間距", "en": "Gap"},
+     "desc": {"zh-TW": "卡片之間的縫。手指需要縫才點得準", "en": "The gap between cards; a thumb needs it to aim"}},
+    {"key": "sans", "type": "font",
+     "label": {"zh-TW": "字體", "en": "Font"},
+     "desc": {"zh-TW": "整個版面只有一種字體", "en": "The whole design uses a single family"}},
+    {"key": "cat", "type": "colors",
+     "label": {"zh-TW": "分類色", "en": "Categorical"},
+     "desc": {"zh-TW": "手機的色票比桌機保守：螢幕小，同樣一塊顏色佔的視角大得多", "en": "More restrained than on a desktop: on a small screen the same patch of colour subtends a much larger angle"}},
+    {"key": "geo-ramp", "type": "colors",
+     "label": {"zh-TW": "地圖漸層", "en": "Map ramp"},
+     "desc": {"zh-TW": "地圖的連續色階", "en": "The sequential scale on maps"}},
+    {"key": "acc-1", "type": "color",
+     "label": {"zh-TW": "強調色 1", "en": "Accent 1"},
+     "desc": {"zh-TW": "四個 KPI 各自的色條", "en": "The bar on each of the four KPIs"}},
+    {"key": "acc-2", "type": "color", "label": {"zh-TW": "強調色 2", "en": "Accent 2"}, "desc": {"zh-TW": "同上", "en": "As above"}},
+    {"key": "acc-3", "type": "color", "label": {"zh-TW": "強調色 3", "en": "Accent 3"}, "desc": {"zh-TW": "同上", "en": "As above"}},
+    {"key": "acc-4", "type": "color", "label": {"zh-TW": "強調色 4", "en": "Accent 4"}, "desc": {"zh-TW": "同上", "en": "As above"}}
+  ]
+}

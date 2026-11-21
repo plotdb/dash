@@ -35,7 +35,7 @@
     "@makechart/line": "^0.0.9",
     "@makechart/number": "^0.0.4",
     "@makechart/percent-list": "^0.0.3",
-    "@makechart/pie": "^0.0.3",
+    "@makechart/pie": "^0.0.4",
     "@makechart/taiwan-map": "^0.0.3",
     "@makechart/twmapadv": "^0.0.5",
     "@plotdb/block": "^5.7.3",

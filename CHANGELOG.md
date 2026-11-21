@@ -1,5 +1,15 @@
 # Change Logs
 
+## master
+
+ - two more built-in themes: `pocket` and `rail`
+ - theme: new `fit`, a sentence saying which layout a theme suits. it is prose for
+   a human, not a setting — the board applies nothing from it
+ - theme: `desc` and `fit` are now carried through to `board.theme` ( `desc` used
+   to be dropped by the resolver, so a host could not show it )
+ - `@makechart/pie` ^0.0.4: pie declares `interactions`, so its hints come from the
+   declaration instead of a guess
+
 ## v0.0.2
 
  - add `README.md`, `CHANGELOG.md` and package metadata ( author, repository )

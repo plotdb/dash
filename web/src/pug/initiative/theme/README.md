@@ -105,7 +105,7 @@ board 的預設`。中間那一段退回**主題的** panel block 很要緊：�
 
 ## 卡片的標題列
 
-五個主題同一套規則，由 panel block 實作：
+前五個主題同一套規則，由 panel block 實作：
 
 ```
 [標題][副標題 小一號、淡色] ………… [提示 / 狀態 / 清除]
@@ -240,7 +240,7 @@ key、網址參數）是宿主的政策，套件不碰。
 主題存在 `def.theme`，所以 `dash.dump(bd.def.theme)` 印出來的就是可以存回去的那一份。
 
 
-## 五份內建主題
+## 七份內建主題
 
 | | 給誰看 | 自己帶的 block |
 |---|---|---|
@@ -249,11 +249,39 @@ key、網址參數）是宿主的政策，套件不碰。
 | `report` 報告 | 要把結論讀完的人 | panel / kpi |
 | `wall` 牆面 | 十公尺外走過去的人 | panel / kpi |
 | `terminal` 主控台 | 整天開著它的人 | panel / kpi |
+| `pocket` 口袋 | 拿著一支手機的人 | panel / kpi |
+| `rail` 側欄 | 要掃過一排指標的人 | panel / kpi |
 
-來源就是 `variation/` 底下那五個設計，不是另外抄一份 —— 收進套件的是它們的
+來源就是 `variation/` 底下那七個設計，不是另外抄一份 —— 收進套件的是它們的
 `theme-of` 與 CSS 變數，攤平成 token。
 
-後面三版**沒有自己的篩選列**（那是後來才加的功能，只有 `vanilla` 與 `desk` 寫了），
+
+## 主題只換長相，`fit` 只是一句話
+
+`pocket` 與 `rail` 跟前五份不一樣：**它們原本的識別有一半在版面上**（口袋是一欄到底，
+側欄是把 KPI 立成一整欄）。但版面不歸主題管 —— `theme.layout` 只拿來補 `def.layout`
+沒給的欄位，def 自己寫了就以 def 為準。理由是**版面是使用者排的，換個配色不該把人家
+排好的格子推掉**。
+
+所以這兩份收進來的是**長相**：圓角卡片對上無框的報紙、手機的 32px 目標對上 15px 的
+問號圈、保守的小螢幕色票對上只有紅藍黑灰的報紙色票。至於它們配什麼版面，寫在新的
+`fit` 欄位裡：
+
+```json
+"fit": {
+  "zh-TW": "配一欄到底的版面：2 欄格線、每一格跨滿、行高用絕對值讓整頁往下捲。",
+  "en": "Pairs with a single-column layout: a 2-column grid, every cell spanning both…"
+}
+```
+
+`fit` 是**給人看的一句話，不是設定**。板子不會照著它動任何東西，宿主自己決定要不要
+把這句話變成一個「要不要連版面一起換」的選項。`theme.layout` 照舊帶著（口袋是 2 欄、
+側欄是 12 欄五列），def 沒寫版面時才會派上用場。
+
+`desc` 與 `fit` 都經由 `board.theme` 拿得到（`board.theme.desc` / `board.theme.fit`），
+兩個都可能是字串或以語系為 key 的物件，用 `dash.text` 取。
+
+`report` / `wall` / `terminal` / `pocket` / `rail` **沒有自己的篩選列**（那是後來才加的功能，只有 `vanilla` 與 `desk` 寫了），
 所以它們的 `blocks.filterbar` 指向素版那一份，再由各自的 `vars` 把 `--dash-*` 對應過去 ——
 **外觀是素版的，顏色是這個主題的**。素版的篩選列本來就只用 `--dash-*`（只有兩個 box-shadow
 是硬寫的），所以這條路走得通；但形狀（圓角卡片、藥丸按鈕）跟 `wall` 的 3px 縫或 `terminal`
@@ -265,6 +293,7 @@ key、網址參數）是宿主的政策，套件不碰。
 ```
 theme/vanilla.json              內建主題
 theme/desk.json  theme/report.json  theme/wall.json  theme/terminal.json
+theme/pocket.json  theme/rail.json
 block/panel/index.html          預設的 panel block ( = vanilla 的那一份 )
 block/filterbar/index.html
 block/panel/<主題>/index.html    主題自己帶的
@@ -295,7 +324,7 @@ block/filterbar/desk/index.html
 不跟著縮 —— 所以任何一個固定比例，換一個格子高度、或多一行單位就會再次溢出
 （量過：繪圖區 41px 時連 1.8 都還溢出 6px）。
 
-0.0.4 起它會把高度一起算進去，寬高兩邊夾住，止血值就都拿掉了 —— 現在五份主題都沒有
+0.0.4 起它會把高度一起算進去，寬高兩邊夾住，止血值就都拿掉了 —— 現在七份主題都沒有
 `numberSizeRate`，數字反而比止血時大。**遇到這類「換了個殼就不合身」的圖，先確認它有沒有
 把兩個方向都量過，再決定要不要在主題層壓一個值。**
 

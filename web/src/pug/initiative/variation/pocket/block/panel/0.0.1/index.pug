@@ -3,6 +3,8 @@ div(ld-scope)
     .pk-head
       .pk-title(ld="title")
       .pk-spacer
+      .pk-hint(ld="hint")
+        .pk-hint-pop(ld="hintpop")
       .pk-tag(ld="tag") 篩選中 ✕
     .pk-sub(ld="sub")
     .pk-body(ld="body")
@@ -60,6 +62,45 @@ div(ld-scope)
       border-radius: 999px
       cursor: pointer
 
+    // 操作提示. 內容由 panel block 依圖表宣告的互動推出來 ( 見 index.ls 的 hints ).
+    // 圓圈比桌機大一號: 手指的目標不能用滑鼠的尺寸
+    .pk-hint
+      position: relative
+      flex: 0 0 auto
+      width: 20px
+      height: 20px
+      border-radius: 50%
+      border: 1px solid var(--pk-line)
+      color: var(--pk-fg-dim)
+      font-size: 12px
+      line-height: 18px
+      text-align: center
+      cursor: help
+      &:before
+        content: '?'
+      // 手機沒有 hover, 所以靠點一下 ( :focus-within 由 tabindex 之外的點擊觸發不了,
+      // 但 :active 會 ) - 兩個都掛上, 桌機瀏覽器開這一頁時 hover 照樣有效
+      &:hover > .pk-hint-pop, &:active > .pk-hint-pop
+        display: block
+
+    .pk-hint-pop
+      display: none
+      position: absolute
+      top: 140%
+      right: 0
+      z-index: 20
+      padding: .5em .7em
+      font-size: 12px
+      line-height: 1.8
+      font-weight: normal
+      text-align: left
+      white-space: nowrap
+      color: var(--pk-fg)
+      background: var(--pk-card)
+      border: 1px solid var(--pk-line)
+      border-radius: 10px
+      box-shadow: 0 .4em 1.4em rgba(0,0,0,.22)
+
     .pk-sub
       flex: 0 0 auto
       margin-top: 3px
@@ -76,4 +117,7 @@ div(ld-scope)
     .pk-panel.filtering
       > .pk-head .pk-tag
         display: inline-flex
+      // 篩選中時提示讓位: 那時候使用者要的是怎麼取消, 不是可以怎麼篩
+      > .pk-head .pk-hint
+        display: none
   script: include:lsc index.ls

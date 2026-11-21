@@ -51,7 +51,7 @@ board.init();
 | `board.setFilter` / `toggleFilter` / `clearPanel` | 篩選 |
 | `dash.themes` | 內建主題清單 |
 
-內建五份主題：`vanilla` / `desk` / `report` / `wall` / `terminal`。
+內建七份主題：`vanilla` / `desk` / `report` / `wall` / `terminal` / `pocket` / `rail`。
 
 
 ## 文件與示範

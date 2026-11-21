@@ -287,6 +287,8 @@ dash.themes = themes = [
   {name: \report,  title: {'zh-TW': "報告",   en: "Report"},   path: 'theme/report.json'}
   {name: \wall,    title: {'zh-TW': "牆面",   en: "Wall"},     path: 'theme/wall.json'}
   {name: \terminal, title: {'zh-TW': "主控台", en: "Terminal"}, path: 'theme/terminal.json'}
+  {name: \pocket,  title: {'zh-TW': "口袋",   en: "Pocket"}, path: 'theme/pocket.json'}
+  {name: \rail,    title: {'zh-TW': "側欄",   en: "Rail"},   path: 'theme/rail.json'}
 ]
 
 # 主題裡給人看的字 ( title / desc / schema 的 label 與 desc ) 可以是字串, 也可以是
@@ -364,6 +366,11 @@ resolve-theme = (b = {}, t = {}) ->
   {
     name: b.name or null
     title: b.title or null
+    # 給人看的兩段話. desc 是「它想長成什麼樣」, fit 是「它配什麼版面」.
+    # fit 只是一句話, 不是設定 - 版面是使用者排的, 換個主題不該把人家排好的
+    # 格子推掉. 要不要照著排由宿主 ( 和使用者 ) 決定, 板子不碰
+    desc: b.desc or null
+    fit: b.fit or null
     mode: mode
     spec: t
     tokens: tok

@@ -54,6 +54,23 @@ html
         padding: .7em
         border-left: 1px solid var(--dash-border, #e7e8e9)
         font-size: .8em
+      // 主題的自述: 想長成什麼樣 ( desc ), 以及配什麼版面 ( fit ).
+      // fit 刻意跟 token 清單分開, 因為它不是可以改的東西, 是一句話
+      .tk-about
+        margin-bottom: .8em
+        line-height: 1.5
+        opacity: .7
+      .tk-fit
+        margin-bottom: 1.1em
+        padding: .55em .7em
+        line-height: 1.5
+        border-left: 2px solid var(--dash-accent, #888)
+        background: var(--dash-face, rgba(128,128,128,.08))
+      .tk-fit-key
+        margin-bottom: .2em
+        font-weight: 600
+      .tk-fit-txt
+        opacity: .75
       .tk
         margin-bottom: .7em
       .tk-key
@@ -96,6 +113,8 @@ html
       .btn(ld="t-report") 報告
       .btn(ld="t-wall") 牆面
       .btn(ld="t-terminal") 主控台
+      .btn(ld="t-pocket") 口袋
+      .btn(ld="t-rail") 側欄
       .btn(ld="m-light") 淺色
       .btn(ld="m-dark") 深色
       .btn(ld="m-auto") 跟系統

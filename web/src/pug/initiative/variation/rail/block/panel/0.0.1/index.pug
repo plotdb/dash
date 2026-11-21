@@ -6,6 +6,8 @@ div(ld-scope)
         .rl-title(ld="title")
         .rl-sub(ld="sub")
       .rl-spacer
+      .rl-hint(ld="hint")
+        .rl-hint-pop(ld="hintpop")
       .rl-tag(ld="tag") 篩選中 ✕
     .rl-body(ld="body")
   style(type="text/css"): :stylus
@@ -62,6 +64,44 @@ div(ld-scope)
     .rl-spacer
       flex: 1 1 auto
 
+    // 操作提示. 內容由 panel block 依圖表宣告的互動推出來 ( 見 index.ls 的 hints ).
+    // 報紙沒有圓角, 所以這裡的框是方的 - 唯一的例外是問號那個圈, 它是符號不是容器
+    .rl-hint
+      position: relative
+      flex: 0 0 auto
+      align-self: center
+      width: 15px
+      height: 15px
+      border-radius: 50%
+      border: 1px solid var(--rl-line)
+      color: var(--rl-fg-dim)
+      font-size: 10px
+      line-height: 13px
+      text-align: center
+      cursor: help
+      &:before
+        content: '?'
+      &:hover > .rl-hint-pop
+        display: block
+
+    .rl-hint-pop
+      display: none
+      position: absolute
+      top: 150%
+      right: 0
+      z-index: 20
+      padding: .45em .65em
+      font-size: 11px
+      line-height: 1.8
+      font-weight: normal
+      letter-spacing: 0
+      text-align: left
+      white-space: nowrap
+      color: var(--rl-fg)
+      background: var(--rl-bg)
+      border: 1px solid var(--rl-fg-strong)
+      box-shadow: 0 .4em 1.4em rgba(0,0,0,.18)
+
     .rl-tag
       display: none
       flex: 0 0 auto
@@ -84,4 +124,7 @@ div(ld-scope)
           background: var(--rl-accent)
         .rl-tag
           display: block
+        // 篩選中時提示讓位: 那時候使用者要的是怎麼取消, 不是可以怎麼篩
+        .rl-hint
+          display: none
   script: include:lsc index.ls

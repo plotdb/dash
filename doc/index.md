@@ -22,7 +22,9 @@ dashboard utility, based on `@plotdb/block`.
 
 `def.theme` 讓同一份 def 長成另一個樣子。一個主題是三件事 —— panel block 的外觀、
 CSS custom property、圖表的 config —— 三者的值都從同一組 token 長出來。
-內建五份：`vanilla` / `desk` / `report` / `wall` / `terminal`。
+內建七份：`vanilla` / `desk` / `report` / `wall` / `terminal` / `pocket` / `rail`。
+後兩份的識別有一半在版面上，但主題只換長相——它們配什麼版面寫在 `theme.fit` 裡，
+那是給人看的一句話，板子不會照著它動任何東西。
 見 `web/src/pug/initiative/theme/README.md`。
 
 ```js
@@ -50,7 +52,7 @@ board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
     dist/block/panel/index.html      預設的 panel block（= vanilla 的那一份）
     dist/block/filterbar/index.html  全域篩選列
     dist/block/*/<主題>/index.html    主題自己帶的那幾份
-    dist/theme/<主題>.json            內建主題（vanilla / desk / report / wall / terminal）
+    dist/theme/<主題>.json            內建主題（vanilla / desk / report / wall / terminal / pocket / rail）
 
 `fedep publish` 會把 `dist/` 的內容攤平到發佈檔的根目錄，並改寫 `main` / `style` /
 `browser` 的路徑，所以**裝起來的套件裡這些都在根目錄**——`index.min.js`、`block/`、
@@ -74,7 +76,7 @@ board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
 
 `index.js` / `index.min.js` 以外的由 `tool/pack.js` 產生，來源都在 `web/src` 底下 —— 它們本來就是示範頁在用的那一份，
 不是另外抄一份給套件。panel block 的來源是 `variation/vanilla/block/panel/0.0.1/`：
-七個設計的那七份逐字相同（只差一個 class 名），vanilla 是共同的起點，所以它就是預設的
+七個設計的那七份逐字相同，vanilla 是共同的起點，所以它就是預設的
 那一份；複製一份當「套件版」只會變成兩份會各自長歪的東西。`tool/pack.js` 的 pug filter
 跟 `@plotdb/srcbuild` 的 pug builder 一致，所以 build 出來的跟 dev server 服務的是
 同一個東西（byte-identical，可以自己 diff 看）。

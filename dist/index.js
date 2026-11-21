@@ -448,6 +448,20 @@
         en: "Terminal"
       },
       path: 'theme/terminal.json'
+    }, {
+      name: 'pocket',
+      title: {
+        'zh-TW': "口袋",
+        en: "Pocket"
+      },
+      path: 'theme/pocket.json'
+    }, {
+      name: 'rail',
+      title: {
+        'zh-TW': "側欄",
+        en: "Rail"
+      },
+      path: 'theme/rail.json'
     }
   ];
   dash.text = function(v, locale, fallback){
@@ -582,6 +596,8 @@
     return {
       name: b.name || null,
       title: b.title || null,
+      desc: b.desc || null,
+      fit: b.fit || null,
       mode: mode,
       spec: t,
       tokens: tok,

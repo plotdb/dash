@@ -76,6 +76,8 @@ const themed = {
   report:   ['panel', 'kpi'],
   wall:     ['panel', 'kpi'],
   terminal: ['panel', 'kpi'],
+  pocket:   ['panel', 'kpi'],
+  rail:     ['panel', 'kpi'],
 };
 for (const [design, bs] of Object.entries(themed)) {
   for (const b of bs) pack(design, b, `block/${b}/${design}/index.html`);
