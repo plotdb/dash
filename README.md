@@ -9,7 +9,7 @@ dash 不碰繪圖。
 
 ## 安裝
 
-    npm install github:plotdb/dash#dist/v0.0.2
+    npm install @plotdb/dash
 
 走 fedep 的專案在 `package.json` 的 `frontendDependencies.modules` 加上 `@plotdb/dash`，
 `npx fedep` 之後頁面上載這兩個檔：
@@ -51,7 +51,7 @@ board.init();
 | `board.setFilter` / `toggleFilter` / `clearPanel` | 篩選 |
 | `dash.themes` | 內建主題清單 |
 
-內建五份主題：`vanilla` / `desk` / `report` / `wall` / `terminal`。
+內建七份主題：`vanilla` / `desk` / `report` / `wall` / `terminal` / `pocket` / `rail`。
 
 
 ## 文件與示範
