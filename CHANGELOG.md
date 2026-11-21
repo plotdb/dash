@@ -1,6 +1,6 @@
 # Change Logs
 
-## master
+## v0.0.3
 
  - two more built-in themes: `pocket` and `rail`
  - theme: new `fit`, a sentence saying which layout a theme suits. it is prose for

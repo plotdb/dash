@@ -1,6 +1,6 @@
 {
   "name": "@plotdb/dash",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "dashboard utility, based on @plotdb/block",
   "main": "dist/index.min.js",
   "browser": "dist/index.min.js",

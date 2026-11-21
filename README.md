@@ -9,7 +9,7 @@ dash 不碰繪圖。
 
 ## 安裝
 
-    npm install github:plotdb/dash#dist/v0.0.2
+    npm install @plotdb/dash
 
 走 fedep 的專案在 `package.json` 的 `frontendDependencies.modules` 加上 `@plotdb/dash`，
 `npx fedep` 之後頁面上載這兩個檔：
