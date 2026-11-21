@@ -1,6 +1,6 @@
 {
   "name": "@plotdb/dash",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "dashboard utility, based on @plotdb/block",
   "main": "dist/index.min.js",
   "browser": "dist/index.min.js",
@@ -10,11 +10,21 @@
   ],
   "scripts": {
     "start": "npx server -r web",
-    "build": "./build"
+    "build": "./build",
+    "release": "./release"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "dashboard",
+    "chart",
+    "crossfilter",
+    "block"
+  ],
+  "author": "zbryikt",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plotdb/dash"
+  },
   "devDependencies": {
     "@loadingio/bootstrap.ext": "^0.0.12",
     "@loadingio/debounce.js": "^1.0.1",

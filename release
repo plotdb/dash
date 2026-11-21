@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# 發佈.
+#
+#   ./release        或   npm run release
+#
+# 做三件事, 順序有意義:
+#
+#   1. ./build      重編 dist/ - 發佈的是 dist/ 的內容, 不先編就會發出一份舊的.
+#                   這不是假設性的問題: 發佈檔與 repo 的產物分屬兩個地方, 中間
+#                   少一步就只能等裝起來才發現
+#   2. fedep publish      發到 npm
+#   3. fedep publish -g   推 release branch + 開 GitHub release, 並打
+#                         dist/vX.Y.Z ( 產物 ) 與 src/vX.Y.Z ( 原始碼 ) 兩個 tag
+#
+# 兩個 publish 都會先在 .fedep/publish/ 把 dist/ 的內容攤平到根目錄, 並改寫
+# main / style / browser 的路徑 - 所以裝起來的套件是 index.min.js、block/、theme/
+# 都在根目錄, 跟 @plotdb/layout、@plotdb/konfig 一樣.
+#
+# 發佈前要自己確認的:
+#   - package.json 的 version 已經升了 ( npm 不讓同一個版號發兩次 )
+#   - CHANGELOG.md 有對應的 ## vX.Y.Z section - GitHub release 的 notes 從這裡取,
+#     沒有的話會退回 --generate-notes
+#   - 工作樹是乾淨的, 且已經 push ( src/vX.Y.Z 會打在當前的 commit 上 )
+set -e
+cd "$(dirname "$0")"
+
+ver=$(node -e 'console.log(require("./package.json").version)')
+
+# npm publish 要登入, 而且會問 OTP. 沒登入就先 login - 這兩步都要人在旁邊,
+# 不能放進無人值守的流程
+if ! npm whoami > /dev/null 2>&1; then
+  echo "npm 尚未登入, 先登入:"
+  npm login
+fi
+
+echo "== build =="
+./build
+
+echo
+echo "== npm publish ( @plotdb/dash $ver ) =="
+npx fedep publish
+
+echo
+echo "== github release ( dist/v$ver, src/v$ver ) =="
+npx fedep publish -g
+
+echo
+echo "完成: @plotdb/dash $ver"
