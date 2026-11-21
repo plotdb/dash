@@ -1,5 +1,13 @@
 # Change Logs
 
+## master
+
+ - upgrade charts: `@plotdb/chart` ^3.17.1, `bar` ^0.0.16, `line` ^0.0.11,
+   `pie` ^0.0.6, `number` ^0.0.5, `taiwan-map` ^0.0.5, `twmapadv` ^0.0.7.
+   all of these only add `desc` on config items and `mod.tabinfo` — no default
+   or behaviour changed. they are dev / frontend dependencies, so nothing in the
+   published package changes; this only affects the demo site
+
 ## v0.0.3
 
  - two more built-in themes: `pocket` and `rail`
