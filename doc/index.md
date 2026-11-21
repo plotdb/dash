@@ -57,6 +57,21 @@ board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
 `theme/` 都是。下面講的路徑（以及主題 JSON 裡 `blocks` 的 `path`）都是裝起來之後的，
 不帶 `dist/`。這是 plotdb 這一系的共同形狀，`@plotdb/layout`、`@plotdb/konfig` 也是這樣。
 
+
+## 宿主要載哪兩個檔
+
+    <package>/index.min.js      掛出全域的 window.dash
+    <package>/index.min.css     版面與卡片的基本 CSS
+
+走 fedep 的話就是 `/assets/lib/@plotdb/dash/main/index.min.js` 與 `.../index.min.css`。
+
+**不要指 `web/static/` 底下的任何東西。** 那是 dev server 編給示範頁用的（`/js/dash.js`、
+`/css/dash.css`，來源同樣是 `web/src/ls/dash.ls`），整個 `web/static/` 在 `.gitignore`
+裡，不進版控也不會發佈。指著它的話，在本機 clone 旁邊 link 時會過，裝起來的套件裡卻根本
+沒有這個檔——而且因為內容是對的，問題會拖到發版後才爆。
+
+`window.dash` 是對外的名字，不會再改。
+
 `index.js` / `index.min.js` 以外的由 `tool/pack.js` 產生，來源都在 `web/src` 底下 —— 它們本來就是示範頁在用的那一份，
 不是另外抄一份給套件。panel block 的來源是 `variation/vanilla/block/panel/0.0.1/`：
 七個設計的那七份逐字相同（只差一個 class 名），vanilla 是共同的起點，所以它就是預設的
