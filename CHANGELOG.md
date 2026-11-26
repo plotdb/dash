@@ -1,5 +1,33 @@
 # Change Logs
 
+## v0.0.4
+
+ - i18n: every UI string in the built-in blocks ( filterbar, panel, kpi ) now goes
+   through `@plotdb/block`'s native i18n, with `en` and `zh-TW` tables in each
+   block's `pkg.i18n`. keys are the English source text, so a missing translation
+   shows English rather than a key
+ - new `lng` option on `dash.board`, plus `dash.lng(l)` / `board.setLng(l)`.
+   **the default language is `en`** — language is the host's call. a dashboard that
+   wants Chinese says so ( dash's own demo pages now pass `lng: 'zh-TW'` )
+ - changing the language keeps filters and layout: static text re-translates itself
+   ( blocks are attached with `autoTransform: 'i18n'` ), JS-composed text follows a
+   `render`, and the filterbar rebuilds its controls because a few of its strings
+   are written once at build time
+ - `dash.text` without a locale now reads the current language instead of always
+   `zh-TW`. hosts that pass a locale explicitly are unaffected
+
+ - theme: rewrite `vanilla`'s `desc`. `desc` / `fit` are read by whoever is picking a
+   theme in a host's theme menu, not by a developer, so they say what a theme looks
+   like and what it suits — file names and CSS variables belong in the README. if one
+   has to be mentioned, it now says plainly that it only matters when embedding
+   `@plotdb/dash` yourself
+
+ - upgrade charts: `@plotdb/chart` ^3.17.1, `bar` ^0.0.16, `line` ^0.0.11,
+   `pie` ^0.0.6, `number` ^0.0.5, `taiwan-map` ^0.0.5, `twmapadv` ^0.0.7.
+   all of these only add `desc` on config items and `mod.tabinfo` — no default
+   or behaviour changed. they are dev / frontend dependencies, so nothing in the
+   published package changes; this only affects the demo site
+
 ## v0.0.3
 
  - two more built-in themes: `pocket` and `rail`
