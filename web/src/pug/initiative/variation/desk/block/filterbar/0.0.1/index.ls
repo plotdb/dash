@@ -22,9 +22,53 @@ mk = (tag, cls, txt) ->
   n
 
 module.exports =
-  pkg: {name: \filterbar, version: \0.0.1}
+  pkg:
+    name: \filterbar
+    version: \0.0.1
+    # key 就是英文原文, 漏翻一句時看到的是英文而不是一個 key.
+    # {n} / {range} 由 tr 自己換 - 見那個 method 的說明.
+    #
+    # 兩個標題都在表裡 ( 「篩選」與「全域篩選」): 那句話是各設計的 pug 自己挑的
+    # ( t= 寫在 pug 上 ), 而這一份 JS 在每個設計裡逐字相同, 所以兩句都得收
+    i18n:
+      en:
+        'Filter': 'Filter'
+        'Global filter': 'Global filter'
+        'Not filtered': 'Not filtered'
+        'Clear {n}': 'Clear {n}'
+        'Only': 'Only'
+        'Exclude': 'Exclude'
+        'Select all': 'Select all'
+        'Select none': 'Select none'
+        'Exclude none': 'Exclude none'
+        'Exclude all': 'Exclude all'
+        'All': 'All'
+        'Nothing': 'Nothing'
+        '{n} items': '{n} items'
+        'Excluding {n}': 'Excluding {n}'
+        'Any': 'Any'
+        'Full range {range}': 'Full range {range}'
+      'zh-TW':
+        'Filter': '篩選'
+        'Global filter': '全域篩選'
+        'Not filtered': '未篩選'
+        'Clear {n}': '清除 {n} 項'
+        'Only': '只要'
+        'Exclude': '排除'
+        'Select all': '全選'
+        'Select none': '全不選'
+        'Exclude none': '不排除'
+        'Exclude all': '全部排除'
+        'All': '全部'
+        'Nothing': '無'
+        '{n} items': '{n} 項'
+        'Excluding {n}': '排除 {n} 項'
+        'Any': '不限'
+        'Full range {range}': '全部範圍 {range}'
 
-  init: ({root, data}) ->
+  init: ({root, data, t, i18n}) ->
+    @t = t
+    @i18n = i18n
     @root = root
     @def = data.def
     @board = board = data.board
@@ -49,6 +93,15 @@ module.exports =
 
   k: (n) -> "#{@pfx}-fb-#n"
 
+  # 翻一句話, 順便把 {name} 換成值.
+  #
+  # 插值自己做: block 內建的 t 收了第二個參數但不用它, 而宿主換成 i18next 的話
+  # 它認的是 {{name}} - 用單括號的話兩種 module 都不會先動手, 兩邊的結果一樣
+  tr: (k, vals = {}) ->
+    s = if @t => @t k else k
+    for n, v of vals => s = s.replace "{#n}", v
+    s
+
   refresh: ->
     @sig = @_sig!
     @labels = @def.labels or {}
@@ -59,9 +112,15 @@ module.exports =
     @build!
     @drop-stale!
 
+  lang: -> ((@i18n or {}).language) or ''
+
   # 欄位的設定 ( 哪幾欄、怎麼稱呼 ) 的指紋. 比字串是因為 labels 是物件,
-  # 而這三個值都小, 每次 render 比一次不划算的問題不存在
-  _sig: -> JSON.stringify [(@def.only or null), (@def.skip or null), (@def.labels or null)]
+  # 而這三個值都小, 每次 render 比一次不划算的問題不存在.
+  #
+  # 語言也算進去: 控制項裡有幾句話是建的時候寫上去就不再動的 ( 分頁的「只要 /
+  # 排除」、「全部範圍 …」), sync 不會重寫它們 - 換語言時整組重建最省事,
+  # 而這條路本來就在了
+  _sig: -> JSON.stringify [(@def.only or null), (@def.skip or null), (@def.labels or null), @lang!]
 
   # 不再開放的欄位, 它原本發出的篩選要一起清掉.
   #
@@ -109,8 +168,8 @@ module.exports =
     for m in <[index exclude]> => tabs.appendChild (c.tab[m] = @tab f, m)
     pop.appendChild tabs
     head = mk \div, @k \head
-    c.all = mk \button, (@k \mini), '全選'
-    c.non = mk \button, (@k \mini), '全不選'
+    c.all = mk \button, (@k \mini), (@tr 'Select all')
+    c.non = mk \button, (@k \mini), (@tr 'Select none')
     # 「全選」在排除模式是「一項都不排除」, 兩者都是「這一欄沒有篩選」
     c.all.addEventListener \click, ~> @emit f, null
     c.non.addEventListener \click, ~>
@@ -126,7 +185,7 @@ module.exports =
     pop.appendChild list
 
   tab: (f, mode) ->
-    b = mk \button, (@k \tab), (if mode == \exclude => '排除' else '只要')
+    b = mk \button, (@k \tab), (@tr (if mode == \exclude => 'Exclude' else 'Only'))
     # 換模式就清掉這一欄的篩選: 同一份勾選在兩種模式下是相反的意思,
     # 直接換過去的話, 使用者會看到自己沒按過的篩選結果
     b.addEventListener \click, ~>
@@ -167,12 +226,12 @@ module.exports =
     pop.appendChild box
     hint = if f.type == \date => "#{f.domain.0} – #{f.domain.1}"
     else "#{num-fmt f.domain.0} – #{num-fmt f.domain.1}"
-    pop.appendChild mk \div, (@k \hint), "全部範圍 #hint"
+    pop.appendChild mk \div, (@k \hint), (@tr 'Full range {range}', {range: hint})
 
   end: (f, which) ->
     if f.type == \date =>
       n = mk \select, @k \sel
-      n.appendChild mk \option, null, '不限'
+      n.appendChild mk \option, null, (@tr 'Any')
       n.firstChild.value = ''
       for v in f.values
         o = mk \option, null, "#v"
@@ -204,7 +263,7 @@ module.exports =
     @bar.classList.toggle \filtering, !!n
     # 只寫「清除 n 項」而不是「清除篩選」- 它只清這一列發出的那幾個,
     # 頁首那顆「清除篩選」才是連圖表發出的一起清
-    @clear.textContent = if n => "清除 #n 項" else '未篩選'
+    @clear.textContent = if n => (@tr 'Clear {n}', {n}) else @tr 'Not filtered'
 
   sync-one: (f) ->
     c = @ctrl[f.key]
@@ -214,23 +273,23 @@ module.exports =
     if cur and cur.type => c.mode = (if cur.type == \exclude => \exclude else \index)
     for m, b of c.tab => b.classList.toggle \on, m == c.mode
     ex = c.mode == \exclude
-    c.all.textContent = if ex => '不排除' else '全選'
-    c.non.textContent = if ex => '全部排除' else '全不選'
+    c.all.textContent = @tr (if ex => 'Exclude none' else 'Select all')
+    c.non.textContent = @tr (if ex => 'Exclude all' else 'Select none')
     vs = if cur => (cur.values or []) else (if ex => [] else f.values)
     for b in c.boxes => b.checked = !!~vs.indexOf(b.value)
-    c.val.textContent = if !cur => '全部'
-    else if ex => "排除 #{vs.length} 項"
-    else if !vs.length => '無'
+    c.val.textContent = if !cur => @tr 'All'
+    else if ex => (@tr 'Excluding {n}', {n: vs.length})
+    else if !vs.length => @tr 'Nothing'
     else if vs.length == 1 => "#{vs.0}"
-    else "#{vs.length} 項"
+    else (@tr '{n} items', {n: vs.length})
     if cur => 1 else 0
 
   sync-range: (f, c, cur) ->
     [lo, hi] = if cur => cur.values else [null, null]
     c.lo.value = if lo? => lo else ''
     c.hi.value = if hi? => hi else ''
-    fmt = (v) -> if !v? => '不限' else if f.type == \date => "#v" else num-fmt v
-    c.val.textContent = if !cur => '全部' else "#{fmt lo} – #{fmt hi}"
+    fmt = (v) ~> if !v? => @tr 'Any' else if f.type == \date => "#v" else num-fmt v
+    c.val.textContent = if !cur => @tr 'All' else "#{fmt lo} – #{fmt hi}"
     if cur => 1 else 0
 
   # def 會被 board.update-panel 改掉 ( 編輯器調整「開放哪些欄位、怎麼稱呼」),

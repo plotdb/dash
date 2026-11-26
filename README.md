@@ -50,8 +50,26 @@ board.init();
 | `board.addPanel` / `updatePanel` / `removePanel` | 單格增修刪 |
 | `board.setFilter` / `toggleFilter` / `clearPanel` | 篩選 |
 | `dash.themes` | 內建主題清單 |
+| `dash.lng(l)` / `board.setLng(l)` | 換語言（`en` / `zh-TW`），不給參數就是讀現在的 |
 
 內建七份主題：`vanilla` / `desk` / `report` / `wall` / `terminal` / `pocket` / `rail`。
+
+
+## 語言
+
+介面上的字（篩選列、「篩選中」、KPI 的「佔全體 x%」、操作提示）走 `@plotdb/block`
+原生的 i18n，附 `en` 與 `zh-TW`。**預設是 `en`** —— 套件不猜使用者要哪一種，語言是宿主的事：
+
+```js
+new dash.board({..., lng: 'zh-TW'})   // 掛起來就用這個語言
+dash.lng('en')                        // 之後要換. board.setLng(l) 等效
+dash.lng()                            // 讀現在的
+```
+
+換語言不清篩選，也不重建版面：靜態的字由 block 自己重譯，JS 現組的那幾句
+（「清除 3 項」）跟著 `render` 重寫。語言是全域的（`block.i18n` 只有一份），
+所以一頁上的兩個 board 不能各講一種話。自己寫一份 block 的話，字串表放在
+`pkg.i18n`，pug 裡用 `t="<英文原文>"` 標要翻的節點。
 
 
 ## 文件與示範

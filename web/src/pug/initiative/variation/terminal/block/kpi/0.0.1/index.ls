@@ -16,9 +16,24 @@ num-fmt = (n) ->
 cells = 12
 
 module.exports =
-  pkg: {name: \kpi, version: \0.0.1}
+  pkg:
+    name: \kpi
+    version: \0.0.1
+    # 這一版的 zh-TW 跟 en 一字不差, 而這是故意的: 主控台的身分就是等寬、單色、
+    # 全大寫的英文, 「ALL」在這裡是介面的一部分, 不是一句可以翻的話.
+    # 表還是要有 - 要翻的人換掉這幾句就好, 不必改程式
+    i18n:
+      en:
+        'ALL': 'ALL'
+        '{d}% vs ALL': '{d}% vs ALL'
+        '{p}% of ALL': '{p}% of ALL'
+      'zh-TW':
+        'ALL': 'ALL'
+        '{d}% vs ALL': '{d}% vs ALL'
+        '{p}% of ALL': '{p}% of ALL'
 
-  init: ({root, data}) ->
+  init: ({root, data, t}) ->
+    @t = t
     @def = def = data.def
     @board = data.board
     @n = Object.from-entries <[num unit label note fill]>.map ->
@@ -43,17 +58,26 @@ module.exports =
     ratio = if total and sub? => sub / total else 1
 
     @n.note.className = \tm-kpi-note
-    if !live => @n.note.textContent = 'ALL'
+    if !live => @n.note.textContent = @tr 'ALL'
     else if @def.note == \delta =>
       d = if total => (sub - total) / total else 0
       @n.note.className = "tm-kpi-note #{if d >= 0 => \up else \down}"
-      @n.note.textContent = "#{if d >= 0 => '+' else ''}#{(d * 100).toFixed 1}% vs ALL"
-    else @n.note.textContent = "#{(ratio * 100).toFixed 1}% of ALL"
+      @n.note.textContent = @tr '{d}% vs ALL', {d: "#{if d >= 0 => '+' else ''}#{(d * 100).toFixed 1}"}
+    else @n.note.textContent = @tr '{p}% of ALL', {p: (ratio * 100).toFixed 1}
 
     # delta 模式的比例不是「佔全體多少」, 畫成進度條會騙人, 所以維持滿格
     r = if @def.note == \delta => 1 else ratio
     on-n = Math.round(r * cells)
     @n.fill.textContent = '█'.repeat(on-n) + '░'.repeat(cells - on-n)
     @n.num.textContent = num-fmt v
+
+  # 翻一句話, 順便把 {name} 換成值.
+  #
+  # 插值自己做: block 內建的 t 收了第二個參數但不用它, 而宿主換成 i18next 的話
+  # 它認的是 {{name}} - 用單括號的話兩種 module 都不會先動手, 兩邊的結果一樣
+  tr: (k, vals = {}) ->
+    s = if @t => @t k else k
+    for n, v of vals => s = s.replace "{#n}", v
+    s
 
   interface: -> @

@@ -291,13 +291,35 @@ dash.themes = themes = [
   {name: \rail,    title: {'zh-TW': "側欄",   en: "Rail"},   path: 'theme/rail.json'}
 ]
 
+# ------------------------------------------------------------------ 語言
+#
+# block 自己就有 i18n: 每個 block 在 pkg.i18n 裡放自己的字串表, pug 裡用 t= 標要
+# 翻的節點, JS 裡用 init 給的 t(key) 取. 所以 dash 這邊不另外做一套字串機制,
+# 只把語言開關擺到 dash 的門口 - 宿主換語言不必自己認識 @plotdb/block.
+#
+# 語言是全域的 ( block.i18n 只有一份 ), 一頁上的兩個 board 不能各講一種話.
+# 真的需要的話要給 board 各自的 i18n module, 那是另一件事, 這一版不做.
+i18n-mod = -> if window? and window.block => (window.block.i18n or {}).module or null else null
+
+# dash.lng!      讀現在的語言
+# dash.lng 'en'  換語言. 所有已經掛上的 block 會跟著換 - 靜態的字由 block 自己
+#                重譯 ( attach 時給了 autoTransform ), JS 現做的字由 board 重畫
+dash.lng = (l) ->
+  if !(m = i18n-mod!) => return l or \en
+  if l? => m.changeLanguage l
+  m.language or m.lng or \en
+
 # 主題裡給人看的字 ( title / desc / schema 的 label 與 desc ) 可以是字串, 也可以是
 # 一個以語系為 key 的物件. 兩種都收, 因為自己寫一份主題的人不該為了一句說明先學
 # 一套 i18n 格式.
 #
+# 不給 locale 就是「現在這個語言」- 宿主換了語言, 主題選單上的說明要跟著換,
+# 而宿主不該為此在每個呼叫點自己補一個參數.
+#
 # 找不到那個語系就退回預設的那個, 再找不到就拿第一個有值的 - 少一句翻譯時畫面上
 # 看到的是另一個語言, 不是空白
-dash.text = (v, locale = 'zh-TW', fallback = 'zh-TW') ->
+dash.text = (v, locale, fallback = 'zh-TW') ->
+  locale or= dash.lng!
   if !v or typeof(v) != \object => return (if v? => "#v" else '')
   for k in [locale, fallback] => if v[k] => return v[k]
   for k, t of v => if t => return t
@@ -407,6 +429,9 @@ board = dash.board = (opt = {}) ->
   @panel-block = opt.panel or {name: \panel, version: \0.0.1}
   # 內建主題的位置. 預設是 fedep 放東西的地方, 宿主換了位置才要給
   @theme-base = opt.theme-base or null
+  # 語言. 不給就是 block.i18n 現在的語言 ( 宿主自己管的話走這條 ),
+  # 給了就在 init 時切過去 - 語言是全域的, 見 dash.lng
+  @lng = opt.lng or null
   @theme = null
   @panels = (@def.panels or []).map (d, i) -> {} <<< d <<< {id: d.id or "panel-#i"}
   @rows = []
@@ -434,6 +459,10 @@ board.prototype = Object.create(Object.prototype) <<<
 
   _init: ->
     Promise.resolve!
+      # 語言要在最前面: block 掛上去的那一刻就會把 t= 的字翻好,
+      # 晚一步切的話第一眼看到的是上一個語言
+      .then ~> if @lng => dash.lng @lng
+      .then ~> @_watch-lng!
       # 主題要在 layout 之前: 它可能補上 def.layout 沒寫的鍵, 也可能換掉
       # panel block. 這時候還沒有 @leaf, set-theme 看得出來, 只把 cfg 與
       # CSS 變數準備好就回來
@@ -460,7 +489,9 @@ board.prototype = Object.create(Object.prototype) <<<
       p._bc = bc
       node = @_cell p
       bc.create {data: {def: p, board: @}}
-        .then (bi) -> bi.attach {root: node} .then -> bi.interface!
+        # autoTransform: 換語言時 block 自己把 pug 裡標了 t= 的字重譯一次.
+        # JS 現做的字 ( 「清除 n 項」這些 ) 它管不到, 那是 _watch-lng 的事
+        .then (bi) -> bi.attach {root: node, autoTransform: \i18n} .then -> bi.interface!
         .then (itf) -> p.itf = itf
     .then -> p
 
@@ -951,6 +982,12 @@ board.prototype = Object.create(Object.prototype) <<<
 
   set-mode: (m) -> @set-theme ({} <<< (@def.theme or {}) <<< {mode: m})
 
+  # 換語言. 跟 dash.lng 是同一件事 ( 語言全域只有一份 ), 擺在 board 上只是因為
+  # 宿主手上通常拿著 board; 不給參數就是讀現在的語言
+  set-lng: (l) ->
+    if l? => @lng = l
+    dash.lng l
+
   # 找 block 的順序: panel 自己指定的 -> 主題給這個角色的 -> 主題的預設 ->
   # board 的預設.
   #
@@ -1060,7 +1097,20 @@ board.prototype = Object.create(Object.prototype) <<<
 
   render: -> @panels.map (p) -> if p.itf => p.itf.render!
 
+  # 換語言時重畫. 靜態的字 block 自己會換 ( attach 給了 autoTransform ), 但
+  # 「清除 3 項」、「佔全體 42.1%」這種是 JS 現組的, 得重跑一次 render 才會換;
+  # 而 render 本來就是「照現在的狀態重寫一遍」, 所以這裡不必知道哪些字要換
+  _watch-lng: ->
+    if @_lng-cb or !(m = i18n-mod!) => return
+    @_lng-cb = ~> @render!
+    m.on \languageChanged, @_lng-cb
+
+  _unwatch-lng: ->
+    if @_lng-cb and (m = i18n-mod!) => m.off \languageChanged, @_lng-cb
+    @_lng-cb = null
+
   destroy: ->
+    @_unwatch-lng!
     if @_mq => @_mq.mq.remove-event-listener \change, @_mq.cb; @_mq = null
     @_guide null
     @panels.map (p) -> if p.itf and p.itf.destroy => p.itf.destroy!

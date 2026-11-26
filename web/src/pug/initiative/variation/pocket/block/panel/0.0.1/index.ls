@@ -10,9 +10,31 @@
 # 同一份 def、同一套 crossfilter, 換掉 block 就換掉整個儀表板的長相.
 
 module.exports =
-  pkg: {name: \panel, version: \0.0.1}
+  pkg:
+    name: \panel
+    version: \0.0.1
+    # 字串表走 block 原生的 i18n: key 就是英文原文, 所以漏翻一句時畫面上看到的是
+    # 英文, 不是一個 key. {field} 由 tr 自己換掉 - block 內建的 t 不做插值,
+    # 而 i18next 看的是 {{...}}, 用單括號兩邊都不會動它
+    i18n:
+      en:
+        'Filtering': 'Filtering'
+        # 主控台那一版的卡片寫的是 [FILTERED ✕] - 那句話是各設計的 pug 自己挑的
+        # ( t= 寫在 pug 上 ), 而這一份 JS 在七個設計裡逐字相同, 所以兩句都得收
+        'FILTERED': 'FILTERED'
+        'Click an item to filter {field}': 'Click an item to filter {field}'
+        'Drag sideways to filter {field}': 'Drag sideways to filter {field}'
+        'Click the legend to filter {field}': 'Click the legend to filter {field}'
+      'zh-TW':
+        'Filtering': '篩選中'
+        # 主控台刻意維持全大寫的英文, 見那一版 kpi 的說明
+        'FILTERED': 'FILTERED'
+        'Click an item to filter {field}': '點圖上的項目可以篩「{field}」'
+        'Drag sideways to filter {field}': '橫向框選可以篩「{field}」'
+        'Click the legend to filter {field}': '點圖例可以篩「{field}」'
 
-  init: ({root, data, manager}) ->
+  init: ({root, data, manager, t}) ->
+    @t = t
     @def = def = data.def
     @board = board = data.board
     @manager = manager
@@ -56,7 +78,8 @@ module.exports =
         .then (bc) -> bc.create {data: {delay-render: false} <<< ((def.chart or {}).data or {})}
         .then (bi) ~>
           @_bi = bi
-          bi.attach {root: node} .then -> bi.interface!
+          # 圖表自己也可能有 i18n ( 它也是 block ), 換語言時跟著換
+          bi.attach {root: node, autoTransform: \i18n} .then -> bi.interface!
         .then (chart) ~>
           @chart = chart
           @bind-events chart
@@ -219,14 +242,24 @@ module.exports =
     # select 代打的那一維. 擺在兩條路之後, 因為兩種情況都可能有:
     # 圖宣告了 click 就表示它自己發, 這裡的條件 ( 不在 filter-dims 裡 ) 自然不成立
     if gf and g not in dims => add \click, gf
-    text =
-      click: "點圖上的項目可以篩"
-      brush: "橫向框選可以篩"
-      legend: "點圖例可以篩"
+    key =
+      click: 'Click an item to filter {field}'
+      brush: 'Drag sideways to filter {field}'
+      legend: 'Click the legend to filter {field}'
     out = []
     # 固定順序, 不照 interactions 的 key 順序 - 提示的排列不該隨圖表的宣告而變
-    for k in <[click brush legend]> => for f in (acts[k] or []) => out.push "#{text[k]}「#{lb f}」"
+    for k in <[click brush legend]> => for f in (acts[k] or []) => out.push @tr key[k], {field: lb f}
     out
+
+  # 翻一句話, 順便把 {name} 換成值.
+  #
+  # 插值自己做: block 內建的 t 收了第二個參數但不用它, 而宿主換成 i18next 的話
+  # 它認的是 {{name}} - 用單括號的話兩種 module 都不會先動手, 這裡換出來的結果
+  # 在兩邊都一樣
+  tr: (k, vals = {}) ->
+    s = if @t => @t k else k
+    for n, v of vals => s = s.replace "{#n}", v
+    s
 
   # 提示掛在標題列右側, 跟「篩選中」同一個位置 - 篩選中的時候它讓位,
   # 因為那時候使用者要的是「怎麼取消」, 不是「可以怎麼篩」

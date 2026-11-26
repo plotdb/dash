@@ -1,9 +1,9 @@
 div(ld-scope)
   .dash-fb(ld="fb",data-pfx="dash")
-    .dash-fb-title 篩選
+    .dash-fb-title(t="Filter")
     .dash-fb-items(ld="items")
     .dash-spacer
-    button.dash-fb-clear(ld="clear") 未篩選
+    button.dash-fb-clear(ld="clear")
   style(type="text/css"): :stylus
     // 這一份是套件發出去的預設篩選列 ( tool/pack.js 取的就是它 ), 所以顏色只用
     // dash.css 的 --dash-* - 宿主載了 index.css 就會長對, 不必再給一組變數.

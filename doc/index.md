@@ -39,6 +39,34 @@ board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
 ```
 
 
+## 語言
+
+介面上的字走 `@plotdb/block` 原生的 i18n：每個 block 在 `pkg.i18n` 放自己的字串表，
+pug 裡用 `t="<英文原文>"` 標要翻的節點，JS 裡用 `init` 給的 `t(key)` 取。
+key 就是英文原文，所以漏翻一句時畫面上看到的是英文，不是一個 key。
+
+附 `en` 與 `zh-TW`，**預設 `en`** —— 語言是宿主的事，套件不猜使用者要哪一種。
+
+```js
+new dash.board({..., lng: 'zh-TW'})
+dash.lng('en')        // 之後要換; board.setLng(l) 等效
+dash.lng()            // 讀現在的
+```
+
+換語言時：
+
+ - pug 裡標了 `t=` 的字由 block 自己重譯（board 掛 block 時給了 `autoTransform: 'i18n'`）
+ - JS 現組的字（「清除 3 項」、「佔全體 42.1%」）由 board 重跑一次 `render`
+ - 篩選不會掉，版面不會重建
+
+語言是全域的（`block.i18n` 只有一份），所以一頁上的兩個 board 不能各講一種話；
+`dash.text`（主題的 `title` / `desc` / `fit` 這些以語系為 key 的物件）不給 locale
+時也是讀現在這個語言。
+
+主控台（`terminal`）那一版的 `ALL` / `FILTERED` 兩種語言一字不差，那是故意的 ——
+全大寫的英文是它的身分，不是一句可以翻的話。
+
+
 ## build
 
     ./build        # 或 npm run build

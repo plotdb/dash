@@ -157,6 +157,9 @@ def =
 # ---------------------------------------------------------------- runtime
 bd = new dash.board do
   root: document.querySelector('[ld=board]')
+  # 這一頁是中文的, 所以自己講一聲 - block 的字串表預設是英文, 語言是
+  # 宿主的事 ( 套件不猜使用者要哪一種 ). 見 dash.lng
+  lng: 'zh-TW'
   manager: mgr
   # 套件根目錄的位置 ( 主題在它底下的 theme/*.json ). 預設是
   # /assets/lib/@plotdb/dash/main/, 同樣因為這一頁是 dash 自己的示範頁才要給 -
