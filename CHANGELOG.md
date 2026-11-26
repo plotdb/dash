@@ -1,5 +1,24 @@
 # Change Logs
 
+## v0.0.5
+
+ - theme: `def.theme.tokens` can now be split per mode, the same shape the theme's
+   own `tokens` already had — `light` / `dark` are that mode's own, every other key
+   is shared by both. merge order, later wins:
+
+       theme tokens.common → theme tokens[mode] → user's shared → user's tokens[mode]
+
+   `mode: 'auto'` resolves through `prefers-color-scheme` first and uses the mode it
+   resolved to, re-resolving when the system flips. a def with flat tokens only keeps
+   working exactly as before. the point: one palette that lands well on a light
+   background does not land well on a dark one — the paper and text colours in
+   particular could not be exposed to the user at all until now
+ - theme: the resolved theme carries `baseTokens`, the theme's own `tokens` before
+   resolution ( still split into `common` / `light` / `dark` ). a UI that recolours a
+   theme for the user needs both modes' source values, not just the current mode's
+ - note: `light` / `dark` can no longer be used as ordinary token names in
+   `def.theme.tokens`. they were never available in a theme's own `tokens` either
+
 ## v0.0.4
 
  - i18n: every UI string in the built-in blocks ( filterbar, panel, kpi ) now goes

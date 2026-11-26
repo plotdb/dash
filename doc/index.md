@@ -32,11 +32,22 @@ dash.themes                   // 內建清單
 board.setTheme(theme)         // 不清篩選
 board.setMode('dark')
 board.theme                   // 解析後的結果 ( 含 tokens 與 schema )
+board.theme.baseTokens        // 主題原本的 tokens, 還分 common / light / dark
 ```
 
 ```json
 "theme": {"name": "desk", "mode": "auto", "tokens": {"accent": "#c0392b"}, "layout": true}
 ```
+
+`theme.tokens` 可以分模式 —— `light` / `dark` 兩個 key 是那個模式專用的，其餘共用：
+
+```json
+"tokens": {"radius": "0px", "light": {"accent": "#c0392b"}, "dark": {"accent": "#ff7a6b"}}
+```
+
+合併順序（後面蓋前面）：主題的 `tokens.common` → 主題的 `tokens[mode]` →
+使用者共用的 → 使用者的 `tokens[mode]`。`mode: auto` 用 `prefers-color-scheme`
+解析出來的那一個。只給 flat tokens 的舊 def 行為不變。
 
 
 ## 語言

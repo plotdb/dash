@@ -601,12 +601,21 @@
     });
   };
   resolveTheme = function(b, t){
-    var mode, tk, tok, r;
+    var mode, tk, ut, flat, k, v, tok, r;
     b == null && (b = {});
     t == null && (t = {});
     mode = modeOf(t.mode);
     tk = b.tokens || {};
-    tok = deep(deep(tk.common || {}, tk[mode] || {}), t.tokens || {});
+    ut = t.tokens || {};
+    flat = {};
+    for (k in ut) {
+      v = ut[k];
+      if (k !== 'light' && k !== 'dark') {
+        flat[k] = v;
+      }
+    }
+    tok = deep(deep(tk.common || {}, tk[mode] || {}), flat);
+    tok = deep(tok, ut[mode] || {});
     r = function(o){
       return sub(o || {}, tok);
     };
@@ -618,6 +627,7 @@
       mode: mode,
       spec: t,
       tokens: tok,
+      baseTokens: deep({}, tk),
       vars: r(b.vars),
       root: r(b.root),
       layout: r(b.layout),
@@ -1637,7 +1647,7 @@
         }, {
           key: 'tokens',
           type: "{key: value}",
-          desc: "覆寫主題的 token. 使用者自訂主要走這裡 - 主題的 schema 說它開放哪幾個、各是什麼型別"
+          desc: "覆寫主題的 token. 使用者自訂主要走這裡 - 主題的 schema 說它開放哪幾個、各是什麼型別. 可以分模式: light / dark 兩個 key 當「那個模式專用」, 其餘的兩個模式共用 ( 合併順序: 主題的 common -> 主題的該模式 -> 這裡共用的 -> 這裡該模式的 )"
         }, {
           key: 'cfg',
           type: "object",

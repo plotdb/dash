@@ -238,6 +238,48 @@ property：
 換主題時上一份 `root` 有而這一份沒有的屬性會被清掉，跟 `vars` 一樣。
 
 
+## 使用者的 token 也可以分模式
+
+`def.theme.tokens` 跟主題自己的 `tokens` 同一個形狀：`light` / `dark` 兩個 key 是
+**那個模式專用**的，其餘的鍵兩個模式共用。
+
+```json
+"theme": {
+  "name": "desk", "mode": "auto",
+  "tokens": {
+    "radius": "0px",
+    "light": {"accent": "#c0392b", "paper": "#fafafa"},
+    "dark":  {"accent": "#ff7a6b", "paper": "#15171a"}
+  }
+}
+```
+
+合併順序（後面蓋前面）：
+
+```
+主題的 tokens.common → 主題的 tokens[mode] → 使用者共用的 → 使用者的 tokens[mode]
+```
+
+`mode: auto` 先照 `prefers-color-scheme` 解析出 `light` / `dark`，再用解析出來的那一個；
+系統在白天與夜晚之間切換時整段重算一次，所以兩套值會各自生效。
+
+需要它的理由：**一組套在淺色底剛好的值，在深色底上不會剛好**。底色與文字更是非分不可
+（`#fafafa` 的紙在深色模式就是一面白牆），所以不分模式的話，使用者只能在兩個模式裡挑
+一個能看的 —— 另一個就只好不給使用者調。
+
+只給 flat tokens 的舊 `def` 行為完全不變：沒有 `light` / `dark` 這兩個 key，後面兩段
+就是空的。反過來，**`light` / `dark` 不能再當普通 token 的名字用** —— 主題的 `tokens`
+本來就是這樣（那兩個 key 一直是模式），這一版只是讓使用者那一層跟它對齊。
+
+要替使用者重配一組色的 UI（makechart 的「套用色盤」）需要的不只是「現在這個模式的值」，
+而是兩個模式的原始值各是什麼，所以解析後的結果多帶一份 `baseTokens`：
+
+```js
+board.theme.tokens        // 這個模式下的結果 ( 已經併好, 給 $name 參照用的那一份 )
+board.theme.baseTokens    // 主題原本那一份, 還分 common / light / dark
+```
+
+
 ## 給人看的字
 
 `title` / `desc` 與 schema 的 `label` / `desc` 可以是字串，也可以是一個以語系為 key 的
@@ -267,6 +309,7 @@ dash.theme(t, {base})            // 讀一份主題, 回傳解析後的結果
 board.setTheme(theme)            // 併 cfg + 寫 CSS 變數 + 需要時換 block, 不清篩選
 board.setMode('dark')            // 等同 setTheme({...現在的, mode})
 board.theme                      // 解析後的結果 ( 含 tokens 與 schema, 給自訂面板回填 )
+board.theme.baseTokens           // 主題原本的 tokens, 還分 common / light / dark
 ```
 
 `setTheme` 回 Promise 是因為換 `name` 可能要重掛 block；只改 `tokens` / `mode` 的話不重掛，

@@ -382,8 +382,17 @@ fetch-theme = (name, base) ->
 resolve-theme = (b = {}, t = {}) ->
   mode = mode-of t.mode
   tk = b.tokens or {}
+  # 使用者覆寫的 token 也可以分模式: 跟主題自己的 tokens 同一個形狀,
+  # light / dark 兩個 key 是「那個模式專用」, 其餘照舊是兩個模式共用.
+  #
+  # 需要它的理由: 一組配色套在淺色底剛好的值, 在深色底上不會剛好 - 底色與文字
+  # 更是非分不可. 不分模式的話, 使用者只能在兩個模式裡挑一個能看的
+  ut = t.tokens or {}
+  flat = {}
+  for k, v of ut => if k != \light and k != \dark => flat[k] = v
   # common 是兩個模式共用的那幾個 ( 例如圓角、字型 ), 不必各寫一次
-  tok = deep (deep (tk.common or {}), (tk[mode] or {})), (t.tokens or {})
+  tok = deep (deep (tk.common or {}), (tk[mode] or {})), flat
+  tok = deep tok, (ut[mode] or {})
   r = (o) -> sub (o or {}), tok
   {
     name: b.name or null
@@ -396,6 +405,10 @@ resolve-theme = (b = {}, t = {}) ->
     mode: mode
     spec: t
     tokens: tok
+    # 主題原本那一份, 沒解析過 ( 還分 common / light / dark ). tokens 是「這個
+    # 模式下的結果」, 要替使用者重配一組色的 UI 需要的是另一件事: 兩個模式的
+    # 原始值各是什麼. 沒有它的話只能去抓 theme/<name>.json 自己讀一次
+    baseTokens: deep {}, tk
     vars: r b.vars
     root: r b.root
     layout: r b.layout
@@ -1166,7 +1179,7 @@ dash.spec = [
     fields: [
       * key: \name, type: "string", desc: "內建主題的名字 ( dash.themes 列出有哪些 ). 不給就是自己寫一份完整的主題"
       * key: \mode, type: "light | dark | auto", desc: "auto ( 預設 ) 跟著系統走, 而且系統換的時候畫面會跟著換. 要不要記住使用者的選擇是宿主的事"
-      * key: \tokens, type: "{key: value}", desc: "覆寫主題的 token. 使用者自訂主要走這裡 - 主題的 schema 說它開放哪幾個、各是什麼型別"
+      * key: \tokens, type: "{key: value}", desc: "覆寫主題的 token. 使用者自訂主要走這裡 - 主題的 schema 說它開放哪幾個、各是什麼型別. 可以分模式: light / dark 兩個 key 當「那個模式專用」, 其餘的兩個模式共用 ( 合併順序: 主題的 common -> 主題的該模式 -> 這裡共用的 -> 這裡該模式的 )"
       * key: \cfg, type: "object", desc: "額外併進每張圖的設定. 比主題晚, 比 panel 自己的 cfg 早"
       * key: \layout, type: "boolean", desc: "要不要吃主題建議的版面. 預設 false; 給 true 也只補 def.layout 沒寫的鍵, split 版面只認 gap"
     ]
